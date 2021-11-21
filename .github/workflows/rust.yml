@@ -16,7 +16,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Build
+    - name: Build AD
+      run: cargo build --manifest-path ./ad/Cargo.toml --verbose
+    - name: Run AD Tests
+      run: cargo test --manifest-path ./ad/Cargo.toml --verbose
+    - name: Build MAD
+      run: cargo build --manifest-path ./mad/Cargo.toml --verbose
+    - name: Run MAD Tests
+      run: cargo test --manifest-path ./mad/Cargo.toml --verbose
+    - name: Build Main
       run: cargo build --verbose
-    - name: Run tests
+    - name: Run Main Tests
       run: cargo test --verbose
