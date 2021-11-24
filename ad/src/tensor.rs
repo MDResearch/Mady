@@ -3,23 +3,18 @@ use std::{
     vec::IntoIter,
 };
 
-use crate::{impl_ops, impl_ops_all, impl_trait, test_ops, test_ops_all};
+use crate::{impl_ops, impl_ops_all, impl_trait};
 #[derive(Debug, PartialEq, Clone)]
-pub struct Tensor<T>
+pub struct Tensor<T>(Vec<T>)
 where
-    T: Copy,
-{
-    data: Vec<T>,
-}
+    T: Copy;
 
 impl<T> Tensor<T>
 where
     T: Copy,
 {
     pub fn new(len: usize, value: T) -> Self {
-        Tensor {
-            data: vec![value; len],
-        }
+        Tensor(vec![value; len])
     }
 }
 
@@ -32,7 +27,7 @@ where
     type IntoIter = IntoIter<T>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.data.into_iter()
+        self.0.into_iter()
     }
 }
 
@@ -41,7 +36,7 @@ where
     T: Copy,
 {
     fn as_mut(&mut self) -> &mut Vec<T> {
-        self.data.as_mut()
+        self.0.as_mut()
     }
 }
 
@@ -50,7 +45,7 @@ where
     T: Copy,
 {
     fn as_ref(&self) -> &Vec<T> {
-        self.data.as_ref()
+        self.0.as_ref()
     }
 }
 
@@ -65,7 +60,7 @@ where
 
 //     fn add(self, rhs: Tensor<K>) -> Self::Output {
 //         if cfg!(debug_assertions) {
-//             assert_eq!(self.data.len(), rhs.data.len())
+//             assert_eq!(self.0.len(), rhs.data.len())
 //         }
 
 //         Tensor {
@@ -78,20 +73,20 @@ where
 //         }
 //     }
 // }
-impl_ops_all!(+[<K,T> where T: Copy,T: Add<K> + Copy,K: Copy,<T as Add<K>>::Output: Copy,]
+impl_ops_all!(+[<K, T> where T: Copy,T: Add<K> + Copy,K: Copy,<T as Add<K>>::Output: Copy,]
     (left:Tensor<T>,right:Tensor<K>)->Tensor<<T as Add<K>>::Output>{
         // !for debug
         if cfg!(debug_assertions) {
-            assert_eq!(left.data.len(), right.data.len())
+            assert_eq!(left.0.len(), right.0.len())
         }
-        Tensor {
-            data: left
-                .data
+        Tensor(
+            left
+                .0
                 .iter()
-                .zip(right.data.iter())
+                .zip(right.0.iter())
                 .map(|(&a, &b)| a + b)
-                .collect(),
-        }
+                .collect()
+        )
     }
 );
 
@@ -106,7 +101,7 @@ impl_ops_all!(+[<K,T> where T: Copy,T: Add<K> + Copy,K: Copy,<T as Add<K>>::Outp
 
 //     fn sub(self, rhs: Tensor<K>) -> Self::Output {
 //         if cfg!(debug_assertions) {
-//             assert_eq!(self.data.len(), rhs.data.len())
+//             assert_eq!(self.0.len(), rhs.data.len())
 //         }
 
 //         Tensor {
@@ -119,20 +114,20 @@ impl_ops_all!(+[<K,T> where T: Copy,T: Add<K> + Copy,K: Copy,<T as Add<K>>::Outp
 //         }
 //     }
 // }
-impl_ops_all!(-[<K,T> where T: Copy,T: Sub<K> + Copy,K: Copy,<T as Sub<K>>::Output: Copy,]
+impl_ops_all!(-[<K, T> where T: Copy,T: Sub<K> + Copy,K: Copy,<T as Sub<K>>::Output: Copy,]
     (left:Tensor<T>,right:Tensor<K>)->Tensor<<T as Sub<K>>::Output>{
         // !for debug
         if cfg!(debug_assertions) {
-            assert_eq!(left.data.len(), right.data.len())
+            assert_eq!(left.0.len(), right.0.len())
         }
-        Tensor {
-            data:left
-                .data
+        Tensor(
+            left
+                .0
                 .iter()
-                .zip(right.data.iter())
+                .zip(right.0.iter())
                 .map(|(&a, &b)| a - b)
-                .collect(),
-        }
+                .collect()
+        )
     }
 );
 
@@ -146,7 +141,7 @@ impl_ops_all!(-[<K,T> where T: Copy,T: Sub<K> + Copy,K: Copy,<T as Sub<K>>::Outp
 //     type Output = Tensor<<T as Mul<K>>::Output>;
 //     fn mul(self, rhs: Tensor<K>) -> Self::Output {
 //         if cfg!(debug_assertions) {
-//             assert_eq!(self.data.len(), rhs.data.len())
+//             assert_eq!(self.0.len(), rhs.data.len())
 //         }
 
 //         Tensor {
@@ -159,26 +154,28 @@ impl_ops_all!(-[<K,T> where T: Copy,T: Sub<K> + Copy,K: Copy,<T as Sub<K>>::Outp
 //         }
 //     }
 // }
-impl_ops_all!(*[<K,T> where T: Copy,T: Mul<K> + Copy,K: Copy,<T as Mul<K>>::Output: Copy,]
+impl_ops_all!(*[<K, T> where T: Copy,T: Mul<K> + Copy,K: Copy,<T as Mul<K>>::Output: Copy,]
     (left:Tensor<T>,right:Tensor<K>)->Tensor<<T as Mul<K>>::Output>{
         // !for debug
         if cfg!(debug_assertions) {
-            assert_eq!(left.data.len(), right.data.len())
+            assert_eq!(left.0.len(), right.0.len())
         }
-        Tensor {
-            data:left
-                .data
+        Tensor (
+            left
+                .0
                 .iter()
-                .zip(right.data.iter())
+                .zip(right.0.iter())
                 .map(|(&a, &b)| a * b)
                 .collect(),
-        }
+    
+        )
     }
 );
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{test_ops, test_ops_all};
 
     #[test]
     fn tensor_clone() {

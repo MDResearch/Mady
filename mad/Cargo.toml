@@ -11,4 +11,3 @@ quote = "1.0"
 
 [lib]
 proc-macro = true
-crate-type = ["proc-macro"]
