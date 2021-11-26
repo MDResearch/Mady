@@ -9,3 +9,9 @@ bench = true
 mad = {path = "mad"}
 ad = {path = "ad"}
 fastrand = "1.5.0"
+
+[workspace]
+members = [
+    "ad",
+    "mad",
+]

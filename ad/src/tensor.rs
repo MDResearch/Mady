@@ -1,7 +1,4 @@
-use std::{
-    ops::{Add, Mul, Sub},
-    vec::IntoIter,
-};
+use std::ops::{Add, Mul, Sub};
 
 use crate::{impl_ops, impl_ops_all, impl_trait};
 #[derive(Debug, PartialEq, Clone)]
@@ -16,18 +13,21 @@ where
     pub fn new(len: usize, value: T) -> Self {
         Tensor(vec![value; len])
     }
+    pub fn iter(&self) -> impl Iterator<Item = &T> {
+        self.0.iter()
+    }
+
+    pub fn iter_mut<'a>(&'a mut self) -> impl Iterator<Item = &mut T> + 'a {
+        self.0.iter_mut()
+    }
 }
 
-impl<T> IntoIterator for Tensor<T>
+impl<T> From<Vec<T>> for Tensor<T>
 where
     T: Copy,
 {
-    type Item = T;
-
-    type IntoIter = IntoIter<T>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.into_iter()
+    fn from(data: Vec<T>) -> Self {
+        Tensor(data)
     }
 }
 
@@ -167,7 +167,7 @@ impl_ops_all!(*[<K, T> where T: Copy,T: Mul<K> + Copy,K: Copy,<T as Mul<K>>::Out
                 .zip(right.0.iter())
                 .map(|(&a, &b)| a * b)
                 .collect(),
-    
+
         )
     }
 );
