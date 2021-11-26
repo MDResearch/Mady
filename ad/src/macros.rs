@@ -57,4 +57,3 @@ macro_rules! test_ops {
         assert_eq!($r, $a $ops $b);
     };
 }
-

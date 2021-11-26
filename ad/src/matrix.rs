@@ -1,7 +1,5 @@
 use crate::{impl_ops, impl_ops_all, impl_trait, tensor::Tensor};
-use std::{
-    ops::{Add, Mul, Sub},
-};
+use std::ops::{Add, Mul, Sub};
 
 // 0  1  2
 // 3  4  5
@@ -44,7 +42,6 @@ where
         self.data.iter()
     }
 
-    
     // iter by col
     // it is non-consum iterator
     // 0  4  8
@@ -75,8 +72,6 @@ where
         self.data.as_ref()
     }
 }
-
-
 
 // Add Matrix
 impl_ops_all!(+[<K, T> where T: Add<K> + Copy,K: Copy,<T as Add<K>>::Output: Copy]
@@ -308,7 +303,7 @@ mod tests {
     fn matrix_mul() {
         test_ops_all!(=,*,Matrix::new([2, 3], 1),Matrix::new([3, 3], 2),Matrix::new([2, 3], 6));
     }
-    
+
     #[test]
     fn matrix_add() {
         test_ops_all!(=,+,Matrix::new([2, 3], 1),Matrix::new([2, 3], 2),Matrix::new([2, 3], 3));
