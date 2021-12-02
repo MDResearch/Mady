@@ -1,29 +1,29 @@
 #[macro_export]
 macro_rules! impl_ops_all {
     ($opstype:tt[<$($ge:tt),+> where $($wh:tt)+]($a:ident:$at:ty,$b:ident:$bt:ty)->$r:ty$code:block) => {
-        impl_ops!($opstype[<$($ge),+> where $($wh)+]($a:$at,$b:$bt)->$r$code);
-        impl_ops!($opstype[<$($ge),+> where $($wh)+]($a:&$at,$b:$bt)->$r$code);
-        impl_ops!($opstype[<$($ge),+> where $($wh)+]($a:$at,$b:&$bt)->$r$code);
-        impl_ops!($opstype[<$($ge),+> where $($wh)+]($a:&$at,$b:&$bt)->$r$code);
+        $crate::impl_ops!($opstype[<$($ge),+> where $($wh)+]($a:$at,$b:$bt)->$r$code);
+        $crate::impl_ops!($opstype[<$($ge),+> where $($wh)+]($a:&$at,$b:$bt)->$r$code);
+        $crate::impl_ops!($opstype[<$($ge),+> where $($wh)+]($a:$at,$b:&$bt)->$r$code);
+        $crate::impl_ops!($opstype[<$($ge),+> where $($wh)+]($a:&$at,$b:&$bt)->$r$code);
     };
 }
 
 #[macro_export]
 macro_rules! impl_ops {
     (+[<$($ge:tt),+> where $($wh:tt)+]($a:ident:$at:ty,$b:ident:$bt:ty)->$r:ty$code:block) => {
-        impl_trait!(Add,add,[$($ge),+],[$($wh)+],$a,$at,$b,$bt,$r,$code);
+        $crate::impl_trait!(Add,add,[$($ge),+],[$($wh)+],$a,$at,$b,$bt,$r,$code);
     };
 
     (-[<$($ge:tt),+> where $($wh:tt)+]($a:ident:$at:ty,$b:ident:$bt:ty)->$r:ty$code:block) => {
-        impl_trait!(Sub,sub,[$($ge),+],[$($wh)+],$a,$at,$b,$bt,$r,$code);
+        $crate::impl_trait!(Sub,sub,[$($ge),+],[$($wh)+],$a,$at,$b,$bt,$r,$code);
     };
 
     (*[<$($ge:tt),+> where $($wh:tt)+]($a:ident:$at:ty,$b:ident:$bt:ty)->$r:ty$code:block) => {
-        impl_trait!(Mul,mul,[$($ge),+],[$($wh)+],$a,$at,$b,$bt,$r,$code);
+        $crate::impl_trait!(Mul,mul,[$($ge),+],[$($wh)+],$a,$at,$b,$bt,$r,$code);
     };
 
     (/[<$($ge:tt),+> where $($wh:tt)+]($a:ident:$at:ty,$b:ident:$bt:ty)->$r:ty$code:block) => {
-        impl_trait!(Div,div,[$($ge),+],[$($wh)+],$a,$at,$b,$bt,$r,$code);
+        $crate::impl_trait!(Div,div,[$($ge),+],[$($wh)+],$a,$at,$b,$bt,$r,$code);
     };
 }
 
