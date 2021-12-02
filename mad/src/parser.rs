@@ -36,7 +36,7 @@ where
 //             if offset >= max {
 //                 break Ok(self.ast_tree);
 //             }
-            
+
 //         }
 //     }
 // }

@@ -1,7 +1,6 @@
 use mad::ad;
 
-fn main() {
-}
+fn main() {}
 
 #[cfg(test)]
 mod tests {
@@ -14,6 +13,6 @@ mod tests {
 
     #[ad]
     fn aplusb(a: f64, b: f64) -> f64 {
-        a*(a + b)
+        a * (a + b)
     }
 }
