@@ -19,4 +19,4 @@ jobs:
     - name: Build All
       run: cargo build -v
     - name: Tests All
-      run: cargo test -v
+      run: cargo test -v --all
