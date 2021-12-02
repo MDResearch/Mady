@@ -1,4 +1,4 @@
-use crate::{impl_ops, impl_ops_all, impl_trait, tensor::Tensor};
+use crate::{impl_ops_all, tensor::Tensor};
 use std::ops::{Add, Mul, Sub};
 
 // 0  1  2
@@ -75,7 +75,7 @@ where
 
 // Add Matrix
 impl_ops_all!(+[<K, T> where T: Add<K> + Copy,K: Copy,<T as Add<K>>::Output: Copy]
-    (left:Matrix<T>, right:Matrix<K>)->Matrix<<T as Add<K>>::Output>{
+    (left:Matrix<T>, right:Matrix<K>)->Matrix<<T as Add<K>>::Output> {
         // !for debug
         if cfg!(debug_assertions) {
             assert_eq!(left.shape, right.shape)
@@ -87,9 +87,23 @@ impl_ops_all!(+[<K, T> where T: Add<K> + Copy,K: Copy,<T as Add<K>>::Output: Cop
     }
 );
 
+// Add Matrix & Transpose
+impl_ops_all!(+[<K, T> where T: Add<K> + Copy,K: Copy,<T as Add<K>>::Output: Copy]
+    (left:Matrix<T>, right:Transpose<K>)->Matrix<<T as Add<K>>::Output> {
+        // !for debug
+        if cfg!(debug_assertions) {
+            assert_eq!(left.shape, [right.0.shape[1],right.0.shape[0]])
+        }
+        Matrix {
+            shape: left.shape.clone(),
+            data: Tensor::from(left.into_row_iter().zip(right.into_row_iter()).map(|(&a,&b)| a + b).collect::<Vec<_>>()),
+        }
+    }
+);
+
 // Sub Matrix
 impl_ops_all!(-[<K, T> where T: Sub<K> + Copy,K: Copy,<T as Sub<K>>::Output: Copy]
-    (left:Matrix<T>, right:Matrix<K>)->Matrix<<T as Sub<K>>::Output>{
+    (left:Matrix<T>, right:Matrix<K>)->Matrix<<T as Sub<K>>::Output> {
         // !for debug
         if cfg!(debug_assertions) {
             assert_eq!(left.shape, right.shape)
@@ -221,6 +235,36 @@ impl_ops_all!(+[<K, T> where T: Add<K> + Copy,K: Copy,<T as Add<K>>::Output: Cop
 );
 
 // Add Transpose & Matrix
+impl_ops_all!(+[<K, T> where T: Add<K> + Copy,K: Copy,<T as Add<K>>::Output: Copy]
+    (left:Transpose<T>, right:Matrix<K>)->Matrix<<T as Add<K>>::Output> {
+        // !for debug
+        if cfg!(debug_assertions) {
+            assert_eq!(left.0.shape, [right.shape[1],right.shape[0]])
+        }
+        Matrix {
+            shape: right.shape.clone(),
+            data: Tensor::from(left.into_row_iter().zip(right.into_row_iter()).map(|(&a,&b)| a + b).collect::<Vec<_>>()),
+        }
+    }
+);
+
+// Sub Transpose
+impl_ops_all!(-[<K, T> where T: Sub<K> + Copy,K: Copy,<T as Sub<K>>::Output: Copy]
+    (left:Transpose<T>, right:Transpose<K>)->Transpose<<T as Sub<K>>::Output> {
+        // !for debug
+        if cfg!(debug_assertions) {
+            assert_eq!(left.0.shape, right.0.shape)
+        }
+        Transpose(
+            Matrix {
+                shape: left.0.shape.clone(),
+                data: &left.0.data - &right.0.data,
+            }
+        )
+    }
+);
+
+// Add Transpose & Matrix
 //          3*2
 //   2*3   |1 4|
 // |1 2 3| |2 5|
@@ -307,5 +351,30 @@ mod tests {
     #[test]
     fn matrix_add() {
         test_ops_all!(=,+,Matrix::new([2, 3], 1),Matrix::new([2, 3], 2),Matrix::new([2, 3], 3));
+    }
+
+    #[test]
+    fn matrix_sub() {
+        test_ops_all!(=,-,Matrix::new([2, 3], 5),Matrix::new([2, 3], 2),Matrix::new([2, 3], 3));
+    }
+
+    #[test]
+    fn matrix_transpose_add() {
+        test_ops_all!(=,+,Matrix::new([2, 3], 1),Matrix::new([3, 2], 2).t(),Matrix::new([2, 3], 3));
+    }
+
+    #[test]
+    fn transpose_add() {
+        test_ops_all!(=,+,Matrix::new([2, 3], 1).t(),Matrix::new([2, 3], 2).t(),Matrix::new([2, 3], 3).t());
+    }
+
+    #[test]
+    fn transpose_matrix_add() {
+        test_ops_all!(=,+,Matrix::new([2, 3], 1).t(),Matrix::new([3, 2], 2),Matrix::new([3, 2], 3));
+    }
+
+    #[test]
+    fn transpose_sub() {
+        test_ops_all!(=,-,Matrix::new([2, 3], 3).t(),Matrix::new([2, 3], 2).t(),Matrix::new([2, 3], 1).t());
     }
 }
