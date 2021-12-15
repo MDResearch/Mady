@@ -10,7 +10,7 @@ impl<T> Tensor<T>
 where
     T: Copy,
 {
-    pub fn new(len: usize, value: T) -> Self {
+    pub fn new(value: T, len: usize) -> Self {
         Tensor(vec![value; len])
     }
     pub fn iter(&self) -> impl Iterator<Item = &T> {
@@ -175,25 +175,35 @@ impl_ops_all!(*[<K, T> where T: Copy,T: Mul<K> + Copy,K: Copy,<T as Mul<K>>::Out
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{test_ops, test_ops_all};
+    use crate::{ten, test_ops, test_ops_all};
 
     #[test]
-    fn tensor_clone() {
-        assert_eq!(Tensor::new(5, 0), Tensor::new(5, 0).clone());
+    fn clone() {
+        assert_eq!(Tensor::new(0, 5), Tensor::new(0, 5).clone());
     }
 
     #[test]
-    fn tensor_add() {
-        test_ops_all!(=,+,Tensor::new(5, 1),Tensor::new(5, 4),Tensor::new(5, 5));
+    fn add() {
+        test_ops_all!(=,+,Tensor::new(1, 5),Tensor::new(4, 5),Tensor::new(5, 5));
     }
 
     #[test]
-    fn tensor_sub() {
-        test_ops_all!(=,-,Tensor::new(5, 5),Tensor::new(5, 1),Tensor::new(5, 4));
+    fn sub() {
+        test_ops_all!(=,-,Tensor::new(5, 5),Tensor::new(1, 5),Tensor::new(4, 5));
     }
 
     #[test]
-    fn tensor_mul() {
-        test_ops_all!(=,*,Tensor::new(5, 2),Tensor::new(5, 3),Tensor::new(5, 6));
+    fn mul() {
+        test_ops_all!(=,*,Tensor::new(2, 5),Tensor::new(3, 5),Tensor::new(6, 5));
+    }
+
+    #[test]
+    fn macro_with_size() {
+        assert_eq!(ten![1;10], Tensor::new(1, 10))
+    }
+
+    #[test]
+    fn macro_with_vec() {
+        assert_eq!(ten![1, 2, 3, 4, 5, 6], Tensor::from(vec![1, 2, 3, 4, 5, 6]))
     }
 }

@@ -1,3 +1,5 @@
+use crate::tensor::Tensor;
+
 #[macro_export]
 macro_rules! impl_ops_all {
     ($opstype:tt[<$($ge:tt),+> where $($wh:tt)+]($a:ident:$at:ty,$b:ident:$bt:ty)->$r:ty$code:block) => {
@@ -56,4 +58,24 @@ macro_rules! test_ops {
     (=,$ops:tt,$a:expr,$b:expr,$r:expr) => {
         assert_eq!($r, $a $ops $b);
     };
+}
+
+#[macro_export]
+macro_rules! ten {
+    ($elem:expr; $n:expr) => (
+        $crate::tensor::Tensor::new($elem, $n)
+    );
+    ($($x:expr),+ $(,)?) => (
+        $crate::tensor::Tensor::from(vec![$($x),+])
+    );
+}
+
+#[macro_export]
+macro_rules! mat {
+    ($elem:expr; $r:expr, $c:expr) => (
+        $crate::matrix::Matrix::new($elem, [$r, $c])
+    );
+    ($($x:expr),+ $(,)?;$r:expr, $c:expr) => (
+        $crate::matrix::Matrix::from(($crate::ten![$($x),+], [$r, $c]))
+    );
 }

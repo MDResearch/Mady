@@ -11,18 +11,18 @@ struct Matrix<T>
 where
     T: Copy,
 {
-    shape: [usize; 2],
     data: Tensor<T>,
+    shape: [usize; 2],
 }
 
 impl<T> Matrix<T>
 where
     T: Copy,
 {
-    pub fn new(shape: [usize; 2], value: T) -> Self {
+    pub fn new(value: T, shape: [usize; 2]) -> Self {
         Matrix {
+            data: Tensor::new(value, shape.iter().product()),
             shape,
-            data: Tensor::new(shape.iter().product(), value),
         }
     }
 
@@ -52,6 +52,18 @@ where
         (0..self.shape[1])
             .flat_map(move |b| (b..).step_by(self.shape[1]).take(self.shape[0]))
             .map(move |n| self.data.iter().nth(n).unwrap())
+    }
+}
+
+impl<T> From<(Tensor<T>, [usize; 2])> for Matrix<T>
+where
+    T: Copy,
+{
+    fn from(data: (Tensor<T>, [usize; 2])) -> Self {
+        Matrix {
+            data: data.0,
+            shape: data.1,
+        }
     }
 }
 
@@ -330,7 +342,7 @@ impl_ops_all!(-[<K, T> where T: Sub<K> + Copy,K: Copy,<T as Sub<K>>::Output: Cop
 
 #[cfg(test)]
 mod tests {
-    use crate::{test_ops, test_ops_all};
+    use crate::{mat, test_ops, test_ops_all};
 
     use super::*;
 
@@ -345,36 +357,51 @@ mod tests {
     // 6 6 6
     #[test]
     fn matrix_mul() {
-        test_ops_all!(=,*,Matrix::new([2, 3], 1),Matrix::new([3, 3], 2),Matrix::new([2, 3], 6));
+        test_ops_all!(=,*,Matrix::new(1, [2, 3]),Matrix::new(2, [3, 3]),Matrix::new(6, [2, 3]));
     }
 
     #[test]
     fn matrix_add() {
-        test_ops_all!(=,+,Matrix::new([2, 3], 1),Matrix::new([2, 3], 2),Matrix::new([2, 3], 3));
+        test_ops_all!(=,+,Matrix::new(1, [2, 3]),Matrix::new(2, [2, 3]),Matrix::new(3, [2, 3]));
     }
 
     #[test]
     fn matrix_sub() {
-        test_ops_all!(=,-,Matrix::new([2, 3], 5),Matrix::new([2, 3], 2),Matrix::new([2, 3], 3));
+        test_ops_all!(=,-,Matrix::new(5, [2, 3]),Matrix::new(2, [2, 3]),Matrix::new(3, [2, 3]));
     }
 
     #[test]
     fn matrix_transpose_add() {
-        test_ops_all!(=,+,Matrix::new([2, 3], 1),Matrix::new([3, 2], 2).t(),Matrix::new([2, 3], 3));
+        test_ops_all!(=,+,Matrix::new(1, [2, 3]),Matrix::new(2, [3, 2]).t(),Matrix::new(3, [2, 3]));
     }
 
     #[test]
     fn transpose_add() {
-        test_ops_all!(=,+,Matrix::new([2, 3], 1).t(),Matrix::new([2, 3], 2).t(),Matrix::new([2, 3], 3).t());
+        test_ops_all!(=,+,Matrix::new(1, [2, 3]).t(),Matrix::new(2, [2, 3]).t(),Matrix::new(3, [2, 3]).t());
     }
 
     #[test]
     fn transpose_matrix_add() {
-        test_ops_all!(=,+,Matrix::new([2, 3], 1).t(),Matrix::new([3, 2], 2),Matrix::new([3, 2], 3));
+        test_ops_all!(=,+,Matrix::new(1, [2, 3]).t(),Matrix::new(2, [3, 2]),Matrix::new(3, [3, 2]));
     }
 
     #[test]
     fn transpose_sub() {
-        test_ops_all!(=,-,Matrix::new([2, 3], 3).t(),Matrix::new([2, 3], 2).t(),Matrix::new([2, 3], 1).t());
+        test_ops_all!(=,-,Matrix::new(3, [2, 3]).t(),Matrix::new(2, [2, 3]).t(),Matrix::new(1, [2, 3]).t());
+    }
+    #[test]
+    fn macro_with_size() {
+        assert_eq!(mat![1;5,6], Matrix::new(1, [5, 6]))
+    }
+
+    #[test]
+    fn macro_with_vec() {
+        assert_eq!(
+            mat![
+                1,2,3,
+                4,5,6,
+            ;2,3],
+            Matrix::from((Tensor::from(vec![1, 2, 3, 4, 5, 6]), [2, 3]))
+        )
     }
 }
