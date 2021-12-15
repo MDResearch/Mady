@@ -11,9 +11,17 @@ struct Matrix<T>
 where
     T: Copy,
 {
-    data: Tensor<T>,
+<<<<<<< HEAD
+=======
+>>>>>>> b7d17ceff0223c3f4f84a4e439c515bb38842a63
+data: Tensor<T>,
+    // 0 直排長度 1 橫排長度
     shape: [usize; 2],
 }
+
+
+
+
 
 impl<T> Matrix<T>
 where
@@ -26,7 +34,12 @@ where
         }
     }
 
-    // transpose Matrix
+// transpose Matrix // 把Matrix轉掉
+// 1 2 3     1 4 
+// 4 5 6 ->  2 5 
+//           3 6
+
+
     pub fn t(self) -> Transpose<T> {
         Transpose(self)
     }
@@ -42,6 +55,9 @@ where
         self.data.iter()
     }
 
+    // 從橫排掃過一遍
+
+
     // iter by col
     // it is non-consum iterator
     // 0  4  8
@@ -49,12 +65,17 @@ where
     // 2  6 10
     // 3  7 11
     pub fn into_col_iter<'a>(&'a self) -> impl Iterator<Item = &T> + 'a {
-        (0..self.shape[1])
-            .flat_map(move |b| (b..).step_by(self.shape[1]).take(self.shape[0]))
-            .map(move |n| self.data.iter().nth(n).unwrap())
+        // 第1直排到第N直排的迭代器
+        (0..self.shape[1]) 
+            // flat_map 用來攤平 ex: [[1,2],[3,4],[5,6]] -> [1,2,3,4,5,6]
+            // step_by(self.shape[1]) 跳直的 , take()用來取迭代器，相對的原本迭代器裡的那個iter會被刪掉 , b的值會來自前面的(0..self.shape[1]) , 也就是 第 0,1,2項的迭代器,是flat_map自己抓的
+            .flat_map(move |b| (b..).step_by(self.shape[1]).take(self.shape[0]))   
+            // map用來取迭代器的值 , map會自己抓上面flat_map跳到的位置n
+            .map(move |n| self.data.iter().nth(n).unwrap()) // 
     }
 }
 
+<<<<<<< HEAD
 impl<T> From<(Tensor<T>, [usize; 2])> for Matrix<T>
 where
     T: Copy,
@@ -66,6 +87,10 @@ where
         }
     }
 }
+=======
+
+
+>>>>>>> b7d17ceff0223c3f4f84a4e439c515bb38842a63
 
 impl<T> AsMut<Vec<T>> for Matrix<T>
 where
@@ -75,7 +100,7 @@ where
         self.data.as_mut()
     }
 }
-
+// 使data可變
 impl<T> AsRef<Vec<T>> for Matrix<T>
 where
     T: Copy,
@@ -84,6 +109,7 @@ where
         self.data.as_ref()
     }
 }
+//使&a與a(借用或不借用)都可以作為參數
 
 // Add Matrix
 impl_ops_all!(+[<K, T> where T: Add<K> + Copy,K: Copy,<T as Add<K>>::Output: Copy]
@@ -94,10 +120,12 @@ impl_ops_all!(+[<K, T> where T: Add<K> + Copy,K: Copy,<T as Add<K>>::Output: Cop
         }
         Matrix {
             shape: left.shape.clone(),
-            data: &left.data + &right.data,
+            // 這裡可以直接+，來源自macros.rs
+            data: &left.data + &right.data, 
         }
     }
 );
+
 
 // Add Matrix & Transpose
 impl_ops_all!(+[<K, T> where T: Add<K> + Copy,K: Copy,<T as Add<K>>::Output: Copy]
