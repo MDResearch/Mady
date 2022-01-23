@@ -1,4 +1,3 @@
-use crate::tensor::Tensor;
 
 #[macro_export]
 macro_rules! impl_ops_all {
@@ -74,6 +73,9 @@ macro_rules! ten {
 macro_rules! mat {
     ($elem:expr; $r:expr, $c:expr) => (
         $crate::matrix::Matrix::new($elem, [$r, $c])
+    );
+    ($($x:expr),+ $(,)?;$l:expr) => (
+        $crate::matrix::Matrix::from(($crate::ten![$($x),+], [$l, $l]))
     );
     ($($x:expr),+ $(,)?;$r:expr, $c:expr) => (
         $crate::matrix::Matrix::from(($crate::ten![$($x),+], [$r, $c]))
