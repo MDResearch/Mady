@@ -7,6 +7,17 @@ pub fn parse(attr: TokenStream, input: TokenStream) -> TokenStream {
     input
 }
 
+struct ad_node {
+    expr_name: String,
+    expr_type: bool,
+    expr: Expr,
+}
+
+impl ad_node {
+    // fn d_var() -> Expr {
+    // }
+}
+
 // struct Tracker {}
 
 // impl Tracker {
