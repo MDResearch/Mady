@@ -94,44 +94,14 @@ impl<N, E> Graph<N, E> {
     /// 頂點是指啥?葉節點?
 
     pub fn roots(&self) -> Vec<usize> {
-        //let to : [ usize ; graph.node.len()] = [];
-        // let mut to = [0; graph.node.len()];
-        // let mut top: Vec<usize>;
-        let mut pc = self.disjoint_set.clone();
-        // some buggy thing happend
-        // consider using function (instead of loop) to achieve this
-
-        for i in 0..pc.len() {
-            let mut p = vec![i];
-
-            // find ancestors
-            let mut ancestors = pc[i];
-            while pc[ancestors] != ancestors && pc[ancestors] != i {
-                p.push(ancestors);
-                ancestors = pc[ancestors];
-            }
-
-            // set ancestors
-            for j in p {
-                pc[j] = ancestors;
-            }
-        }
-
-        pc.sort();
-
-        let mut ans = vec![];
-
-        let mut l = pc[0];
-        ans.push(l);
-
-        for &node in &pc {
-            if node != l {
-                ans.push(node);
-                l = node;
-            }
-        }
-        ans
+        // @YZ
+        // 給我寫
+        todo!()
     }
+    
+    pub fn topological_sort(&self) -> Vec<usize> {
+        todo!()
+    } 
 }
 
 #[cfg(test)]
