@@ -90,12 +90,7 @@ impl<N, E> Graph<N, E> {
         &self.edges[id]
     }
 
-    /// 找到所有有向圖裡的頂點(其他點無法到達的點)，輸出頂點 id 陣列
-    /// 頂點是指啥?葉節點?
-
     pub fn roots(&self) -> Vec<usize> {
-        // @YZ
-        // 給我寫
         let mut ans: Vec<usize> = Vec::new();
 
         for c in 0..self.disjoint_set.len() {
@@ -125,7 +120,7 @@ impl<N, E> Graph<N, E> {
         while ans.len() != self.disjoint_set.len() {
             for c in 0..nodes.len() {
                 if nodes[c].0 == 0 {
-                    ans.push(nodes[c].0);
+                    ans.push(c);
                     if self.disjoint_set[c] != c {
                         nodes[self.disjoint_set[c]].0 = nodes[self.disjoint_set[c]].0 - 1;
                     }
@@ -143,18 +138,6 @@ mod tests {
 
     #[test]
     fn test_graph() {
-        // I don't know how to test this
-        // may be bc of the rule break
-        // let mut g = Graph::<usize, usize>::new();
-        // for i in 0..5 {
-        //     g.add_node(i);
-        //     for j in 0..5 {
-        //         if i != j {
-        //             g.add_edge(i * j, (i, j));
-        //         }
-        //     }
-        // }
-        // dbg!(g);
         let mut g: Graph<&str, &str> = Graph::new();
 
         let root_name = "root";
@@ -166,8 +149,6 @@ mod tests {
             let id = g.add_node(c);
             g.add_edge(c, (id, root_id));
         }
-
-        dbg!(g);
     }
 
     #[test]
@@ -216,5 +197,19 @@ mod tests {
         dbg!(g.roots());
 
         assert_eq!(g.roots(), vec![node_e]);
+    }
+
+    #[test]
+    fn topological() {
+        let mut g: Graph<&str, &str> = Graph::new();
+
+        let node_a = g.add_node("a");
+        let node_b = g.add_node("b");
+        let node_c = g.add_node("c");
+
+        g.add_edge("", (node_a, node_b));
+        g.add_edge("", (node_b, node_c));
+
+        assert_eq!(g.topological_sort(), vec![node_a, node_b, node_c]);
     }
 }
