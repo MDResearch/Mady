@@ -189,13 +189,11 @@ mod tests {
             g.add_edge(c, (id, root2_id));
         }
 
-        dbg!(g.roots());
+        assert_eq!(g.roots().sort(), vec![root1_id, root2_id].sort());
 
         g.add_edge("edge to union two roots", (root1_id, root2_id));
 
-        dbg!(g.roots());
-
-        // 無解，我要烙幹了
+        assert_eq!(g.roots().sort(), vec![root2_id].sort());
     }
 
     #[test]
@@ -206,6 +204,7 @@ mod tests {
         let node_b = g.add_node("b");
         let node_c = g.add_node("c");
         let node_d = g.add_node("d");
+        let node_e = g.add_node("e");
 
         g.add_edge("", (node_a, node_b));
         g.add_edge("", (node_b, node_c));
@@ -215,5 +214,7 @@ mod tests {
         g.add_edge("", (node_c, node_a));
 
         dbg!(g.roots());
+
+        assert_eq!(g.roots(), vec![node_e]);
     }
 }
