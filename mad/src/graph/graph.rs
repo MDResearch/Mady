@@ -96,12 +96,45 @@ impl<N, E> Graph<N, E> {
     pub fn roots(&self) -> Vec<usize> {
         // @YZ
         // 給我寫
-        todo!()
+        let mut ans: Vec<usize> = Vec::new();
+
+        for c in 0..self.disjoint_set.len() {
+            if self.disjoint_set[c] == c {
+                ans.push(c);
+            }
+        }
+
+        ans
     }
-    
+
+    // O(n^2)
+    // N is amount of node
     pub fn topological_sort(&self) -> Vec<usize> {
-        todo!()
-    } 
+        let mut ans: Vec<usize> = Vec::new();
+
+        // sort nodes into tuple (in-degree,out-degree)
+        let mut nodes: Vec<(usize, usize)> = vec![(0, 0); self.disjoint_set.len()];
+
+        for i in 0..self.children.len() {
+            self.children[i].iter().for_each(|&to| {
+                nodes[i].0 += 1;
+                nodes[to].1 += 1;
+            });
+        }
+
+        while ans.len() != self.disjoint_set.len() {
+            for c in 0..nodes.len() {
+                if nodes[c].0 == 0 {
+                    ans.push(nodes[c].0);
+                    if self.disjoint_set[c] != c {
+                        nodes[self.disjoint_set[c]].0 = nodes[self.disjoint_set[c]].0 - 1;
+                    }
+                }
+            }
+        }
+
+        ans
+    }
 }
 
 #[cfg(test)]
