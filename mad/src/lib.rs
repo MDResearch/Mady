@@ -2,9 +2,8 @@ extern crate proc_macro;
 use proc_macro::TokenStream;
 
 mod ad;
-mod parser;
-mod tree;
 mod graph;
+mod parser;
 
 #[proc_macro_attribute]
 pub fn ad(attr: TokenStream, input: TokenStream) -> TokenStream {

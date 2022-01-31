@@ -132,6 +132,12 @@ impl<N, E> Graph<N, E> {
     }
 }
 
+impl<N, E> Default for Graph<N, E> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

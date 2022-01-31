@@ -1,4 +1,3 @@
-
 #[macro_export]
 macro_rules! impl_ops_all {
     ($opstype:tt[<$($ge:tt),+> where $($wh:tt)+]($a:ident:$at:ty,$b:ident:$bt:ty)->$r:ty$code:block) => {
