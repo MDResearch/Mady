@@ -57,15 +57,15 @@ impl<N, E> Graph<N, E> {
         index
     }
 
-    /// nodes (to, from) =>to: children node
+    /// nodes (parents, children)
     pub fn add_edge(&mut self, value: E, nodes: (usize, usize)) -> usize {
         let index = self.edges.len();
         self.edges.push(value);
 
-        let (to, from) = nodes;
+        let (parents, children) = nodes;
 
-        self.disjoint_set[to] = from;
-        self.children[from].push(to);
+        self.disjoint_set[children] = parents;
+        self.children[parents].push(children);
 
         index
     }
@@ -153,7 +153,7 @@ mod tests {
 
         for c in node_name {
             let id = g.add_node(c);
-            g.add_edge(c, (id, root_id));
+            g.add_edge(c, (root_id, id));
         }
     }
 
@@ -168,17 +168,17 @@ mod tests {
 
         for c in node_name.clone() {
             let id = g.add_node(c);
-            g.add_edge(c, (id, root1_id));
+            g.add_edge(c, (root1_id, id));
         }
 
         for c in node_name.clone() {
             let id = g.add_node(c);
-            g.add_edge(c, (id, root2_id));
+            g.add_edge(c, (root2_id, id));
         }
 
         assert_eq!(g.roots().sort(), vec![root1_id, root2_id].sort());
 
-        g.add_edge("edge to union two roots", (root1_id, root2_id));
+        g.add_edge("edge to union two roots", (root2_id, root1_id));
 
         assert_eq!(g.roots().sort(), vec![root2_id].sort());
     }
@@ -193,12 +193,12 @@ mod tests {
         let node_d = g.add_node("d");
         let node_e = g.add_node("e");
 
-        g.add_edge("", (node_a, node_b));
-        g.add_edge("", (node_b, node_c));
-        g.add_edge("", (node_c, node_d));
-        g.add_edge("", (node_d, node_a));
+        g.add_edge("", (node_b, node_a));
+        g.add_edge("", (node_c, node_b));
+        g.add_edge("", (node_d, node_c));
+        g.add_edge("", (node_a, node_d));
 
-        g.add_edge("", (node_c, node_a));
+        g.add_edge("", (node_a, node_c));
 
         dbg!(g.roots());
 
@@ -213,8 +213,8 @@ mod tests {
         let node_b = g.add_node("b");
         let node_c = g.add_node("c");
 
-        g.add_edge("", (node_a, node_b));
-        g.add_edge("", (node_b, node_c));
+        g.add_edge("", (node_b, node_a));
+        g.add_edge("", (node_c, node_b));
 
         assert_eq!(g.topological_sort(), vec![node_a, node_b, node_c]);
     }
