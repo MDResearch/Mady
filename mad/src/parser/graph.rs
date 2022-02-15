@@ -24,7 +24,7 @@ struct Variable {
 
 #[derive(Debug)]
 enum Node {
-    Opt(Operator),
+    Opt(usize, Operator),
     Var(usize),
 }
 
@@ -44,16 +44,24 @@ impl Parser {
         Default::default()
     }
 
-    /// add a var to current stack block
-    fn push_var(&mut self, name: String) -> Result<usize, Box<dyn Error>> {
+    /// add a var to varibles
+    ///
+    /// return usize mean the index in varibles
+    fn push_var(&mut self, name: String) -> usize {
         let index = self.variables.len();
+        self.variables.push(Variable { name });
+        index
+    }
+
+    /// add a var to stack block
+    ///
+    /// return usize mean the index in varibles
+    fn push_loacl(&mut self, name: String) -> Result<usize, Box<dyn Error>> {
+        let index = self.push_var(name);
         self.stack
             .last_mut()
             .ok_or("No Block in Stack")?
             .push_back(index);
-        self.variables.push(Variable { name });
-        // !rewrite var
-        let index = self.ad_graph.add_node(Node::Var(index));
         Ok(index)
     }
 
@@ -66,6 +74,18 @@ impl Parser {
         let var = TokenStream::from_str(name.as_str())?;
         Ok((var, self.push_var(name)?))
     }
+
+    
+    /// gen a var by auto gen key
+    ///
+    /// like `mad_var_{auto gen key}`
+    fn push_loacl_key(&mut self) -> Result<(TokenStream, usize), Box<dyn Error>> {
+        let index = self.variables.len();
+        let name = format!("mad_var_{}", index);
+        let var = TokenStream::from_str(name.as_str())?;
+        Ok((var, self.push_var(name)?))
+    }
+
 
     /// enter a block
     ///
@@ -93,41 +113,73 @@ impl Fold for Parser {
     }
 
     /// record varible
-    /// 
-    /// `
+    ///
+    /// ```
+    /// let mut a, b, c;
     /// a = b * c;
     /// // covert to
     /// a = {
     ///     let mad_var_id = b * c;
     ///     mad_var_id
     /// };
-    /// `
+    /// ```
     fn fold_expr(&mut self, i: Expr) -> syn::Expr {
         match i {
             Expr::Binary(v) => {
-                let left = self.fold_expr(*v.left);
-                let right = self.fold_expr(*v.right);
-                let op = v.op;
-                let (left_var, left_id) = self.push_var_key().expect("no stack to push");
-                let (right_var, right_id) = self.push_var_key().expect("no stack to push");
-
                 // todo wait @Eason0729 check add_edge(from, to)
+                let op = v.op;
                 match op {
                     BinOp::Add(_) => {
-                        // self.ad_graph.add_edge(value, nodes);
-                        // self.ad_graph.add_edge(value, nodes);
+                        let left = self.fold_expr(*v.left);
+                        let right = self.fold_expr(*v.right);
+
+                        let (left_var, left_id) = self.push_var_key().expect("no stack to push");
+                        let (right_var, right_id) = self.push_var_key().expect("no stack to push");
+                        let (add_var, add_id) = self.push_var_key().expect("no stack to push");
+
+                        self.ad_graph.add_node(Node::Var(left_id));
+                        self.ad_graph.add_node(Node::Var(right_id));
+                        self.ad_graph.add_node(Node::Var(add_id));
+
+                        self.ad_graph.add_edge(add_id, ());
+                        self.ad_graph.add_edge(add_id, nodes);
+
+                        parse_quote! {
+                            {
+                                #left_var = #left.clone();
+                                #right_var = #right.clone();
+                                #left #op #right
+                            }
+                        }
                     }
-                    BinOp::Sub(_) => {}
-                    BinOp::Mul(_) => {}
-                    BinOp::Div(_) => {}
-                    _ => {}
-                }
-                parse_quote! {
-                    {
-                        #left_var = #left.clone();
-                        #right_var = #right.clone();
-                        #left #op #right
-                    }
+                    // BinOp::Sub(_) => {
+                    //     parse_quote! {
+                    //         {
+                    //             #left_var = #left.clone();
+                    //             #right_var = #right.clone();
+                    //             #left #op #right
+                    //         }
+                    //     }
+                    // }
+                    // BinOp::Mul(_) => {
+                    //     parse_quote! {
+                    //         {
+                    //             #left_var = #left.clone();
+                    //             #right_var = #right.clone();
+                    //             #left #op #right
+                    //         }
+                    //     }
+                    // }
+                    // BinOp::Div(_) => {
+                    //     parse_quote! {
+                    //         {
+                    //             #left_var = #left.clone();
+                    //             #right_var = #right.clone();
+                    //             #left #op #right
+                    //         }
+                    //     }
+                    // }
+                    _ => Expr::Binary(v),
                 }
             }
             _ => fold_expr(self, i),

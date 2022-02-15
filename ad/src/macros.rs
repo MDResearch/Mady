@@ -1,3 +1,6 @@
+//! a internal library
+//! most of macros define here
+
 #[macro_export]
 macro_rules! impl_ops_all {
     ($opstype:tt[<$($ge:tt),+> where $($wh:tt)+]($a:ident:$at:ty,$b:ident:$bt:ty)->$r:ty$code:block) => {
@@ -11,24 +14,24 @@ macro_rules! impl_ops_all {
 #[macro_export]
 macro_rules! impl_ops {
     (+[<$($ge:tt),+> where $($wh:tt)+]($a:ident:$at:ty,$b:ident:$bt:ty)->$r:ty$code:block) => {
-        $crate::impl_trait!(Add,add,[$($ge),+],[$($wh)+],$a,$at,$b,$bt,$r,$code);
+        $crate::impl_ops_trait!(Add,add,[$($ge),+],[$($wh)+],$a,$at,$b,$bt,$r,$code);
     };
 
     (-[<$($ge:tt),+> where $($wh:tt)+]($a:ident:$at:ty,$b:ident:$bt:ty)->$r:ty$code:block) => {
-        $crate::impl_trait!(Sub,sub,[$($ge),+],[$($wh)+],$a,$at,$b,$bt,$r,$code);
+        $crate::impl_ops_trait!(Sub,sub,[$($ge),+],[$($wh)+],$a,$at,$b,$bt,$r,$code);
     };
 
     (*[<$($ge:tt),+> where $($wh:tt)+]($a:ident:$at:ty,$b:ident:$bt:ty)->$r:ty$code:block) => {
-        $crate::impl_trait!(Mul,mul,[$($ge),+],[$($wh)+],$a,$at,$b,$bt,$r,$code);
+        $crate::impl_ops_trait!(Mul,mul,[$($ge),+],[$($wh)+],$a,$at,$b,$bt,$r,$code);
     };
 
     (/[<$($ge:tt),+> where $($wh:tt)+]($a:ident:$at:ty,$b:ident:$bt:ty)->$r:ty$code:block) => {
-        $crate::impl_trait!(Div,div,[$($ge),+],[$($wh)+],$a,$at,$b,$bt,$r,$code);
+        $crate::impl_ops_trait!(Div,div,[$($ge),+],[$($wh)+],$a,$at,$b,$bt,$r,$code);
     };
 }
 
 #[macro_export]
-macro_rules! impl_trait {
+macro_rules! impl_ops_trait {
     ($t:ident,$f:ident,[$($ge:tt),+],[$($wh:tt)+],$a:ident,$at:ty,$b:ident,$bt:ty,$r:ty,$code:block) => {
         impl<$($ge),+> $t<$bt> for $at where $($wh)+
         {
@@ -79,4 +82,26 @@ macro_rules! mat {
     ($($x:expr),+ $(,)?;$r:expr, $c:expr) => (
         $crate::matrix::Matrix::from(($crate::ten![$($x),+], [$r, $c]))
     );
+}
+
+#[macro_export]
+macro_rules! impl_const_trait {
+    ($trait_name:ident,$fn_name:ident,$value:expr,$($ty:ident),+ ) => {
+        $(
+            impl $trait_name for $ty{
+                fn $fn_name()->Self{
+                    $value as $ty
+                }
+            }
+        )+
+    };
+}
+
+#[macro_export]
+macro_rules! impl_trait_default {
+    ($trait_name:ident,$($ty:ident),+ ) => {
+        $(
+            impl $trait_name for $ty{}
+        )+
+    };
 }

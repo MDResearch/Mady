@@ -1,13 +1,15 @@
 use crate::{impl_ops_all, tensor::Tensor};
 use std::ops::{Add, Mul, Sub};
 
+// reexport
+pub use crate::{mat};
 // 0  1  2
 // 3  4  5
 // 6  7  8
 // 9 10 11
-// Matrix Warpper for Tensor
+/// Matrix Warpper for Tensor
 #[derive(Debug, PartialEq, Clone)]
-struct Matrix<T>
+pub struct Matrix<T>
 where
     T: Copy,
 {
@@ -166,9 +168,9 @@ impl_ops_all!(*[<K,T> where T: Mul<K> + Copy,K: Copy,<T as Mul<K>>::Output: Copy
     }
 );
 
-// Transpose Matrix
+/// Transpose Matrix
 #[derive(Debug, PartialEq, Clone)]
-struct Transpose<T>(Matrix<T>)
+pub struct Transpose<T>(Matrix<T>)
 where
     T: Copy;
 
@@ -333,4 +335,5 @@ mod tests {
             Matrix::from((Tensor::from(vec![1, 2, 3, 4, 5, 6]), [2, 3]))
         )
     }
+
 }

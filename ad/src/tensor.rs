@@ -1,6 +1,9 @@
 use std::ops::{Add, Mul, Sub};
 
-use crate::{impl_ops, impl_ops_all, impl_trait};
+use crate::{impl_ops, impl_ops_all, impl_ops_trait};
+
+pub use crate::ten;
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct Tensor<T>(Vec<T>)
 where
