@@ -84,8 +84,17 @@ where
             // map用來取迭代器的值 , map會自己抓上面flat_map跳到的位置n
             .map(move |n| self.data.iter().nth(n).unwrap())
     }
-}
 
+    // st = start, sl = side length
+    pub fn convolution(&self, st:usize,sl:usize) -> Vec<T>{
+
+        for i in st..st+sl{
+            self.data
+        }
+
+    }
+
+}
 
 impl<T> From<(Tensor<T>, [usize; 2])> for Matrix<T>
 where
