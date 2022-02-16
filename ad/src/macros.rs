@@ -88,9 +88,11 @@ macro_rules! mat {
 macro_rules! impl_const_trait {
     ($trait_name:ident,$fn_name:ident,$value:expr,$($ty:ident),+ ) => {
         $(
+            /// a const trait
+            /// return const value
             impl $trait_name for $ty{
                 fn $fn_name()->Self{
-                    $value as $ty
+                    $value
                 }
             }
         )+
