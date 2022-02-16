@@ -76,7 +76,8 @@ macro_rules! mat {
     ($elem:expr; $r:expr, $c:expr) => (
         $crate::matrix::Matrix::new($elem, [$r, $c])
     );
-    ($($x:expr),+ $(,)?;$l:expr) => (
+    // $(,)? , maybe appear  
+    ($($x:expr),+ $(,)?;$l:expr) => ( 
         $crate::matrix::Matrix::from(($crate::ten![$($x),+], [$l, $l]))
     );
     ($($x:expr),+ $(,)?;$r:expr, $c:expr) => (
@@ -88,9 +89,11 @@ macro_rules! mat {
 macro_rules! impl_const_trait {
     ($trait_name:ident,$fn_name:ident,$value:expr,$($ty:ident),+ ) => {
         $(
+            /// a const trait
+            /// return const value
             impl $trait_name for $ty{
                 fn $fn_name()->Self{
-                    $value as $ty
+                    $value
                 }
             }
         )+
