@@ -46,7 +46,6 @@ where
     }
 }
 
-
 impl_const_trait![One, one, 1, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64];
 
 impl_trait_default![GradAdd, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64];
@@ -54,7 +53,6 @@ impl_trait_default![GradAdd, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f
 impl_trait_default![GradSub, i8, i16, i32, i64, i128, f32, f64];
 
 impl_trait_default![GradMul, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64];
-
 
 #[cfg(test)]
 mod tests {

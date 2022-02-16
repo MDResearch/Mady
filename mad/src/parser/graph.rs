@@ -4,10 +4,12 @@ use std::ops::Sub;
 use std::str::FromStr;
 
 use crate::graph::Graph;
-use proc_macro2::TokenStream;
+use proc_macro2::{token_stream, Ident, TokenStream};
 use quote::quote;
 use syn::fold::{fold_block, fold_expr, fold_expr_assign, Fold};
-use syn::{parse2, parse_quote, BinOp, Block, Expr, ExprAssign, ExprAssignOp, ExprBinary, Local};
+use syn::{
+    parse2, parse_quote, parse_str, BinOp, Block, Expr, ExprAssign, ExprAssignOp, ItemFn, Local,
+};
 
 #[derive(Debug, Default)]
 struct Parser {
@@ -72,10 +74,9 @@ impl Parser {
         let index = self.variables.len();
         let name = format!("mad_var_{}", index);
         let var = TokenStream::from_str(name.as_str())?;
-        Ok((var, self.push_var(name)?))
+        Ok((var, self.push_var(name)))
     }
 
-    
     /// gen a var by auto gen key
     ///
     /// like `mad_var_{auto gen key}`
@@ -83,9 +84,8 @@ impl Parser {
         let index = self.variables.len();
         let name = format!("mad_var_{}", index);
         let var = TokenStream::from_str(name.as_str())?;
-        Ok((var, self.push_var(name)?))
+        Ok((var, self.push_var(name)))
     }
-
 
     /// enter a block
     ///
@@ -101,6 +101,24 @@ impl Parser {
         self.stack.pop().ok_or("cannot exit block")?;
         Ok(())
     }
+
+    fn grad_parse(input: TokenStream) -> Result<TokenStream, Box<dyn Error>> {
+        let i = parse2::<ItemFn>(input)?;
+        let new_ident = parse_str::<Ident>(&format!("grads_{}", i.sig.ident))?;
+
+        let g = Graph::<Ident, Ident>::new();
+        for stmt in &i.block.stmts {}
+
+        Ok(quote! {
+            {
+                #i
+
+                fn #new_ident(){
+                    todo!()
+                }
+            }
+        })
+    }
 }
 
 impl Fold for Parser {
@@ -115,7 +133,7 @@ impl Fold for Parser {
     /// record varible
     ///
     /// ```
-    /// let mut a, b, c;
+    /// let (mut a, mut b, mut c)=(0, 0, 0);
     /// a = b * c;
     /// // covert to
     /// a = {
@@ -125,6 +143,20 @@ impl Fold for Parser {
     /// ```
     fn fold_expr(&mut self, i: Expr) -> syn::Expr {
         match i {
+            // Expr::Assign(stat) => {
+            //     let parents = self.fold_expr(*stat.left);
+            //     let expect_bin = self.fold_expr(*stat.right);
+            //     match expect_bin {
+            //         Expr::Binary(v) => {
+            //             match v.op {
+            //                 BinOp::Add(_) => {}
+            //                 _ => {}
+            //             }
+            //             parse_quote! {#parents = #v.left #v.op #v.right}
+            //         }
+            //         _ => fold_expr(self, i),
+            //     }
+            // }
             Expr::Binary(v) => {
                 // todo wait @Eason0729 check add_edge(from, to)
                 let op = v.op;
@@ -141,8 +173,8 @@ impl Fold for Parser {
                         self.ad_graph.add_node(Node::Var(right_id));
                         self.ad_graph.add_node(Node::Var(add_id));
 
-                        self.ad_graph.add_edge(add_id, ());
-                        self.ad_graph.add_edge(add_id, nodes);
+                        // self.ad_graph.add_edge(add_id, ());
+                        // self.ad_graph.add_edge(add_id, nodes);
 
                         parse_quote! {
                             {
@@ -222,28 +254,28 @@ mod tests {
     use super::{Fold, Parser};
     use quote::quote;
 
-    #[test]
-    fn test_expr() {
-        let s = quote! {
-            {
-                a * b;
-            }
-        };
-        let ast: Block = parse2(s).expect("unknow tokenstream");
-        let s = quote! {
-            {
-                {
-                    mad_var_0 = a.clone();
-                    mad_var_1 = b.clone();
-                    a * b
-                };
-            }
-        };
-        let res: Block = parse2(s).expect("unknow tokenstream");
-        let mut parser = Parser::new();
-        let ast = parser.fold_block(ast);
-        assert_eq!(ast, res);
-    }
+    // #[test]
+    // fn test_expr() {
+    //     let s = quote! {
+    //         {
+    //             a * b;
+    //         }
+    //     };
+    //     let ast: Block = parse2(s).expect("unknow tokenstream");
+    //     let s = quote! {
+    //         {
+    //             {
+    //                 mad_var_0 = a.clone();
+    //                 mad_var_1 = b.clone();
+    //                 a * b
+    //             };
+    //         }
+    //     };
+    //     let res: Block = parse2(s).expect("unknow tokenstream");
+    //     let mut parser = Parser::new();
+    //     let ast = parser.fold_block(ast);
+    //     assert_eq!(ast, res);
+    // }
 
     #[test]
     fn assign_var() {

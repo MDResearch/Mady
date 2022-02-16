@@ -2,7 +2,7 @@ use crate::{impl_ops_all, tensor::Tensor};
 use std::ops::{Add, Mul, Sub};
 
 // reexport
-pub use crate::{mat};
+pub use crate::mat;
 // 0  1  2
 // 3  4  5
 // 6  7  8
@@ -335,5 +335,4 @@ mod tests {
             Matrix::from((Tensor::from(vec![1, 2, 3, 4, 5, 6]), [2, 3]))
         )
     }
-
 }
