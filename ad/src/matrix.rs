@@ -1,8 +1,20 @@
+//! define the datastructure,matrix.
+//! describe all the implement of matrix
+
+
 use crate::{impl_ops_all, tensor::Tensor};
 use std::ops::{Add, Mul, Sub};
 
-// reexport
+/// mat means the macro that simplify buildimg matrix
+/// here is the uasge example
+/// ```
+/// mat![element:type, col:type, row:type] = Matrix::new[element,[col,row]]
+/// mat![a,b,c,b;col,row] = Matrix::form[Tensor::from[vec![a,b,c,d],[col,row]]] 
+/// mat![a,b,c,b;sl] = Matrix::form[Tensor::from[vec![a,b,c,d],[sl,sl]]] //square matrix
+/// 
+/// ```
 pub use crate::{mat};
+
 // 0  1  2
 // 3  4  5
 // 6  7  8
@@ -22,6 +34,7 @@ impl<T> Matrix<T>
 where
     T: Copy,
 {
+    /// build the martix
     pub fn new(value: T, shape: [usize; 2]) -> Self {
         Matrix {
             data: Tensor::new(value, shape.iter().product()),
@@ -34,6 +47,7 @@ where
     // 4 5 6 ->  2 5
     //           3 6
 
+    /// flip the matrix
     pub fn t(self) -> Transpose<T> {
         Transpose(self)
     }
@@ -45,6 +59,8 @@ where
     // 3  4  5
     // 6  7  8
     // 9 10 11
+
+    /// traverse the matrix by row
     pub fn into_row_iter<'a>(&'a self) -> impl Iterator<Item = &T> + 'a {
         self.data.iter()
     }
@@ -57,6 +73,8 @@ where
     // 1  5  9
     // 2  6 10
     // 3  7 11
+
+    /// traverse the matrix by colume
     pub fn into_col_iter<'a>(&'a self) -> impl Iterator<Item = &T> + 'a {
         // 第1直排到第N直排的迭代器
         (0..self.shape[1])
@@ -67,6 +85,7 @@ where
             .map(move |n| self.data.iter().nth(n).unwrap())
     }
 }
+
 
 impl<T> From<(Tensor<T>, [usize; 2])> for Matrix<T>
 where
@@ -168,7 +187,7 @@ impl_ops_all!(*[<K,T> where T: Mul<K> + Copy,K: Copy,<T as Mul<K>>::Output: Copy
     }
 );
 
-/// Transpose Matrix
+// Transpose Matrix
 #[derive(Debug, PartialEq, Clone)]
 pub struct Transpose<T>(Matrix<T>)
 where
