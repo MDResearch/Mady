@@ -5,7 +5,7 @@
 pub struct Graph<N, E> {
     pub children: Vec<Vec<usize>>,
     // Vec<usize> : an vec of out-degree node id(N)
-    pub disjoint_set: Vec<usize>,
+    disjoint_set: Vec<usize>,
     edges: Vec<E>,
     // lookup table for edge id and edge value(E)
     nodes: Vec<N>,
@@ -70,10 +70,12 @@ impl<N, E> Graph<N, E> {
         index
     }
 
+    /// modify node value
     pub fn edit_node(&mut self, id: usize, value: N) {
         self.nodes[id] = value;
     }
 
+    /// modify edge value
     pub fn edit_edge(&mut self, id: usize, value: E) {
         self.edges[id] = value;
     }
@@ -90,6 +92,7 @@ impl<N, E> Graph<N, E> {
         &self.edges[id]
     }
 
+    /// return the roots of the data-flow graph
     pub fn roots(&self) -> Vec<usize> {
         let mut ans: Vec<usize> = Vec::new();
 
@@ -104,6 +107,8 @@ impl<N, E> Graph<N, E> {
 
     // O(n^2)
     // N is amount of node
+
+    /// use topolohival sort to get the order of caculation
     pub fn topological_sort(&self) -> Vec<usize> {
         let mut ans: Vec<usize> = Vec::new();
 

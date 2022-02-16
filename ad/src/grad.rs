@@ -1,3 +1,5 @@
+//! about the std ops trait
+
 use std::ops::{Add, Mul, Neg, Sub};
 
 use crate::{impl_const_trait, impl_trait_default};
