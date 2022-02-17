@@ -1,7 +1,6 @@
 //! define the datastructure,tensor.
 //! describe all the implement of tensor.
 
-
 use std::ops::{Add, Mul, Sub};
 
 use crate::{impl_ops, impl_ops_all, impl_ops_trait};

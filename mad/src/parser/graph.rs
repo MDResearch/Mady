@@ -6,7 +6,7 @@ use std::str::FromStr;
 use crate::graph::Graph;
 use proc_macro2::{token_stream, Ident, TokenStream};
 use quote::quote;
-use syn::fold::{fold_block, fold_expr, fold_expr_assign, Fold};
+use syn::fold::{fold_block, fold_expr, fold_expr_assign, fold_ident, Fold};
 use syn::{
     parse2, parse_quote, parse_str, BinOp, Block, Expr, ExprAssign, ExprAssignOp, ItemFn, Local,
 };
@@ -161,20 +161,11 @@ impl Fold for Parser {
     /// ```
     fn fold_expr(&mut self, i: Expr) -> syn::Expr {
         match i {
-            // Expr::Assign(stat) => {
-            //     let parents = self.fold_expr(*stat.left);
-            //     let expect_bin = self.fold_expr(*stat.right);
-            //     match expect_bin {
-            //         Expr::Binary(v) => {
-            //             match v.op {
-            //                 BinOp::Add(_) => {}
-            //                 _ => {}
-            //             }
-            //             parse_quote! {#parents = #v.left #v.op #v.right}
-            //         }
-            //         _ => fold_expr(self, i),
-            //     }
-            // }
+            Expr::Assign(stat) => {
+                let parent = *stat.left;
+
+                todo!()
+            }
             Expr::Binary(v) => {
                 let op = v.op;
                 match op {
