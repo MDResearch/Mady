@@ -78,13 +78,31 @@ impl Parser {
     }
 
     /// gen a var by auto gen key
-    ///
+    /// but it push it to stack
     /// like `mad_var_{auto gen key}`
     fn push_loacl_key(&mut self) -> Result<(TokenStream, usize), Box<dyn Error>> {
         let index = self.variables.len();
         let name = format!("mad_var_{}", index);
         let var = TokenStream::from_str(name.as_str())?;
-        Ok((var, self.push_var(name)))
+        Ok((var, self.push_loacl(name)?))
+    }
+
+    fn find_local(&self, name: String) -> Option<usize> {
+        self.stack
+            .last()?
+            .iter()
+            .position(|&x| self.variables[x].name == name)
+    }
+
+    fn link_nodes(&mut self, edge_var_id: usize, from_to: (String, String)) -> Result<(), ()> {
+        self.ad_graph.add_edge(
+            edge_var_id,
+            (
+                self.find_local(from_to.0).ok_or(())?,
+                self.find_local(from_to.1).ok_or(())?,
+            ),
+        );
+        Ok(())
     }
 
     /// enter a block
@@ -158,16 +176,17 @@ impl Fold for Parser {
             //     }
             // }
             Expr::Binary(v) => {
-                // todo wait @Eason0729 check add_edge(from, to)
                 let op = v.op;
                 match op {
                     BinOp::Add(_) => {
                         let left = self.fold_expr(*v.left);
                         let right = self.fold_expr(*v.right);
 
-                        let (left_var, left_id) = self.push_var_key().expect("no stack to push");
-                        let (right_var, right_id) = self.push_var_key().expect("no stack to push");
-                        let (add_var, add_id) = self.push_var_key().expect("no stack to push");
+                        let (edge_left, left_id) = self.push_var_key().expect("no stack to push");
+                        let (edge_right, right_id) = self.push_var_key().expect("no stack to push");
+                        let (node_left, add_id) = self.push_var_key().expect("no stack to push");
+                        let (node_right, add_id) = self.push_var_key().expect("no stack to push");
+                        let (add_node, add_id) = self.push_var_key().expect("no stack to push");
 
                         self.ad_graph.add_node(Node::Var(left_id));
                         self.ad_graph.add_node(Node::Var(right_id));
@@ -178,9 +197,9 @@ impl Fold for Parser {
 
                         parse_quote! {
                             {
-                                #left_var = #left.clone();
-                                #right_var = #right.clone();
-                                #left #op #right
+                                let tmp;
+                                (tmp, (#edge_left, #edge_right)) = #left.grad_add(#right);
+                                tmp
                             }
                         }
                     }
