@@ -16,26 +16,14 @@ struct Parser {
     variables: Vec<Variable>,
     stack: Vec<LinkedList<usize>>,
     grads: Vec<usize>,
-    ad_graph: Graph<Node, usize>,
+    // the index in self.varibles
+    ad_graph: Graph<usize, usize>,
+    parents: Vec<usize>,
 }
 
 #[derive(Debug, Default)]
 struct Variable {
     name: String,
-}
-
-#[derive(Debug)]
-enum Node {
-    Opt(usize, Operator),
-    Var(usize),
-}
-
-#[derive(Debug)]
-enum Operator {
-    Add,
-    Sub,
-    Mul,
-    Div,
 }
 
 impl Parser {
@@ -49,17 +37,23 @@ impl Parser {
     /// add a var to varibles
     ///
     /// return usize mean the index in varibles
-    fn push_var(&mut self, name: String) -> usize {
+    fn new_var(&mut self, name: String) -> usize {
         let index = self.variables.len();
         self.variables.push(Variable { name });
         index
     }
 
+    fn new_tmp(&mut self) -> (String, usize) {
+        let index = self.variables.len();
+        let name = format!("mad_var_{}", index);
+        (name.clone(), self.new_var(name))
+    }
+
     /// add a var to stack block
     ///
     /// return usize mean the index in varibles
-    fn push_loacl(&mut self, name: String) -> Result<usize, Box<dyn Error>> {
-        let index = self.push_var(name);
+    fn new_loacl(&mut self, name: String) -> Result<usize, Box<dyn Error>> {
+        let index = self.new_var(name);
         self.stack
             .last_mut()
             .ok_or("No Block in Stack")?
@@ -67,25 +61,27 @@ impl Parser {
         Ok(index)
     }
 
+    // ! dont use
     /// gen a var by auto gen key
     ///
     /// like `mad_var_{auto gen key}`
-    fn push_var_key(&mut self) -> Result<(TokenStream, usize), Box<dyn Error>> {
-        let index = self.variables.len();
-        let name = format!("mad_var_{}", index);
-        let var = TokenStream::from_str(name.as_str())?;
-        Ok((var, self.push_var(name)))
-    }
+    // fn push_var_key(&mut self) -> Result<(TokenStream, usize), Box<dyn Error>> {
+    //     let index = self.variables.len();
+    //     let name = format!("mad_var_{}", index);
+    //     let var = TokenStream::from_str(name.as_str())?;
+    //     Ok((var, self.new_var(name)))
+    // }
 
+    // ! dont use
     /// gen a var by auto gen key
     /// but it push it to stack
     /// like `mad_var_{auto gen key}`
-    fn push_loacl_key(&mut self) -> Result<(TokenStream, usize), Box<dyn Error>> {
-        let index = self.variables.len();
-        let name = format!("mad_var_{}", index);
-        let var = TokenStream::from_str(name.as_str())?;
-        Ok((var, self.push_loacl(name)?))
-    }
+    // fn push_loacl_key(&mut self) -> Result<(TokenStream, usize), Box<dyn Error>> {
+    //     let index = self.variables.len();
+    //     let name = format!("mad_var_{}", index);
+    //     let var = TokenStream::from_str(name.as_str())?;
+    //     Ok((var, self.new_loacl(name)?))
+    // }
 
     fn find_local(&self, name: String) -> Option<usize> {
         self.stack
@@ -94,16 +90,17 @@ impl Parser {
             .position(|&x| self.variables[x].name == name)
     }
 
-    fn link_nodes(&mut self, edge_var_id: usize, from_to: (String, String)) -> Result<(), ()> {
-        self.ad_graph.add_edge(
-            edge_var_id,
-            (
-                self.find_local(from_to.0).ok_or(())?,
-                self.find_local(from_to.1).ok_or(())?,
-            ),
-        );
-        Ok(())
-    }
+    // ! dont use
+    // fn link_nodes(&mut self, edge_var_id: usize, from_to: (usize, usize)) -> Result<(), ()> {
+    //     self.ad_graph.add_edge(
+    //         edge_var_id,
+    //         (
+    //             self.find_local(from_to.0).ok_or(())?,
+    //             self.find_local(from_to.1).ok_or(())?,
+    //         ),
+    //     );
+    //     Ok(())
+    // }
 
     /// enter a block
     ///
@@ -137,6 +134,38 @@ impl Parser {
             }
         })
     }
+
+    fn build_graph(&mut self, e: Expr) -> Result<(usize, Expr), Expr> {
+        match e {
+            Expr::Binary(v) => {
+                let (left, left_expr) = self.build_graph(*v.left)?;
+                let (right, right_expr) = self.build_graph(*v.right)?;
+                let (edge_left_name, edge_left) = self.new_tmp();
+                let (edge_right_name, edge_right) = self.new_tmp();
+                let (_, ops) = self.new_tmp();
+
+                self.ad_graph.add_edge(edge_right, (ops, left));
+                self.ad_graph.add_edge(edge_left, (ops, right));
+
+                let edge_left_ts = TokenStream::from_str(edge_left_name.as_str()).unwrap();
+                let edge_right_ts = TokenStream::from_str(edge_right_name.as_str()).unwrap();
+
+                let ts = parse_quote! {
+                    {
+                        let tmp;
+                        (tmp, (#edge_left_ts, #edge_right_ts)) = #left_expr.grad_add(#right_expr);
+                        tmp
+                    }
+                };
+                Ok((ops, ts))
+            }
+            Expr::Path(v) => {
+                todo!()
+                // Ok((,v))
+            }
+            _ => Err(fold_expr(self, e)),
+        }
+    }
 }
 
 impl Fold for Parser {
@@ -168,31 +197,31 @@ impl Fold for Parser {
             }
             Expr::Binary(v) => {
                 let op = v.op;
+
                 match op {
                     BinOp::Add(_) => {
+                        panic!("deprecated");
                         let left = self.fold_expr(*v.left);
-                        let right = self.fold_expr(*v.right);
+                        // let right = self.fold_expr(*v.right);
 
-                        let (edge_left, left_id) = self.push_var_key().expect("no stack to push");
-                        let (edge_right, right_id) = self.push_var_key().expect("no stack to push");
-                        let (node_left, add_id) = self.push_var_key().expect("no stack to push");
-                        let (node_right, add_id) = self.push_var_key().expect("no stack to push");
-                        let (add_node, add_id) = self.push_var_key().expect("no stack to push");
+                        // let (edge_left, edge_left_id) =
+                        //     self.push_var_key().expect("no stack to push");
+                        // let (edge_right, edge_right_id) =
+                        //     self.push_var_key().expect("no stack to push");
+                        // let (ops, ops_id) = self.push_var_key().expect("no stack to push");
 
-                        self.ad_graph.add_node(Node::Var(left_id));
-                        self.ad_graph.add_node(Node::Var(right_id));
-                        self.ad_graph.add_node(Node::Var(add_id));
+                        // let ops_node = self.ad_graph.add_node(ops_id);
 
-                        // self.ad_graph.add_edge(add_id, ());
-                        // self.ad_graph.add_edge(add_id, nodes);
+                        // // self.link_nodes(edge_right_id, (ops_node, 0));
+                        // // self.link_nodes(edge_left_id, (ops_node, 0));
 
-                        parse_quote! {
-                            {
-                                let tmp;
-                                (tmp, (#edge_left, #edge_right)) = #left.grad_add(#right);
-                                tmp
-                            }
-                        }
+                        // parse_quote! {
+                        //     {
+                        //         let tmp;
+                        //         (tmp, (#edge_left, #edge_right)) = #left.grad_add(#right);
+                        //         tmp
+                        //     }
+                        // }
                     }
                     // BinOp::Sub(_) => {
                     //     parse_quote! {
