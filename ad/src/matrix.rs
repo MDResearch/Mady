@@ -7,11 +7,11 @@ use std::ops::{Add, Mul, Sub};
 // reexport
 /// mat means the macro that simplify buildimg matrix
 /// here is the uasge example
-/// ```
+/// 
+/// ```no_run
 /// mat![element:type, col:type, row:type] = Matrix::new[element,[col,row]]
 /// mat![a,b,c,b;col,row] = Matrix::form[Tensor::from[vec![a,b,c,d],[col,row]]]
 /// mat![a,b,c,b;sl] = Matrix::form[Tensor::from[vec![a,b,c,d],[sl,sl]]] //square matrix
-///
 /// ```
 pub use crate::mat;
 
@@ -122,7 +122,7 @@ where
         self.data.as_ref()
     }
 }
-//使&a與a(借用或不借用)都可以作為參數
+// 使&a與a(借用或不借用)都可以作為參數
 
 // Add Matrix
 impl_ops_all!(+[<K, T> where T: Add<K> + Copy,K: Copy,<T as Add<K>>::Output: Copy]
