@@ -119,17 +119,23 @@ impl Parser {
 
     fn grad_parse(input: TokenStream) -> Result<TokenStream, Box<dyn Error>> {
         let i = parse2::<ItemFn>(input)?;
+
+        // generate new ident
         let new_ident = parse_str::<Ident>(&format!("grads_{}", i.sig.ident))?;
 
-        let g = Graph::<Ident, Ident>::new();
-        for stmt in &i.block.stmts {}
+        //replace return ... with return '(tuple)'($de_arg1,de_arg2...)
+        todo!();
+
+        let mut parser = Parser::new();
+
+        let result = parser.fold_block(*i.block);
 
         Ok(quote! {
             {
-                #i
+                #input
 
                 fn #new_ident(){
-                    todo!()
+                    #result
                 }
             }
         })
