@@ -118,13 +118,13 @@ impl Parser {
     }
 
     fn grad_parse(input: TokenStream) -> Result<TokenStream, Box<dyn Error>> {
-        let i = parse2::<ItemFn>(input)?;
+        let i = parse2::<ItemFn>(input.clone())?;
 
         // generate new ident
         let new_ident = parse_str::<Ident>(&format!("grads_{}", i.sig.ident))?;
 
         //replace return ... with return '(tuple)'($de_arg1,de_arg2...)
-        todo!();
+        // todo!();
 
         let mut parser = Parser::new();
 
