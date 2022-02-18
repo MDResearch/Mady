@@ -1,11 +1,12 @@
-use std::collections::LinkedList;
+use std::collections::{hash_map::DefaultHasher, LinkedList};
 use std::error::Error;
+use std::hash::{Hash, Hasher};
 use std::ops::Sub;
 use std::str::FromStr;
 
 use crate::graph::Graph;
-use proc_macro2::{token_stream, Ident, TokenStream};
-use quote::quote;
+use proc_macro2::{token_stream, Ident, Span, TokenStream};
+use quote::{quote, ToTokens};
 use syn::fold::{fold_block, fold_expr, fold_expr_assign, fold_ident, Fold};
 use syn::{
     parse2, parse_quote, parse_str, BinOp, Block, Expr, ExprAssign, ExprAssignOp, ItemFn, Local,
@@ -21,9 +22,10 @@ struct Parser {
     parents: Vec<usize>,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 struct Variable {
-    name: String,
+    hash: u64,
+    ident: Ident,
 }
 
 impl Parser {
@@ -37,57 +39,50 @@ impl Parser {
     /// add a var to varibles
     ///
     /// return usize mean the index in varibles
-    fn new_var(&mut self, name: String) -> usize {
+    fn new_var<T>(&mut self, name: T) -> (Ident, usize)
+    where
+        T: Into<String>,
+    {
         let index = self.variables.len();
-        self.variables.push(Variable { name });
-        index
+        let ident = Ident::new(name.into().as_str(), Span::call_site());
+        let mut hasher = DefaultHasher::new();
+        ident.hash(&mut hasher);
+        self.variables.push(Variable {
+            hash: hasher.finish(),
+            ident: ident.clone(),
+        });
+        (ident, index)
     }
 
-    fn new_tmp(&mut self) -> (String, usize) {
+    fn new_tmp(&mut self) -> (Ident, usize) {
         let index = self.variables.len();
         let name = format!("mad_var_{}", index);
-        (name.clone(), self.new_var(name))
+        self.new_var(name)
     }
 
     /// add a var to stack block
     ///
     /// return usize mean the index in varibles
-    fn new_loacl(&mut self, name: String) -> Result<usize, Box<dyn Error>> {
-        let index = self.new_var(name);
+    fn new_local<T>(&mut self, name: T) -> Result<(Ident, usize), Box<dyn Error>>
+    where
+        T: Into<String>,
+    {
+        let (ident, index) = self.new_var(name);
         self.stack
             .last_mut()
             .ok_or("No Block in Stack")?
             .push_back(index);
-        Ok(index)
+        Ok((ident, index))
     }
 
-    // ! dont use
-    /// gen a var by auto gen key
-    ///
-    /// like `mad_var_{auto gen key}`
-    // fn push_var_key(&mut self) -> Result<(TokenStream, usize), Box<dyn Error>> {
-    //     let index = self.variables.len();
-    //     let name = format!("mad_var_{}", index);
-    //     let var = TokenStream::from_str(name.as_str())?;
-    //     Ok((var, self.new_var(name)))
-    // }
-
-    // ! dont use
-    /// gen a var by auto gen key
-    /// but it push it to stack
-    /// like `mad_var_{auto gen key}`
-    // fn push_loacl_key(&mut self) -> Result<(TokenStream, usize), Box<dyn Error>> {
-    //     let index = self.variables.len();
-    //     let name = format!("mad_var_{}", index);
-    //     let var = TokenStream::from_str(name.as_str())?;
-    //     Ok((var, self.new_loacl(name)?))
-    // }
-
-    fn find_local(&self, name: String) -> Option<usize> {
+    fn find_local(&self, ident: &Ident) -> Option<usize> {
+        let mut hasher = DefaultHasher::new();
+        ident.hash(&mut hasher);
+        let hash = hasher.finish();
         self.stack
             .last()?
             .iter()
-            .position(|&x| self.variables[x].name == name)
+            .position(|&x| self.variables[x].hash == hash)
     }
 
     // ! dont use
@@ -146,28 +141,33 @@ impl Parser {
             Expr::Binary(v) => {
                 let (left, left_expr) = self.build_graph(*v.left)?;
                 let (right, right_expr) = self.build_graph(*v.right)?;
-                let (edge_left_name, edge_left) = self.new_tmp();
-                let (edge_right_name, edge_right) = self.new_tmp();
+                let (edge_left_ident, edge_left) = self.new_tmp();
+                let (edge_right_ident, edge_right) = self.new_tmp();
                 let (_, ops) = self.new_tmp();
+                let node_ops = self.ad_graph.add_node(ops);
 
-                self.ad_graph.add_edge(edge_right, (ops, left));
-                self.ad_graph.add_edge(edge_left, (ops, right));
-
-                let edge_left_ts = TokenStream::from_str(edge_left_name.as_str()).unwrap();
-                let edge_right_ts = TokenStream::from_str(edge_right_name.as_str()).unwrap();
+                self.ad_graph.add_edge(edge_right, (node_ops, left));
+                self.ad_graph.add_edge(edge_left, (node_ops, right));
 
                 let ts = parse_quote! {
                     {
                         let tmp;
-                        (tmp, (#edge_left_ts, #edge_right_ts)) = #left_expr.grad_add(#right_expr);
+                        (tmp, (#edge_left_ident, #edge_right_ident)) = #left_expr.grad_add(#right_expr);
                         tmp
                     }
                 };
                 Ok((ops, ts))
             }
             Expr::Path(v) => {
+                if let Some(ident) = v.path.get_ident() {
+                    let id = self.find_local(ident).expect("not find varible in stack");
+                    Ok((id, Expr::Path(v)))
+                } else {
+                    Err(Expr::Path(v))
+                }
+            }
+            Expr::Let(v) => {
                 todo!()
-                // Ok((,v))
             }
             _ => Err(fold_expr(self, e)),
         }
@@ -294,38 +294,36 @@ impl Fold for Parser {
 
 #[cfg(test)]
 mod tests {
-    use syn::{parse2, Block};
+    use syn::{parse2, Expr};
 
     use super::{Fold, Parser};
     use quote::quote;
 
-    // #[test]
-    // fn test_expr() {
-    //     let s = quote! {
-    //         {
-    //             a * b;
-    //         }
-    //     };
-    //     let ast: Block = parse2(s).expect("unknow tokenstream");
-    //     let s = quote! {
-    //         {
-    //             {
-    //                 mad_var_0 = a.clone();
-    //                 mad_var_1 = b.clone();
-    //                 a * b
-    //             };
-    //         }
-    //     };
-    //     let res: Block = parse2(s).expect("unknow tokenstream");
-    //     let mut parser = Parser::new();
-    //     let ast = parser.fold_block(ast);
-    //     assert_eq!(ast, res);
-    // }
-
     #[test]
-    fn assign_var() {
-        let a = 10;
-        a.clone();
+    fn test_expr_binary() {
+        let s = quote! {
+            a + b
+        };
+        let ast: Expr = parse2(s).expect("unknow tokenstream");
+        let s = quote! {
+            {
+                let tmp;
+                (tmp, (mad_var_2, mad_var_3)) = a.grad_add(b);
+                tmp
+            }
+        };
+        let res: Expr = parse2(s).expect("unknow tokenstream");
+        let mut parser = Parser::new();
+        parser.enter_block();
+        let (.., a) = parser.new_local("a").unwrap();
+        let (.., b) = parser.new_local("b").unwrap();
+        parser.ad_graph.add_node(a);
+        parser.ad_graph.add_node(b);
+        let (top, ast) = parser.build_graph(ast).unwrap();
+        assert_eq!(ast, res);
+
+        // idk, is my fault or it's a bug /cc @Eason0729
+        // assert_eq!(&top, parser.ad_graph.roots().first().unwrap());
     }
 }
 

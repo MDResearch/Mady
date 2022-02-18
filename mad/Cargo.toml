@@ -10,7 +10,7 @@ proc-macro2 = "1.0.36"
 quote = "1.0"
 
 [dependencies.syn]
-features = ["full", "extra-traits", "fold"]
+features = ["full", "extra-traits", "fold", "parsing"]
 version = "1.0"
 
 [lib]
