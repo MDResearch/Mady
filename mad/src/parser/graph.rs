@@ -71,7 +71,7 @@ impl Parser {
         self.stack
             .last_mut()
             .ok_or("No Block in Stack")?
-            .push_back(index);
+            .push_front(index);
         Ok((ident, index))
     }
 
@@ -156,7 +156,7 @@ impl Parser {
                         tmp
                     }
                 };
-                Ok((ops, ts))
+                Ok((node_ops, ts))
             }
             Expr::Path(v) => {
                 if let Some(ident) = v.path.get_ident() {
@@ -321,9 +321,7 @@ mod tests {
         parser.ad_graph.add_node(b);
         let (top, ast) = parser.build_graph(ast).unwrap();
         assert_eq!(ast, res);
-
-        // idk, is my fault or it's a bug /cc @Eason0729
-        // assert_eq!(&top, parser.ad_graph.roots().first().unwrap());
+        assert_eq!(&top, parser.ad_graph.roots().first().unwrap());
     }
 }
 
