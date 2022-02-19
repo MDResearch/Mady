@@ -2,10 +2,22 @@
 
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
-use crate::{impl_const_trait, impl_trait_default};
+use crate::impl_trait;
 
 trait One: Sized {
     fn one() -> Self;
+}
+
+trait Pow: Sized {
+    fn pow(self, exp: u32) -> Self;
+}
+
+trait Powi: Sized {
+    fn powi(self, exp: i32) -> Self;
+}
+
+trait Powf: Sized {
+    fn powf(self, exp: Self) -> Self;
 }
 
 trait GradAdd<Rhs = Self>
@@ -61,17 +73,79 @@ where
     }
 }
 
-// impl One trait
-impl_const_trait![One, one, 1, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128];
-impl_const_trait![One, one, 1.0, f32, f64];
+// impl traits
+impl_trait![
+    One,
+    fn one() -> Self {
+        1
+    },
+    u8,
+    u16,
+    u32,
+    u64,
+    u128,
+    usize,
+    i8,
+    i16,
+    i32,
+    i64,
+    i128,
+    isize
+];
 
-impl_trait_default![GradAdd, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64];
+impl_trait![
+    One,
+    fn one() -> Self {
+        1.0
+    },
+    f32,
+    f64
+];
 
-impl_trait_default![GradSub, i8, i16, i32, i64, i128, f32, f64];
+impl_trait![
+    Pow,
+    fn pow(self, exp: u32) -> Self {
+        self.pow(exp)
+    },
+    u8,
+    u16,
+    u32,
+    u64,
+    u128,
+    usize,
+    i8,
+    i16,
+    i32,
+    i64,
+    i128,
+    isize
+];
 
-impl_trait_default![GradMul, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64];
+impl_trait![
+    Powi,
+    fn powi(self, exp: i32) -> Self {
+        self.powi(exp)
+    },
+    f32,
+    f64
+];
 
-impl_trait_default![GradDiv, i8, i16, i32, i64, i128, f32, f64];
+impl_trait![
+    Powf,
+    fn powf(self, exp: Self) -> Self {
+        self.powf(exp)
+    },
+    f32,
+    f64
+];
+
+impl_trait![GradAdd, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64];
+
+impl_trait![GradSub, i8, i16, i32, i64, i128, f32, f64];
+
+impl_trait![GradMul, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64];
+
+impl_trait![GradDiv, i8, i16, i32, i64, i128, f32, f64];
 
 #[cfg(test)]
 mod tests {
