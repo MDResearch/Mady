@@ -147,6 +147,8 @@ impl_trait![GradMul, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64]
 
 impl_trait![GradDiv, i8, i16, i32, i64, i128, f32, f64];
 
+// impl_trait_self2![Pow, pow, [i, i32], self.pow(i), i32];
+
 #[cfg(test)]
 mod tests {
     use super::*;
