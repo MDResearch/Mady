@@ -75,13 +75,12 @@ where
 
 struct single_tuple<T>(T);
 
-trait GradPow<Rhs = Self>
+trait GradPow<T = Self, Rhs = Self>
 where
-    Self: Clone + Pow + Mul<Rhs>,
-    Rhs: From<u32>,
+    Self: Clone + Pow + Mul<u32, Output = T>,
 {
-    fn grad_pow(self, i: u32) -> (Self, single_tuple<<Self as Mul<Rhs>>::Output>) {
-        let a = i.clone().into();
+    fn grad_pow(self, i: u32) -> (Self, single_tuple<T>) {
+        let a = i.clone();
         let b = self.clone().pow(i - 1);
         let out = b * a;
         (self.clone(), single_tuple(out))
@@ -170,6 +169,7 @@ impl_trait![
 //     }
 // }
 
+// impl_trait![GradPow, u32, i32];
 impl_trait![GradPow, u32];
 
 impl_trait![GradAdd, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64];
