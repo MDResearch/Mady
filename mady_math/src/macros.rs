@@ -108,3 +108,16 @@ macro_rules! impl_trait_default {
         )+
     };
 }
+
+#[macro_export]
+macro_rules! impl_trait_self2 {
+    ($trait_name:ident,$fn_name:ident,$($p:expr,$t:ty)*,$value:expr,$($ty:ident)*, ) => {
+        $(
+            impl $trait_name for $ty {
+                fn $fn_name(&self, $p: $t) -> Self {
+                    $value
+                }
+            }
+        )*
+    };
+}

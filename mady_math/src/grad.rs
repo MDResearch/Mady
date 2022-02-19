@@ -2,7 +2,9 @@
 
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
-use crate::{impl_const_trait, impl_trait_default};
+// use std::i32::pow;
+
+use crate::{impl_const_trait, impl_trait_default, impl_trait_self2};
 
 trait One: Sized {
     fn one() -> Self;
@@ -61,9 +63,25 @@ where
     }
 }
 
+trait Pow: Sized {
+    fn one() -> Self;
+}
+
+// trait GradPow<Rhs = Self>
+// where
+//     Self: Clone + Pow,
+//     i32: Clone,
+// {
+//     fn grad_pow(self, i: u32) {
+//         self.pow(i - 1) * i
+//     }
+// }
+
 // impl One trait
 impl_const_trait![One, one, 1, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128];
 impl_const_trait![One, one, 1.0, f32, f64];
+
+// impl_trait_default![GradPow, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64];
 
 impl_trait_default![GradAdd, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64];
 
@@ -72,6 +90,8 @@ impl_trait_default![GradSub, i8, i16, i32, i64, i128, f32, f64];
 impl_trait_default![GradMul, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64];
 
 impl_trait_default![GradDiv, i8, i16, i32, i64, i128, f32, f64];
+
+// impl_trait_self2![Pow, pow, [i, i32], self.pow(i), i32];
 
 #[cfg(test)]
 mod tests {
