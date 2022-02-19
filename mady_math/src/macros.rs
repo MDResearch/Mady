@@ -86,25 +86,20 @@ macro_rules! mat {
 }
 
 #[macro_export]
-macro_rules! impl_const_trait {
-    ($trait_name:ident,$fn_name:ident,$value:expr,$($ty:ident),+ ) => {
-        $(
-            /// a const trait
-            /// return const value
-            impl $trait_name for $ty{
-                fn $fn_name()->Self{
-                    $value
-                }
-            }
-        )+
-    };
-}
-
-#[macro_export]
-macro_rules! impl_trait_default {
+macro_rules! impl_trait {
+    // use default
     ($trait_name:ident,$($ty:ident),+ ) => {
         $(
             impl $trait_name for $ty{}
+        )+
+    };
+
+    // use custom fn
+    ($trait_name:ident,$fn:item,$($ty:ident),+ ) => {
+        $(
+            impl $trait_name for $ty{
+                $fn
+            }
         )+
     };
 }
