@@ -1,5 +1,6 @@
 //! about the std ops trait
 
+use std::error::Error;
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
 use crate::impl_trait;
@@ -73,17 +74,15 @@ where
     }
 }
 
-struct single_tuple<T>(T);
-
 trait GradPow<T = Self, Rhs = Self>
 where
-    Self: Clone + Pow + Mul<u32, Output = T>,
+    Self: Clone + Pow + Mul<Self, Output = T> + TryFrom<u32>,
 {
-    fn grad_pow(self, i: u32) -> (Self, single_tuple<T>) {
-        let a = i.clone();
+    fn grad_pow(self, i: u32) -> Result<(Self, (T,)), Self::Error> {
+        let a: Self = i.clone().try_into()?;
         let b = self.clone().pow(i - 1);
-        let out = b * a;
-        (self.clone(), single_tuple(out))
+        let out = a * b;
+        Ok((self.clone(), (out,)))
     }
 }
 
@@ -153,24 +152,7 @@ impl_trait![
     f64
 ];
 
-// impl_trait![
-//     From,
-//     u32,
-//     fn from(self, i: Self) -> Self {
-//         i as u32
-//     },
-//     f32,
-//     f64
-// ];
-
-// impl From<u32> for i32 {
-//     fn from(i: u32) -> Self {
-//         i as i32
-//     }
-// }
-
-// impl_trait![GradPow, u32, i32];
-impl_trait![GradPow, u32];
+impl_trait![GradPow, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128];
 
 impl_trait![GradAdd, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64];
 
