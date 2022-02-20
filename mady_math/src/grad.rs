@@ -151,7 +151,6 @@ impl_trait![
     f64
 ];
 
-
 impl_trait![
     Pow,
     fn pow(self, exp: u32) -> Self {
@@ -179,7 +178,6 @@ impl_trait![
     f32,
     f64
 ];
-
 
 impl_trait![
     GradPow,
@@ -235,7 +233,6 @@ impl_trait![
     f32,
     f64
 ];
-
 
 impl_trait![GradAdd, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64];
 
