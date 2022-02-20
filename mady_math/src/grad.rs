@@ -73,6 +73,20 @@ where
     }
 }
 
+struct single_tuple<T>(T);
+
+trait GradPow<T = Self, Rhs = Self>
+where
+    Self: Clone + Pow + Mul<u32, Output = T>,
+{
+    fn grad_pow(self, i: u32) -> (Self, single_tuple<T>) {
+        let a = i.clone();
+        let b = self.clone().pow(i - 1);
+        let out = b * a;
+        (self.clone(), single_tuple(out))
+    }
+}
+
 // impl traits
 impl_trait![
     One,
@@ -138,6 +152,25 @@ impl_trait![
     f32,
     f64
 ];
+
+// impl_trait![
+//     From,
+//     u32,
+//     fn from(self, i: Self) -> Self {
+//         i as u32
+//     },
+//     f32,
+//     f64
+// ];
+
+// impl From<u32> for i32 {
+//     fn from(i: u32) -> Self {
+//         i as i32
+//     }
+// }
+
+// impl_trait![GradPow, u32, i32];
+impl_trait![GradPow, u32];
 
 impl_trait![GradAdd, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64];
 
