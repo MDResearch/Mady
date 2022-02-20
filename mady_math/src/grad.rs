@@ -9,6 +9,18 @@ trait One: Sized {
     fn one() -> Self;
 }
 
+trait GradPow: Sized {
+    fn grad_pow(self: Self, i: u32) -> (Self, (Self,));
+}
+
+trait GradPowi: Sized {
+    fn grad_powi(self: Self, i: i32) -> (Self, (Self,));
+}
+
+trait GradPowf: Sized {
+    fn grad_powf(self: Self, i: Self) -> (Self, (Self,));
+}
+
 trait Pow: Sized {
     fn pow(self, exp: u32) -> Self;
 }
@@ -74,41 +86,41 @@ where
     }
 }
 
-trait GradPow<Rhs = Self>
-where
-    Self: Clone + Pow + Mul<Self, Output = Self> + TryFrom<u32>,
-{
-    fn grad_pow(self, i: u32) -> Result<(Self, (Self,)), Self::Error> {
-        let a: Self = i.clone().try_into()?; // Error when excess range of u32
-        let b = self.clone().pow(i.clone() - 1);
-        let out = a * b;
-        Ok((self.clone(), (out,)))
-    }
-}
+// trait GradPow<Rhs = Self>
+// where
+//     Self: Clone + Pow + Mul<Self, Output = Self> + TryFrom<u32>,
+// {
+//     fn grad_pow(self, i: u32) -> Result<(Self, (Self,)), Self::Error> {
+//         let a: Self = i.clone().try_into()?; // Error when excess range of u32
+//         let b = self.clone().pow(i.clone() - 1);
+//         let out = a * b;
+//         Ok((self.clone(), (out,)))
+//     }
+// }
 
-trait GradPowi<Rhs = Self>
-where
-    Self: Clone + Powi + Mul<Self, Output = Self> + TryFrom<i32>,
-{
-    fn grad_pow(self, i: i32) -> Result<(Self, (Self,)), Self::Error> {
-        let a: Self = i.clone().try_into()?;
-        let b = self.clone().powi(i.clone() - 1);
-        let out = a * b;
-        Ok((self.clone(), (out,)))
-    }
-}
+// trait GradPowi<Rhs = Self>
+// where
+//     Self: Clone + Powi + Mul<Self, Output = Self> + TryFrom<i32>,
+// {
+//     fn grad_powi(self, i: i32) -> Result<(Self, (Self,)), Self::Error> {
+//         let a: Self = i.clone().try_into()?;
+//         let b = self.clone().powi(i.clone() - 1);
+//         let out = a * b;
+//         Ok((self.clone(), (out,)))
+//     }
+// }
 
-trait GradPowf<Rhs = Self>
-where
-    Self: Clone + Powf + Mul<Self, Output = Self> + Sub<Self, Output = Self> + TryFrom<usize>,
-{
-    fn grad_pow(self, i: Self) -> Result<(Self, (Self,)), Self::Error> {
-        let one = 1usize.try_into()?;
-        let b = self.clone().powf(i.clone() - one);
-        let out = i * b;
-        Ok((self.clone(), (out,)))
-    }
-}
+// trait GradPowf<Rhs = Self>
+// where
+//     Self: Clone + Powf + Mul<Self, Output = Self> + Sub<Self, Output = Self> + TryFrom<usize>,
+// {
+//     fn grad_powf(self, i: Self) -> Result<(Self, (Self,)), Self::Error> {
+//         let one = 1usize.try_into()?;
+//         let b = self.clone().powf(i.clone() - one);
+//         let out = i * b;
+//         Ok((self.clone(), (out,)))
+//     }
+// }
 
 // impl traits
 impl_trait![
@@ -134,6 +146,50 @@ impl_trait![
     One,
     fn one() -> Self {
         1.0
+    },
+    f32,
+    f64
+];
+
+impl_trait![
+    GradPow,
+    fn grad_pow(self, i: u32) -> (Self, (Self,)) {
+        let a: Self = i.clone() as Self;
+        let b = self.clone().pow(i.clone() - 1);
+        let out = a * b;
+        (self.clone(), (out,))
+    },
+    u8,
+    u16,
+    u32,
+    u64,
+    u128,
+    i8,
+    i16,
+    i32,
+    i64,
+    i128
+];
+
+impl_trait![
+    GradPowi,
+    fn grad_powi(self, i: i32) -> (Self, (Self,)) {
+        let a: Self = i.clone() as Self;
+        let b = self.clone().powi(i.clone() - 1);
+        let out = a * b;
+        (self.clone(), (out,))
+    },
+    f32,
+    f64
+];
+
+impl_trait![
+    GradPowf,
+    fn grad_powf(self, i: Self) -> (Self, (Self,)) {
+        let a: Self = i.clone() as Self;
+        let b = self.clone().powf(i.clone() - 1 as Self);
+        let out = a * b;
+        (self.clone(), (out,))
     },
     f32,
     f64
@@ -176,7 +232,7 @@ impl_trait![
     f64
 ];
 
-impl_trait![GradPow, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128];
+// impl_trait![GradPow, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128];
 
 // impl_trait![GradPowi, f32, f64];
 
