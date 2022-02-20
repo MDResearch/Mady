@@ -238,13 +238,13 @@ impl Parser {
                         self.parse_expr(*expr).map_err(|_| Stmt::Local(v.clone()))?;
                     let (edge_ident, edge) = self.new_tmp();
                     self.ad_graph.add_edge(edge, (id, top));
-                    let right=parse_quote!{
+                    let right = parse_quote! {
                         {
                             #edge_ident = #left.one();
                             #right
                         }
                     };
-                    let ts= Local {
+                    let ts = Local {
                         pat: left,
                         init: Some((eq, Box::new(right))),
                         ..v
