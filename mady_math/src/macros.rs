@@ -104,11 +104,11 @@ macro_rules! impl_trait {
     };
 
     // use custom fn with generic
-    // ($trait_name:ident,$gen:ident,$fn:item,,$($ty:ident),+ ) => {
-    //     $(
-    //         impl $trait_name<gen> for $ty{
-    //             $fn
-    //         }
-    //     )+
-    // };
+    ($trait_name:ident,$($gen:ident)+,$fn:item,$($ty:ident)+ ) => {
+        $(
+            impl $trait_name<gen> for $ty{
+                $fn
+            }
+        )+
+    };
 }
