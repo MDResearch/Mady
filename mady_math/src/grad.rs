@@ -151,49 +151,6 @@ impl_trait![
     f64
 ];
 
-impl_trait![
-    GradPow,
-    fn grad_pow(self, i: u32) -> (Self, (Self,)) {
-        let a: Self = i.clone() as Self;
-        let b = self.clone().pow(i.clone() - 1);
-        let out = a * b;
-        (self.clone(), (out,))
-    },
-    u8,
-    u16,
-    u32,
-    u64,
-    u128,
-    i8,
-    i16,
-    i32,
-    i64,
-    i128
-];
-
-impl_trait![
-    GradPowi,
-    fn grad_powi(self, i: i32) -> (Self, (Self,)) {
-        let a: Self = i.clone() as Self;
-        let b = self.clone().powi(i.clone() - 1);
-        let out = a * b;
-        (self.clone(), (out,))
-    },
-    f32,
-    f64
-];
-
-impl_trait![
-    GradPowf,
-    fn grad_powf(self, i: Self) -> (Self, (Self,)) {
-        let a: Self = i.clone() as Self;
-        let b = self.clone().powf(i.clone() - 1 as Self);
-        let out = a * b;
-        (self.clone(), (out,))
-    },
-    f32,
-    f64
-];
 
 impl_trait![
     Pow,
@@ -223,6 +180,53 @@ impl_trait![
     f64
 ];
 
+
+impl_trait![
+    GradPow,
+    fn grad_pow(self, i: u32) -> (Self, (Self,)) {
+        let a: Self = i.clone() as Self;
+        let b = self.clone().pow(i.clone() - 1);
+        let out = a * b;
+        (self.clone(), (out,))
+    },
+    u8,
+    u16,
+    u32,
+    u64,
+    u128,
+    usize,
+    i8,
+    i16,
+    i32,
+    i64,
+    i128,
+    isize
+];
+
+impl_trait![
+    GradPowi,
+    fn grad_powi(self, i: i32) -> (Self, (Self,)) {
+        let a: Self = i.clone() as Self;
+        let b = self.clone().powi(i.clone() - 1);
+        let out = a * b;
+        (self.clone(), (out,))
+    },
+    f32,
+    f64
+];
+
+impl_trait![
+    GradPowf,
+    fn grad_powf(self, i: Self) -> (Self, (Self,)) {
+        let a: Self = i.clone() as Self;
+        let b = self.clone().powf(i.clone() - 1 as Self);
+        let out = a * b;
+        (self.clone(), (out,))
+    },
+    f32,
+    f64
+];
+
 impl_trait![
     Powf,
     fn powf(self, exp: Self) -> Self {
@@ -232,11 +236,6 @@ impl_trait![
     f64
 ];
 
-// impl_trait![GradPow, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128];
-
-// impl_trait![GradPowi, f32, f64];
-
-// impl_trait![GradPowf, f32, f64];
 
 impl_trait![GradAdd, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64];
 
