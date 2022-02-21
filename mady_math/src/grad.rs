@@ -5,7 +5,7 @@ use std::ops::{Add, Div, Mul, Neg, Sub};
 use crate::impl_trait;
 
 /// return one in a type
-/// 
+///
 /// `a * a.one() = a`
 /// and
 /// `a.one() * a = a`
@@ -80,7 +80,6 @@ where
         )
     }
 }
-
 
 pub trait GradPow: Sized {
     fn grad_pow(self: Self, i: u32) -> (Self, (Self,));
