@@ -46,6 +46,23 @@ impl<N, E> Graph<N, E> {
         self.edges.iter_mut()
     }
 
+    ///
+    pub fn dfs<'a>(&'a self, root: usize) -> Vec<usize> {
+        let mut r = vec![];
+        let mut st = std::collections::LinkedList::from([root]);
+        while (!st.is_empty()) {
+            let c = st.pop_back();
+            match c {
+                Some(x) => {
+                    self.children[x].iter().for_each(|x| st.push_back((*x)));
+                    r.push(x);
+                }
+                None => panic!(),
+            }
+        }
+        r
+    }
+
     /// return id for the node
     pub fn add_node(&mut self, value: N) -> usize {
         let index = self.nodes.len();
@@ -208,6 +225,23 @@ mod tests {
         dbg!(g.roots());
 
         assert_eq!(g.roots(), vec![node_e]);
+    }
+
+    #[test]
+    fn dfs() {
+        let mut g: Graph<&str, &str> = Graph::new();
+
+        let node_a = g.add_node("a");
+        let node_b = g.add_node("b");
+        let node_c = g.add_node("c");
+        let node_d = g.add_node("d");
+
+        g.add_edge("", (node_b, node_a));
+        g.add_edge("", (node_c, node_b));
+        g.add_edge("", (node_c, node_d));
+        // c b d a
+        let r = g.dfs(g.roots()[0]);
+        assert_eq!(r, vec![node_c, node_d, node_b, node_a])
     }
 
     #[test]
