@@ -9,6 +9,10 @@ trait One: Sized {
     fn one() -> Self;
 }
 
+trait Gradtanh: Sized {
+    fn grad_tanh(i: Self) -> (Self, (Self,));
+}
+
 trait GradPow: Sized {
     fn grad_pow(self: Self, i: u32) -> (Self, (Self,));
 }
@@ -180,12 +184,21 @@ impl_trait![
 ];
 
 impl_trait![
+    Powf,
+    fn powf(self, exp: Self) -> Self {
+        self.powf(exp)
+    },
+    f32,
+    f64
+];
+
+impl_trait![
     GradPow,
     fn grad_pow(self, i: u32) -> (Self, (Self,)) {
         let a: Self = i.clone() as Self;
         let b = self.clone().pow(i.clone() - 1);
         let out = a * b;
-        (self.clone(), (out,))
+        (self.pow(i), (out,))
     },
     u8,
     u16,
@@ -202,12 +215,22 @@ impl_trait![
 ];
 
 impl_trait![
+    Gradtanh,
+    fn grad_tanh(i: Self) -> (Self, (Self,)) {
+        // be warning that it seems to be wrong
+        (i.tanh(), (i.atanh().acosh().powf(-2.0),))
+    },
+    f32,
+    f64
+];
+
+impl_trait![
     GradPowi,
     fn grad_powi(self, i: i32) -> (Self, (Self,)) {
         let a: Self = i.clone() as Self;
         let b = self.clone().powi(i.clone() - 1);
         let out = a * b;
-        (self.clone(), (out,))
+        (self.powi(i), (out,))
     },
     f32,
     f64
@@ -217,18 +240,9 @@ impl_trait![
     GradPowf,
     fn grad_powf(self, i: Self) -> (Self, (Self,)) {
         let a: Self = i.clone() as Self;
-        let b = self.clone().powf(i.clone() - 1 as Self);
+        let b = self.clone().powf(i.clone() - (1 as Self));
         let out = a * b;
-        (self.clone(), (out,))
-    },
-    f32,
-    f64
-];
-
-impl_trait![
-    Powf,
-    fn powf(self, exp: Self) -> Self {
-        self.powf(exp)
+        (self.powf(i), (out,))
     },
     f32,
     f64
@@ -276,5 +290,13 @@ mod tests {
         let b = 2.0;
 
         assert_eq!(a.grad_div(b), (2.0, (1.0 / 2.0, -4.0 / 2.0 / 2.0)));
+    }
+
+    #[test]
+    fn grad_pow() {
+        let a = 4;
+        let b = 2;
+
+        assert_eq!(a.grad_pow(b), (4.pow(2), (4.pow(2 - 1) * 2,)));
     }
 }
