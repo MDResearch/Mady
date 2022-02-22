@@ -1,3 +1,5 @@
+use crate::graph;
+
 /// fast add edit node & edge
 /// cannot remove node & edge
 /// raw method only
@@ -46,22 +48,59 @@ impl<N, E> Graph<N, E> {
         self.edges.iter_mut()
     }
 
-    ///
-    pub fn dfs<'a>(&'a self, root: usize) -> Vec<usize> {
+    pub fn bfs<'a>(&'a self, root: usize) -> impl Iterator + 'a {
         let mut r = vec![];
         let mut st = std::collections::LinkedList::from([root]);
         while (!st.is_empty()) {
             let c = st.pop_back();
             match c {
                 Some(x) => {
-                    self.children[x].iter().for_each(|x| st.push_back((*x)));
+                    self.children[x].iter().for_each(|x| st.push_front((*x)));
                     r.push(x);
                 }
                 None => panic!(),
             }
         }
-        r
+        r.into_iter().map(|x| self.node(x))
     }
+
+    // pub fn bfs_iter<'a>(&'a self, root: usize) -> impl Iterator + 'a {
+    //     struct iter_bfs<N, E> {
+    //         st: std::collections::LinkedList<usize>,
+    //         c: usize,
+    //         g: &'b Graph<N, E>,
+    //     }
+
+    //     impl<N, E> iter_bfs<N, E> {
+    //         fn new(root: usize, g: &Graph<N, E>) -> Self {
+    //             iter_bfs {
+    //                 st: std::collections::LinkedList::from([root]),
+    //                 c: 0,
+    //                 g,
+    //             }
+    //         }
+    //     }
+
+    //     impl<N, E> Iterator for iter_bfs<N, E> {
+    //         type Item = usize;
+    //         fn next(&mut self) -> Option<Self::Item> {
+    //             if (self.st.is_empty()) {
+    //                 None
+    //             } else {
+    //                 let n = self.st.pop_back();
+    //                 match n {
+    //                     Some(x) => {
+    //                         self.g.children[x].for_each(|x| self.st.push_front(x));
+    //                         return n;
+    //                     }
+    //                     None => return None,
+    //                 }
+    //             }
+    //         }
+    //     }
+
+    //     iter_bfs::new(root, self)
+    // }
 
     /// return id for the node
     pub fn add_node(&mut self, value: N) -> usize {
@@ -227,22 +266,22 @@ mod tests {
         assert_eq!(g.roots(), vec![node_e]);
     }
 
-    #[test]
-    fn dfs() {
-        let mut g: Graph<&str, &str> = Graph::new();
+    // #[test]
+    // fn dfs() {
+    //     let mut g: Graph<&str, &str> = Graph::new();
 
-        let node_a = g.add_node("a");
-        let node_b = g.add_node("b");
-        let node_c = g.add_node("c");
-        let node_d = g.add_node("d");
+    //     let node_a = g.add_node("a");
+    //     let node_b = g.add_node("b");
+    //     let node_c = g.add_node("c");
+    //     let node_d = g.add_node("d");
 
-        g.add_edge("", (node_b, node_a));
-        g.add_edge("", (node_c, node_b));
-        g.add_edge("", (node_c, node_d));
-        // c b d a
-        let r = g.dfs(g.roots()[0]);
-        assert_eq!(r, vec![node_c, node_d, node_b, node_a])
-    }
+    //     g.add_edge("", (node_b, node_a));
+    //     g.add_edge("", (node_c, node_b));
+    //     g.add_edge("", (node_c, node_d));
+    //     // c b d a
+    //     let r = g.dfs(g.roots()[0]);
+    //     assert_eq!(r, vec![node_c, node_d, node_b, node_a])
+    // }
 
     #[test]
     fn topological() {
