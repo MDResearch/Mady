@@ -1,43 +1,34 @@
 //! about the std ops trait
 
-use std::error::Error;
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
 use crate::impl_trait;
 
-trait One: Sized {
+/// return one in a type
+///
+/// `a * a.one() = a`
+/// and
+/// `a.one() * a = a`
+pub trait One: Sized {
     fn one() -> Self;
 }
 
-trait Gradtanh: Sized {
-    fn grad_tanh(i: Self) -> (Self, (Self,));
-}
-
-trait GradPow: Sized {
-    fn grad_pow(self: Self, i: u32) -> (Self, (Self,));
-}
-
-trait GradPowi: Sized {
-    fn grad_powi(self: Self, i: i32) -> (Self, (Self,));
-}
-
-trait GradPowf: Sized {
-    fn grad_powf(self: Self, i: Self) -> (Self, (Self,));
-}
-
-trait Pow: Sized {
+/// just a std method with trait
+pub trait Pow: Sized {
     fn pow(self, exp: u32) -> Self;
 }
 
-trait Powi: Sized {
+/// just a std method with trait
+pub trait Powi: Sized {
     fn powi(self, exp: i32) -> Self;
 }
 
-trait Powf: Sized {
+/// just a std method with trait
+pub trait Powf: Sized {
     fn powf(self, exp: Self) -> Self;
 }
 
-trait GradAdd<Rhs = Self>
+pub trait GradAdd<Rhs = Self>
 where
     Self: Add<Rhs> + One,
     Rhs: One,
@@ -57,7 +48,7 @@ where
     }
 }
 
-trait GradMul<Rhs = Self>
+pub trait GradMul<Rhs = Self>
 where
     Self: Mul<Rhs> + Clone,
     Rhs: Clone,
@@ -67,7 +58,7 @@ where
     }
 }
 
-trait GradDiv<Rhs = Self>
+pub trait GradDiv<Rhs = Self>
 where
     Self: Div<Rhs> + Neg + Clone,
     Rhs: Div + Div<<Self as Neg>::Output> + Mul + Clone + One,
@@ -88,6 +79,22 @@ where
             (Rhs::one() / rhs.clone(), -self / (rhs.clone() * rhs)),
         )
     }
+}
+
+pub trait GradPow: Sized {
+    fn grad_pow(self: Self, i: u32) -> (Self, (Self,));
+}
+
+pub trait GradPowi: Sized {
+    fn grad_powi(self: Self, i: i32) -> (Self, (Self,));
+}
+
+pub trait GradPowf: Sized {
+    fn grad_powf(self: Self, i: Self) -> (Self, (Self,));
+}
+
+trait Gradtanh: Sized {
+    fn grad_tanh(i: Self) -> (Self, (Self,));
 }
 
 // trait GradPow<Rhs = Self>

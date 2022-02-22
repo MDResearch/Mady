@@ -6,23 +6,23 @@ use crate::graph::Graph;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::fold::{
-    fold_block, fold_expr, fold_expr_assign, fold_ident, fold_local, fold_pat, fold_stmt, Fold,
+    fold_block, fold_expr, fold_expr_assign, fold_ident, fold_item_fn, fold_local, fold_pat,
+    fold_stmt, Fold,
 };
 use syn::{
     parse2, parse_quote, parse_str, BinOp, Block, Expr, ExprAssign, ItemFn, Local, Pat, Stmt,
 };
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 struct Parser {
     variables: Vec<Variable>,
     stack: Vec<LinkedList<usize>>,
     grads: Vec<usize>,
     // the index in self.varibles
     ad_graph: Graph<usize, usize>,
-    parents: Vec<usize>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Variable {
     hash: u64,
     ident: Ident,
@@ -105,28 +105,36 @@ impl Parser {
         Ok(())
     }
 
-    fn grad_parse(input: TokenStream) -> Result<TokenStream, Box<dyn Error>> {
-        let i = parse2::<ItemFn>(input.clone())?;
+    // cousming method
+    fn gen_vars(&self) -> TokenStream {
+        let mut ts = TokenStream::new();
+        for i in self.variables.clone() {
+            let ident = i.ident;
+            let stmt = quote! {
+                #ident = Zero::zero();
+            };
+            ts.extend(stmt)
+        }
+        ts
+    }
 
-        // generate new ident
-        let new_ident = parse_str::<Ident>(&format!("grads_{}", i.sig.ident))?;
+    fn gen_backward(&self) -> TokenStream {
+        // todo wait @Eason0729 complete BFSIter
+        unimplemented!("wait @Eason0729")
+    }
 
-        //replace return ... with return '(tuple)'($de_arg1,de_arg2...)
-        // todo!();
-
-        let mut parser = Parser::new();
-
-        let result = parser.fold_block(*i.block);
-
-        Ok(quote! {
+    // cousming method
+    fn gen_fn(mut self, i: ItemFn) -> ItemFn {
+        let i = self.fold_item_fn(i);
+        let block = i.block;
+        let vars = self.gen_vars();
+        let block = parse_quote! {
             {
-                #input
-
-                fn #new_ident(){
-                    #result
-                }
+                #vars
+                #block
             }
-        })
+        };
+        ItemFn { block, ..i }
     }
 }
 
@@ -431,6 +439,16 @@ mod tests {
         let ast = parser.fold_expr(ast);
         assert_eq!(ast, res);
     }
+
+    // #[test]
+    // fn test_gen_var() {
+    //     let mut parser = Parser::new();
+    //     for _ in 0..10 {
+    //         parser.new_tmp();
+    //     }
+
+    //     assert_eq!(parser.gen_vars().len(), 10);
+    // }
 }
 
 /*
