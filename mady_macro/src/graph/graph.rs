@@ -1,7 +1,7 @@
 /// fast add edit node & edge
 /// cannot remove node & edge
 /// raw method only
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Graph<N, E> {
     pub children: Vec<Vec<usize>>,
     // Vec<usize> : an vec of out-degree node id(N)

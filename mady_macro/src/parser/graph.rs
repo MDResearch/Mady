@@ -13,17 +13,16 @@ use syn::{
     parse2, parse_quote, parse_str, BinOp, Block, Expr, ExprAssign, ItemFn, Local, Pat, Stmt,
 };
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 struct Parser {
     variables: Vec<Variable>,
     stack: Vec<LinkedList<usize>>,
     grads: Vec<usize>,
     // the index in self.varibles
     ad_graph: Graph<usize, usize>,
-    parents: Vec<usize>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Variable {
     hash: u64,
     ident: Ident,
@@ -107,9 +106,9 @@ impl Parser {
     }
 
     // cousming method
-    fn gen_vars(self) -> TokenStream {
+    fn gen_vars(&self) -> TokenStream {
         let mut ts = TokenStream::new();
-        for i in self.variables {
+        for i in self.variables.clone() {
             let ident = i.ident;
             let stmt = quote! {
                 #ident = Zero::zero();
@@ -117,6 +116,11 @@ impl Parser {
             ts.extend(stmt)
         }
         ts
+    }
+
+    fn gen_backward(&self) -> TokenStream {
+        // todo wait @Eason0729 complete BFSIter
+        unimplemented!("wait @Eason0729")
     }
 
     // cousming method
