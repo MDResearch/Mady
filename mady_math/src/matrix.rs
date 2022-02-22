@@ -85,27 +85,25 @@ where
             .map(move |n| self.data.iter().nth(n).unwrap())
     }
 
+    //     // st = start, sl = side length
+    //     pub fn convolution(&self, st: usize, sl: usize, cor:Vec<usize>) -> Vec<usize> {
 
-//     // st = start, sl = side length
-//     pub fn convolution(&self, st: usize, sl: usize, cor:Vec<usize>) -> Vec<usize> {
-        
-//         let mut ret : Vec<usize> ;
-//         ret.resize(sl*sl, 0);
+    //         let mut ret : Vec<usize> ;
+    //         ret.resize(sl*sl, 0);
 
-//         for i in st..self.data.0.len(){
-//         // compiler error : filed '0' of struct 'Tensor' is private private filed. (how to solve)
+    //         for i in st..self.data.0.len(){
+    //         // compiler error : filed '0' of struct 'Tensor' is private private filed. (how to solve)
 
-//             for j in i..i+sl*sl{
-//                     ret = self.data.0[j]*cor[j-i];
-//                     // compiler error : filed '0' of struct 'Tensor' is private private filed. (how to solve)
-//             }
-         
-//         }
-//         ret
-//     }
+    //             for j in i..i+sl*sl{
+    //                     ret = self.data.0[j]*cor[j-i];
+    //                     // compiler error : filed '0' of struct 'Tensor' is private private filed. (how to solve)
+    //             }
 
-// help me about above by YZ
+    //         }
+    //         ret
+    //     }
 
+    // help me about above by YZ
 }
 
 impl<T> From<(Tensor<T>, [usize; 2])> for Matrix<T>
