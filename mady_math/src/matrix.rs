@@ -84,24 +84,39 @@ where
             // map用來取迭代器的值 , map會自己抓上面flat_map跳到的位置n
             .map(move |n| self.data.iter().nth(n).unwrap())
     }
+    //
+    // st = start, sl = side length
+    // todo!!
+    pub fn convolution(&self, cor: &Self, step: usize) -> Vec<usize> {
+        todo!();
+        let mut ret = vec![];
+        ret.resize(cor.shape.iter().product(), 0);
+        // product() mean muiltple all the
+        let mut st= self.into_row_iter();
 
-    //     // st = start, sl = side length
-    //     pub fn convolution(&self, st: usize, sl: usize, cor:Vec<usize>) -> Vec<usize> {
+        let mut pass = 0;
+        let len_diff=  self.shape[1]-cor.shape[1];
+        loop{
+            pass += 1;
 
-    //         let mut ret : Vec<usize> ;
-    //         ret.resize(sl*sl, 0);
+            let matrix_now = st.next();
+            
+            if pass == cor.shape[1] {
+                st.skip(len_diff);
+            }
 
-    //         for i in st..self.data.0.len(){
-    //         // compiler error : filed '0' of struct 'Tensor' is private private filed. (how to solve)
 
-    //             for j in i..i+sl*sl{
-    //                     ret = self.data.0[j]*cor[j-i];
-    //                     // compiler error : filed '0' of struct 'Tensor' is private private filed. (how to solve)
-    //             }
+            break;
+        }
 
-    //         }
-    //         ret
-    //     }
+        // for i in  st{
+        //     for j in  {
+        //         ret = self.data.0[j] * cor[j - i];
+        //         // compiler error : filed '0' of struct 'Tensor' is private private filed. (how to solve)
+        //     }
+        // }
+        ret
+    }
 
     // help me about above by YZ
 }
