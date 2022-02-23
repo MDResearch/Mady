@@ -17,7 +17,7 @@ pub struct Graph<N, E> {
 #[derive(Debug)]
 pub struct IterBfs<'b, N, E> {
     queue: std::collections::LinkedList<usize>,
-    c: usize,
+    visited: Vec<bool>,
     graph: &'b Graph<N, E>,
 }
 
@@ -41,30 +41,6 @@ impl<N, E> Graph<N, E> {
             edges: vec![],
             nodes: vec![],
         }
-    }
-
-    /// iterate node
-    pub fn node_iter<'a>(&'a self) -> impl Iterator + 'a {
-        todo!();
-        self.nodes.iter()
-    }
-
-    /// mut iterate node
-    pub fn node_iter_mut<'a>(&'a mut self) -> impl Iterator + 'a {
-        todo!();
-        self.nodes.iter_mut()
-    }
-
-    /// iterate edge
-    pub fn edge_iter<'a>(&'a self) -> impl Iterator + 'a {
-        todo!();
-        self.edges.iter()
-    }
-
-    /// mut iterate edge
-    pub fn edge_iter_mut<'a>(&'a mut self) -> impl Iterator + 'a {
-        todo!();
-        self.edges.iter_mut()
     }
 
     pub fn bfs_iter<'a>(&'a self, root: usize) -> impl Iterator<Item = Node<N, E>> + 'a {
@@ -166,7 +142,7 @@ impl<'b, N, E> IterBfs<'b, N, E> {
     fn new(root: usize, g: &'b Graph<N, E>) -> Self {
         IterBfs {
             queue: std::collections::LinkedList::from([root]),
-            c: 0,
+            visited: vec![false; g.nodes.len()],
             graph: g,
         }
     }
@@ -175,12 +151,15 @@ impl<'b, N, E> IterBfs<'b, N, E> {
 impl<'b, N, E> Iterator for IterBfs<'b, N, E> {
     type Item = Node<'b, N, E>;
     fn next(&mut self) -> Option<Self::Item> {
+        while (!self.queue.is_empty() && self.visited[*self.queue.back().unwrap()]) {
+            self.queue.pop_back();
+        }
         let n = self.queue.pop_back();
         if let Some(x) = n {
             self.graph.children[x]
                 .iter()
                 .for_each(|&x| self.queue.push_front(x));
-            let h = x;
+            self.visited[x] = true;
             Some(Node {
                 index: x,
                 graph: self.graph,
@@ -221,7 +200,7 @@ mod tests {
     }
 
     #[test]
-    pub fn roots_linear() {
+    pub fn roots() {
         let mut g: Graph<&str, &str> = Graph::new();
 
         let node_name = vec!["a", "b", "c"];
@@ -302,6 +281,22 @@ mod tests {
         // c b d a
         let r: Vec<_> = g.bfs_iter(g.roots()[0]).map(|x| x.index).collect();
         assert_eq!(r, vec![node_c, node_b, node_d, node_a, node_e])
+    }
+
+    #[test]
+
+    fn bfs_cyclic() {
+        let mut g: Graph<&str, &str> = Graph::new();
+
+        let node_a = g.add_node("a");
+        let node_b = g.add_node("b");
+
+        g.add_edge("", (node_b, node_a));
+        g.add_edge("", (node_a, node_b));
+
+        // c b d a
+        let r: Vec<_> = g.bfs_iter(node_a).map(|x| x.index).collect();
+        assert_eq!(r.len(), 2)
     }
 
     #[test]
