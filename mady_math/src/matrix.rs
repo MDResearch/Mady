@@ -92,19 +92,18 @@ where
         let mut ret = vec![];
         ret.resize(cor.shape.iter().product(), 0);
         // product() mean muiltple all the
-        let mut st= self.into_row_iter();
+        let mut st = self.into_row_iter();
 
         let mut pass = 0;
-        let len_diff=  self.shape[1]-cor.shape[1];
-        loop{
+        let len_diff = self.shape[1] - cor.shape[1];
+        loop {
             pass += 1;
 
             let matrix_now = st.next();
-            
+
             if pass == cor.shape[1] {
                 st.skip(len_diff);
             }
-
 
             break;
         }
