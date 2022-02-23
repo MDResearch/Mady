@@ -1,9 +1,9 @@
 use crate::graph;
 use std::collections::BTreeMap;
 
-pub struct Node {
-    index: usize,
-    parents: usize,
+pub struct Edge {
+    child: usize,
+    parent: usize,
 }
 
 pub struct IterTopological<'b> {
@@ -102,7 +102,7 @@ impl<N, E> Graph<N, E> {
     // O(n^2)
     // N is amount of edge
     /// use topolohival sort to get the order of caculation
-    pub fn topological_iter<'a>(&'a self) -> impl Iterator<Item = Node> + 'a {
+    pub fn topological_iter<'a>(&'a self) -> impl Iterator<Item = Edge> + 'a {
         IterTopological {
             out_degree: self.out_degree.clone(),
             edges: &self.edges,
@@ -111,15 +111,15 @@ impl<N, E> Graph<N, E> {
 }
 
 impl<'b> Iterator for IterTopological<'b> {
-    type Item = Node;
+    type Item = Edge;
     fn next(&mut self) -> Option<Self::Item> {
         for c in self.edges {
             if (self.out_degree[c.0] == 0) {
                 self.out_degree[c.1] = self.out_degree[c.1] - 1;
                 self.out_degree[c.0] = usize::max_value();
-                return Some(Node {
-                    index: c.1,
-                    parents: c.0,
+                return Some(Edge {
+                    child: c.1,
+                    parent: c.0,
                 });
             }
         }
@@ -205,7 +205,7 @@ mod tests {
         g.add_edge("", (node_b, node_a));
         g.add_edge("", (node_c, node_b));
 
-        let nodes: Vec<usize> = g.topological_iter().map(|x| x.index).collect();
+        let nodes: Vec<usize> = g.topological_iter().map(|x| x.child).collect();
         assert_eq!(nodes, vec![node_b, node_a]);
     }
 }

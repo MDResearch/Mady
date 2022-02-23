@@ -13,6 +13,18 @@ pub trait One: Sized {
     fn one() -> Self;
 }
 
+pub trait Zero: Sized {
+    fn zero() -> Self;
+}
+
+pub trait Max: Sized {
+    fn max(self, i: Self) -> Self;
+}
+
+pub trait Min: Sized {
+    fn min(self, i: Self) -> Self;
+}
+
 /// just a std method with trait
 pub trait Pow: Sized {
     fn pow(self, exp: u32) -> Self;
@@ -79,6 +91,14 @@ where
             (Rhs::one() / rhs.clone(), -self / (rhs.clone() * rhs)),
         )
     }
+}
+
+pub trait GradMin: Sized {
+    fn grad_min(self: Self, i: Self) -> (Self, (Self, Self));
+}
+
+pub trait GradMax: Sized {
+    fn grad_max(self: Self, i: Self) -> (Self, (Self, Self));
 }
 
 pub trait GradPow: Sized {
@@ -163,6 +183,72 @@ impl_trait![
 ];
 
 impl_trait![
+    Zero,
+    fn zero() -> Self {
+        0
+    },
+    u8,
+    u16,
+    u32,
+    u64,
+    u128,
+    usize,
+    i8,
+    i16,
+    i32,
+    i64,
+    i128,
+    isize
+];
+
+impl_trait![
+    Zero,
+    fn zero() -> Self {
+        0.0
+    },
+    f32,
+    f64
+];
+
+impl_trait![
+    Max,
+    fn max(self, i: Self) -> Self {
+        std::cmp::max(self, i)
+    },
+    u8,
+    u16,
+    u32,
+    u64,
+    u128,
+    usize,
+    i8,
+    i16,
+    i32,
+    i64,
+    i128,
+    isize
+];
+
+impl_trait![
+    Min,
+    fn min(self, i: Self) -> Self {
+        std::cmp::min(self, i)
+    },
+    u8,
+    u16,
+    u32,
+    u64,
+    u128,
+    usize,
+    i8,
+    i16,
+    i32,
+    i64,
+    i128,
+    isize
+];
+
+impl_trait![
     Pow,
     fn pow(self, exp: u32) -> Self {
         self.pow(exp)
@@ -197,6 +283,54 @@ impl_trait![
     },
     f32,
     f64
+];
+
+impl_trait![
+    GradMin,
+    fn grad_min(self, i: Self) -> (Self, (Self, Self)) {
+        let re = std::cmp::min(self, i);
+        if (re == self) {
+            return (re, (1 as Self, 0 as Self));
+        } else {
+            return (re, (0 as Self, 1 as Self));
+        }
+    },
+    u8,
+    u16,
+    u32,
+    u64,
+    u128,
+    usize,
+    i8,
+    i16,
+    i32,
+    i64,
+    i128,
+    isize
+];
+
+impl_trait![
+    GradMax,
+    fn grad_max(self, i: Self) -> (Self, (Self, Self)) {
+        let re = std::cmp::max(self, i);
+        if (re == self) {
+            return (re, (1 as Self, 0 as Self));
+        } else {
+            return (re, (0 as Self, 1 as Self));
+        }
+    },
+    u8,
+    u16,
+    u32,
+    u64,
+    u128,
+    usize,
+    i8,
+    i16,
+    i32,
+    i64,
+    i128,
+    isize
 ];
 
 impl_trait![
