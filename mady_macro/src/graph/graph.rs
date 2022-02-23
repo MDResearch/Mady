@@ -14,6 +14,25 @@ pub struct Graph<N, E> {
     // lookup table for edge id and node value(N)
 }
 
+#[derive(Debug)]
+pub struct IterBfs<'b, N, E> {
+    queue: std::collections::LinkedList<usize>,
+    c: usize,
+    graph: &'b Graph<N, E>,
+}
+
+#[derive(Debug)]
+pub struct Node<'a, N, E> {
+    index: usize,
+    graph: &'a Graph<N, E>,
+}
+
+impl<N, E> Default for Graph<N, E> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<N, E> Graph<N, E> {
     pub fn new() -> Self {
         Self {
@@ -48,59 +67,9 @@ impl<N, E> Graph<N, E> {
         self.edges.iter_mut()
     }
 
-    pub fn bfs<'a>(&'a self, root: usize) -> impl Iterator + 'a {
-        let mut r = vec![];
-        let mut st = std::collections::LinkedList::from([root]);
-        while (!st.is_empty()) {
-            let c = st.pop_back();
-            match c {
-                Some(x) => {
-                    self.children[x].iter().for_each(|x| st.push_front((*x)));
-                    r.push(x);
-                }
-                None => panic!(),
-            }
-        }
-        r.into_iter().map(|x| self.node(x))
+    pub fn bfs_iter<'a>(&'a self, root: usize) -> impl Iterator<Item = Node<N, E>> + 'a {
+        IterBfs::new(root, self)
     }
-
-    // pub fn bfs_iter<'a>(&'a self, root: usize) -> impl Iterator + 'a {
-    //     struct iter_bfs<N, E> {
-    //         st: std::collections::LinkedList<usize>,
-    //         c: usize,
-    //         g: &'b Graph<N, E>,
-    //     }
-
-    //     impl<N, E> iter_bfs<N, E> {
-    //         fn new(root: usize, g: &Graph<N, E>) -> Self {
-    //             iter_bfs {
-    //                 st: std::collections::LinkedList::from([root]),
-    //                 c: 0,
-    //                 g,
-    //             }
-    //         }
-    //     }
-
-    //     impl<N, E> Iterator for iter_bfs<N, E> {
-    //         type Item = usize;
-    //         fn next(&mut self) -> Option<Self::Item> {
-    //             if (self.st.is_empty()) {
-    //                 None
-    //             } else {
-    //                 let n = self.st.pop_back();
-    //                 match n {
-    //                     Some(x) => {
-    //                         self.g.children[x].for_each(|x| self.st.push_front(x));
-    //                         return n;
-    //                     }
-    //                     None => return None,
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     iter_bfs::new(root, self)
-    // }
 
     /// return id for the node
     pub fn add_node(&mut self, value: N) -> usize {
@@ -193,9 +162,42 @@ impl<N, E> Graph<N, E> {
     }
 }
 
-impl<N, E> Default for Graph<N, E> {
-    fn default() -> Self {
-        Self::new()
+impl<'b, N, E> IterBfs<'b, N, E> {
+    fn new(root: usize, g: &'b Graph<N, E>) -> Self {
+        IterBfs {
+            queue: std::collections::LinkedList::from([root]),
+            c: 0,
+            graph: g,
+        }
+    }
+}
+
+impl<'b, N, E> Iterator for IterBfs<'b, N, E> {
+    type Item = Node<'b, N, E>;
+    fn next(&mut self) -> Option<Self::Item> {
+        let n = self.queue.pop_back();
+        if let Some(x) = n {
+            self.graph.children[x]
+                .iter()
+                .for_each(|&x| self.queue.push_front(x));
+            let h = x;
+            Some(Node {
+                index: x,
+                graph: self.graph,
+            })
+        } else {
+            None
+        }
+    }
+}
+
+impl<'a, N, E> Node<'a, N, E> {
+    pub fn parent(i: Node<N, E>) -> usize {
+        i.graph.disjoint_set[i.index]
+    }
+
+    pub fn children(i: Node<N, E>) -> &Vec<usize> {
+        &i.graph.children[i.index]
     }
 }
 
@@ -282,6 +284,25 @@ mod tests {
     //     let r = g.dfs(g.roots()[0]);
     //     assert_eq!(r, vec![node_c, node_d, node_b, node_a])
     // }
+
+    #[test]
+    fn bfs() {
+        let mut g: Graph<&str, &str> = Graph::new();
+
+        let node_a = g.add_node("a");
+        let node_b = g.add_node("b");
+        let node_c = g.add_node("c");
+        let node_d = g.add_node("d");
+        let node_e = g.add_node("e");
+
+        g.add_edge("", (node_b, node_a));
+        g.add_edge("", (node_c, node_b));
+        g.add_edge("", (node_c, node_d));
+        g.add_edge("", (node_a, node_e));
+        // c b d a
+        let r: Vec<_> = g.bfs_iter(g.roots()[0]).map(|x| x.index).collect();
+        assert_eq!(r, vec![node_c, node_b, node_d, node_a, node_e])
+    }
 
     #[test]
     fn topological() {
