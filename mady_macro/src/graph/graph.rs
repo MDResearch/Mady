@@ -1,30 +1,31 @@
 use crate::graph;
+use std::collections::BTreeMap;
+
+pub struct Node {
+    index: usize,
+    parents: usize,
+}
+
+pub struct IterTopological<'b> {
+    out_degree: Vec<usize>,
+    edges: &'b Vec<(usize, usize)>,
+}
 
 /// fast add edit node & edge
 /// cannot remove node & edge
 /// raw method only
 #[derive(Debug, Clone)]
 pub struct Graph<N, E> {
-    pub children: Vec<Vec<usize>>,
-    // Vec<usize> : an vec of out-degree node id(N)
-    disjoint_set: Vec<usize>,
-    edges: Vec<E>,
+    edge_count: usize,
+    node_count: usize,
+    // in_degree: Vec<usize>,
+    out_degree: Vec<usize>,
+    edges: Vec<(usize, usize)>,
+    // (parents, children)
+    edges_value: Vec<E>,
     // lookup table for edge id and edge value(E)
-    nodes: Vec<N>,
+    nodes_value: Vec<N>,
     // lookup table for edge id and node value(N)
-}
-
-#[derive(Debug)]
-pub struct IterBfs<'b, N, E> {
-    queue: std::collections::LinkedList<usize>,
-    visited: Vec<bool>,
-    graph: &'b Graph<N, E>,
-}
-
-#[derive(Debug)]
-pub struct Node<'a, N, E> {
-    index: usize,
-    graph: &'a Graph<N, E>,
 }
 
 impl<N, E> Default for Graph<N, E> {
@@ -36,147 +37,93 @@ impl<N, E> Default for Graph<N, E> {
 impl<N, E> Graph<N, E> {
     pub fn new() -> Self {
         Self {
-            children: vec![],
-            disjoint_set: vec![],
+            edge_count: 0,
+            node_count: 0,
+            // in_degree: vec![],
+            out_degree: vec![],
             edges: vec![],
-            nodes: vec![],
+            nodes_value: vec![],
+            edges_value: vec![],
         }
-    }
-
-    pub fn bfs_iter<'a>(&'a self, root: usize) -> impl Iterator<Item = Node<N, E>> + 'a {
-        IterBfs::new(root, self)
     }
 
     /// return id for the node
     pub fn add_node(&mut self, value: N) -> usize {
-        let index = self.nodes.len();
-        self.nodes.push(value);
-
-        self.disjoint_set.push(index);
-        self.children.push(vec![]);
-
-        index
+        self.nodes_value.push(value);
+        // self.in_degree.push(0);
+        self.out_degree.push(0);
+        self.node_count = self.node_count + 1;
+        self.node_count - 1
     }
 
     /// nodes (parents, children)
     pub fn add_edge(&mut self, value: E, nodes: (usize, usize)) -> usize {
-        let index = self.edges.len();
-        self.edges.push(value);
-
-        let (parents, children) = nodes;
-
-        self.disjoint_set[children] = parents;
-        self.children[parents].push(children);
-
-        index
+        self.edges_value.push(value);
+        self.edges.push(nodes);
+        // self.in_degree[nodes.0] = self.in_degree[nodes.0] + 1;
+        self.out_degree[nodes.1] = self.out_degree[nodes.1] + 1;
+        self.edge_count = self.edge_count + 1;
+        self.edge_count - 1
     }
 
     /// modify node value
     pub fn edit_node(&mut self, id: usize, value: N) {
-        self.nodes[id] = value;
+        self.nodes_value[id] = value;
     }
 
     /// modify edge value
     pub fn edit_edge(&mut self, id: usize, value: E) {
-        self.edges[id] = value;
+        self.edges_value[id] = value;
     }
 
     /// read node value
     /// ([edge id], value)
     pub fn node(&self, id: usize) -> &N {
-        &self.nodes[id]
+        &self.nodes_value[id]
     }
 
     /// read edge value
     /// (to node, value)
     pub fn edge(&self, id: usize) -> &E {
-        &self.edges[id]
+        &self.edges_value[id]
     }
 
     /// return the roots of the data-flow graph
     pub fn roots(&self) -> Vec<usize> {
         let mut ans: Vec<usize> = Vec::new();
-
-        for c in 0..self.disjoint_set.len() {
-            if self.disjoint_set[c] == c {
+        for c in 0..self.out_degree.len() {
+            if self.out_degree[c] == 0 {
                 ans.push(c);
             }
         }
-
         ans
     }
 
     // O(n^2)
-    // N is amount of node
-
+    // N is amount of edge
     /// use topolohival sort to get the order of caculation
-    pub fn topological_sort(&self) -> Vec<usize> {
-        let mut ans: Vec<usize> = Vec::new();
-
-        // sort nodes into tuple (in-degree,out-degree)
-        let mut nodes: Vec<(usize, usize)> = vec![(0, 0); self.disjoint_set.len()];
-
-        for i in 0..self.children.len() {
-            self.children[i].iter().for_each(|&to| {
-                nodes[i].0 += 1;
-                nodes[to].1 += 1;
-            });
+    pub fn topological_iter<'a>(&'a self) -> impl Iterator<Item = Node> + 'a {
+        IterTopological {
+            out_degree: self.out_degree.clone(),
+            edges: &self.edges,
         }
+    }
+}
 
-        while ans.len() != self.disjoint_set.len() {
-            for c in 0..nodes.len() {
-                if nodes[c].0 == 0 {
-                    ans.push(c);
-                    if self.disjoint_set[c] != c {
-                        nodes[self.disjoint_set[c]].0 = nodes[self.disjoint_set[c]].0 - 1;
-                    }
-                }
+impl<'b> Iterator for IterTopological<'b> {
+    type Item = Node;
+    fn next(&mut self) -> Option<Self::Item> {
+        for c in self.edges {
+            if (self.out_degree[c.0] == 0) {
+                self.out_degree[c.1] = self.out_degree[c.1] - 1;
+                self.out_degree[c.0] = usize::max_value();
+                return Some(Node {
+                    index: c.1,
+                    parents: c.0,
+                });
             }
         }
-
-        ans
-    }
-}
-
-impl<'b, N, E> IterBfs<'b, N, E> {
-    fn new(root: usize, g: &'b Graph<N, E>) -> Self {
-        IterBfs {
-            queue: std::collections::LinkedList::from([root]),
-            visited: vec![false; g.nodes.len()],
-            graph: g,
-        }
-    }
-}
-
-impl<'b, N, E> Iterator for IterBfs<'b, N, E> {
-    type Item = Node<'b, N, E>;
-    fn next(&mut self) -> Option<Self::Item> {
-        while (!self.queue.is_empty() && self.visited[*self.queue.back().unwrap()]) {
-            self.queue.pop_back();
-        }
-        let n = self.queue.pop_back();
-        if let Some(x) = n {
-            self.graph.children[x]
-                .iter()
-                .for_each(|&x| self.queue.push_front(x));
-            self.visited[x] = true;
-            Some(Node {
-                index: x,
-                graph: self.graph,
-            })
-        } else {
-            None
-        }
-    }
-}
-
-impl<'a, N, E> Node<'a, N, E> {
-    pub fn parent(i: Node<N, E>) -> usize {
-        i.graph.disjoint_set[i.index]
-    }
-
-    pub fn children(i: Node<N, E>) -> &Vec<usize> {
-        &i.graph.children[i.index]
+        None
     }
 }
 
@@ -247,58 +194,6 @@ mod tests {
         assert_eq!(g.roots(), vec![node_e]);
     }
 
-    // #[test]
-    // fn dfs() {
-    //     let mut g: Graph<&str, &str> = Graph::new();
-
-    //     let node_a = g.add_node("a");
-    //     let node_b = g.add_node("b");
-    //     let node_c = g.add_node("c");
-    //     let node_d = g.add_node("d");
-
-    //     g.add_edge("", (node_b, node_a));
-    //     g.add_edge("", (node_c, node_b));
-    //     g.add_edge("", (node_c, node_d));
-    //     // c b d a
-    //     let r = g.dfs(g.roots()[0]);
-    //     assert_eq!(r, vec![node_c, node_d, node_b, node_a])
-    // }
-
-    #[test]
-    fn bfs() {
-        let mut g: Graph<&str, &str> = Graph::new();
-
-        let node_a = g.add_node("a");
-        let node_b = g.add_node("b");
-        let node_c = g.add_node("c");
-        let node_d = g.add_node("d");
-        let node_e = g.add_node("e");
-
-        g.add_edge("", (node_b, node_a));
-        g.add_edge("", (node_c, node_b));
-        g.add_edge("", (node_c, node_d));
-        g.add_edge("", (node_a, node_e));
-        // c b d a
-        let r: Vec<_> = g.bfs_iter(g.roots()[0]).map(|x| x.index).collect();
-        assert_eq!(r, vec![node_c, node_b, node_d, node_a, node_e])
-    }
-
-    #[test]
-
-    fn bfs_cyclic() {
-        let mut g: Graph<&str, &str> = Graph::new();
-
-        let node_a = g.add_node("a");
-        let node_b = g.add_node("b");
-
-        g.add_edge("", (node_b, node_a));
-        g.add_edge("", (node_a, node_b));
-
-        // c b d a
-        let r: Vec<_> = g.bfs_iter(node_a).map(|x| x.index).collect();
-        assert_eq!(r.len(), 2)
-    }
-
     #[test]
     fn topological() {
         let mut g: Graph<&str, &str> = Graph::new();
@@ -310,6 +205,7 @@ mod tests {
         g.add_edge("", (node_b, node_a));
         g.add_edge("", (node_c, node_b));
 
-        assert_eq!(g.topological_sort(), vec![node_a, node_b, node_c]);
+        let nodes: Vec<usize> = g.topological_iter().map(|x| x.index).collect();
+        assert_eq!(nodes, vec![node_b, node_a]);
     }
 }
