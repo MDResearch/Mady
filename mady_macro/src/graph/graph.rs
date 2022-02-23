@@ -16,15 +16,13 @@ pub struct IterTopological<'b> {
 /// raw method only
 #[derive(Debug, Clone)]
 pub struct Graph<N, E> {
-    edge_count: usize,
-    node_count: usize,
     // in_degree: Vec<usize>,
     out_degree: Vec<usize>,
     edges: Vec<(usize, usize)>,
     // (parents, children)
-    edges_value: Vec<E>,
+    edges_phantom: Vec<E>,
     // lookup table for edge id and edge value(E)
-    nodes_value: Vec<N>,
+    nodes_phantom: Vec<N>,
     // lookup table for edge id and node value(N)
 }
 
@@ -37,55 +35,51 @@ impl<N, E> Default for Graph<N, E> {
 impl<N, E> Graph<N, E> {
     pub fn new() -> Self {
         Self {
-            edge_count: 0,
-            node_count: 0,
             // in_degree: vec![],
             out_degree: vec![],
             edges: vec![],
-            nodes_value: vec![],
-            edges_value: vec![],
+            nodes_phantom: vec![],
+            edges_phantom: vec![],
         }
     }
 
     /// return id for the node
     pub fn add_node(&mut self, value: N) -> usize {
-        self.nodes_value.push(value);
+        self.nodes_phantom.push(value);
         // self.in_degree.push(0);
         self.out_degree.push(0);
-        self.node_count = self.node_count + 1;
-        self.node_count - 1
+        self.nodes_phantom.len() - 1
     }
 
     /// nodes (parents, children)
     pub fn add_edge(&mut self, value: E, nodes: (usize, usize)) -> usize {
-        self.edges_value.push(value);
+        self.edges_phantom.push(value);
         self.edges.push(nodes);
         // self.in_degree[nodes.0] = self.in_degree[nodes.0] + 1;
         self.out_degree[nodes.1] = self.out_degree[nodes.1] + 1;
-        self.edge_count = self.edge_count + 1;
-        self.edge_count - 1
+        self.edges_phantom.len() - 1
     }
 
     /// modify node value
     pub fn edit_node(&mut self, id: usize, value: N) {
-        self.nodes_value[id] = value;
+        self.nodes_phantom[id] = value;
     }
 
     /// modify edge value
     pub fn edit_edge(&mut self, id: usize, value: E) {
-        self.edges_value[id] = value;
+        self.edges_phantom[id] = value;
     }
 
     /// read node value
     /// ([edge id], value)
     pub fn node(&self, id: usize) -> &N {
-        &self.nodes_value[id]
+        &self.nodes_phantom[id]
     }
 
     /// read edge value
     /// (to node, value)
     pub fn edge(&self, id: usize) -> &E {
-        &self.edges_value[id]
+        &self.edges_phantom[id]
     }
 
     /// return the roots of the data-flow graph
