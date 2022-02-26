@@ -1,8 +1,9 @@
 use std::collections::{hash_map::DefaultHasher, LinkedList};
 use std::error::Error;
+use std::fmt::Display;
 use std::hash::{Hash, Hasher};
 
-use crate::graph::Graph;
+use crate::graph::{Graph, Node};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::fold::{
@@ -12,6 +13,15 @@ use syn::fold::{
 use syn::{
     parse2, parse_quote, parse_str, BinOp, Block, Expr, ExprAssign, ItemFn, Local, Pat, Stmt,
 };
+
+impl<N, E> Node<N, E>
+where
+    N: Display,
+{
+    fn ident(&self, graph: &Graph<N, E>) -> Ident {
+        new_ident(self.value(graph))
+    }
+}
 
 #[derive(Debug, Default, Clone)]
 struct Parser {
@@ -24,8 +34,8 @@ struct Parser {
 
 #[derive(Debug, Clone)]
 struct Variable {
-    hash: u64,
-    ident: Ident,
+    hash: Option<u64>,
+    grads: bool,
 }
 
 impl Parser {
@@ -36,54 +46,71 @@ impl Parser {
         Default::default()
     }
 
-    /// add a var to varibles
-    ///
-    /// return usize mean the index in varibles
-    fn new_var<T>(&mut self, name: T) -> (Ident, usize)
-    where
-        T: Into<String>,
-    {
+    fn new_tmp(&mut self) -> usize {
         let index = self.variables.len();
-        let ident = Ident::new(name.into().as_str(), Span::call_site());
-        let mut hasher = DefaultHasher::new();
-        ident.hash(&mut hasher);
         self.variables.push(Variable {
-            hash: hasher.finish(),
-            ident: ident.clone(),
+            hash: None,
+            grads: false,
         });
-        (ident, index)
+        index
     }
 
-    fn new_tmp(&mut self) -> (Ident, usize) {
-        let index = self.variables.len();
-        let name = format!("mad_var_{}", index);
-        self.new_var(name)
+    fn new_tmp_node(&mut self) -> Node<usize, usize> {
+        let index = self.new_tmp();
+        let node = self.ad_graph.add_node(index);
+        node
     }
 
     /// add a var to stack block
     ///
     /// return usize mean the index in varibles
-    fn new_local<T>(&mut self, name: T) -> Result<(Ident, usize), Box<dyn Error>>
+    fn new_local_node<T>(&mut self, name: &T) -> Result<Node<usize, usize>, Box<dyn Error>>
     where
-        T: Into<String>,
+        T: Hash,
     {
-        let (ident, index) = self.new_var(name);
+        let index = self.variables.len();
+        let mut hasher = DefaultHasher::new();
+        name.hash(&mut hasher);
+        self.variables.push(Variable {
+            hash: Some(hasher.finish()),
+            grads: false,
+        });
+        let node = self.ad_graph.add_node(index);
         self.stack
             .last_mut()
             .ok_or("No Block in Stack")?
-            .push_front(index);
-        Ok((ident, index))
+            .push_back(node.index());
+        Ok(node)
     }
 
-    fn find_local(&self, ident: &Ident) -> Option<usize> {
+    fn new_grad_node<T>(&mut self, name: T) -> Result<Node<usize, usize>, Box<dyn Error>>
+    where
+        T: Hash,
+    {
+        let index = self.variables.len();
+        let mut hasher = DefaultHasher::new();
+        name.hash(&mut hasher);
+        self.variables.push(Variable {
+            hash: Some(hasher.finish()),
+            grads: true,
+        });
+        let node = self.ad_graph.add_node(index);
+        self.stack
+            .last_mut()
+            .ok_or("No Block in Stack")?
+            .push_back(node.index());
+        Ok(node)
+    }
+
+    fn find_local(&mut self, ident: &Ident) -> Option<Node<usize, usize>> {
         let mut hasher = DefaultHasher::new();
         ident.hash(&mut hasher);
         let hash = hasher.finish();
 
         for list in self.stack.iter().rev() {
-            for &index in list.iter().rev() {
-                if self.variables[index].hash == hash {
-                    return Some(index);
+            for &index in list.iter() {
+                if self.variables[index].hash == Some(hash) {
+                    return Some(Node::new(index));
                 }
             }
         }
@@ -105,21 +132,24 @@ impl Parser {
         Ok(())
     }
 
-    // cousming method
-    fn gen_vars(&self) -> TokenStream {
+    fn gen_vars(&self) -> (TokenStream, Vec<Ident>) {
         let mut ts = TokenStream::new();
-        for i in self.variables.clone() {
-            let ident = i.ident;
+        let mut grads = vec![];
+        for (i, var) in self.variables.iter().enumerate() {
+            let ident = new_ident(i);
+            if var.grads {
+                grads.push(ident.clone());
+            }
             let stmt = quote! {
                 #ident = Zero::zero();
             };
-            ts.extend(stmt)
+            ts.extend(stmt);
         }
-        ts
+        (ts, grads)
     }
 
     fn gen_backward(&self) -> TokenStream {
-        // todo wait @Eason0729 complete BFSIter
+        // todo wait @Eason0729 complete fix graph
         unimplemented!("wait @Eason0729")
     }
 
@@ -127,7 +157,7 @@ impl Parser {
     fn gen_fn(mut self, i: ItemFn) -> ItemFn {
         let i = self.fold_item_fn(i);
         let block = i.block;
-        let vars = self.gen_vars();
+        let (vars, grads) = self.gen_vars();
         let block = parse_quote! {
             {
                 #vars
@@ -139,31 +169,32 @@ impl Parser {
 }
 
 impl Parser {
-    fn parse_expr(&mut self, e: Expr) -> Result<(usize, Expr), Expr> {
+    fn parse_expr(&mut self, e: Expr) -> Result<(Node<usize, usize>, Expr), Expr> {
         match e {
             // a + b
             //
             // `a + b` is Expr::Binary
             Expr::Binary(v) => {
-                let ops_ts = match parse_ops(v.op) {
+                let ops_ts = match parse_ops_tokenstream(v.op) {
                     Ok(t) => t,
                     Err(_) => return Err(Expr::Binary(v)),
                 };
 
+                // parent->node(left->right)->edge(left->right)
+                let ops = self.new_tmp_node();
                 let (left, left_expr) = self
                     .parse_expr(*v.left.clone())
                     .map_err(|_| Expr::Binary(v.clone()))?;
                 let (right, right_expr) = self
                     .parse_expr(*v.right.clone())
                     .map_err(|_| Expr::Binary(v.clone()))?;
-                let (edge_left_ident, edge_left) = self.new_tmp();
-                let (edge_right_ident, edge_right) = self.new_tmp();
-                let (_, ops) = self.new_tmp();
-                let node_ops = self.ad_graph.add_node(ops);
-
-                self.ad_graph.add_edge(edge_right, (node_ops, left));
-                self.ad_graph.add_edge(edge_left, (node_ops, right));
-
+                let edge_left = self.new_tmp();
+                let edge_right = self.new_tmp();
+                ops.link(&mut self.ad_graph, edge_left, &left);
+                ops.link(&mut self.ad_graph, edge_right, &right);
+                
+                let edge_left_ident = new_ident(edge_left);
+                let edge_right_ident = new_ident(edge_right);
                 let ts = parse_quote! {
                     {
                         let tmp;
@@ -171,7 +202,7 @@ impl Parser {
                         tmp
                     }
                 };
-                Ok((node_ops, ts))
+                Ok((ops, ts))
             }
 
             // a = b + c
@@ -190,34 +221,37 @@ impl Parser {
             //
             // `=` is Expr::Assign
             Expr::Assign(v) => {
-                let (id, left) = self
+                let (parent, left) = self
                     .parse_expr(*v.left.clone())
                     .map_err(|_| Expr::Assign(v.clone()))?;
-                let (top, right) = self
+                let (child, right) = self
                     .parse_expr(*v.right.clone())
                     .map_err(|_| Expr::Assign(v.clone()))?;
-                let (edge_ident, edge) = self.new_tmp();
-                self.ad_graph.add_edge(edge, (id, top));
+                let edge = self.new_tmp();
+                parent.link(&mut self.ad_graph, edge, &child);
+                let edge_ident = new_ident(edge);
+
                 let right = parse_quote! {
                     {
                         #edge_ident = #left.one();
                         #right
                     }
                 };
+
                 let ts = ExprAssign {
                     left: Box::new(left.clone()),
                     right: Box::new(right),
                     ..v
                 };
 
-                Ok((id, Expr::Assign(ts)))
+                Ok((parent, Expr::Assign(ts)))
             }
 
             _ => Err(fold_expr(self, e)),
         }
     }
 
-    fn parse_pat(&mut self, e: Pat) -> Result<(usize, Pat), Pat> {
+    fn parse_pat(&mut self, e: Pat) -> Result<(Node<usize, usize>, Pat), Pat> {
         match e {
             // let a;
             //
@@ -225,8 +259,8 @@ impl Parser {
             //
             // expect some bug
             Pat::Ident(v) => {
-                if let Ok((.., id)) = self.new_local(v.ident.to_string()) {
-                    Ok((self.ad_graph.add_node(id), Pat::Ident(v)))
+                if let Ok(node) = self.new_local_node(&v.ident) {
+                    Ok((node, Pat::Ident(v)))
                 } else {
                     Err(Pat::Ident(v))
                 }
@@ -235,17 +269,18 @@ impl Parser {
         }
     }
 
-    fn parse_stmt(&mut self, e: Stmt) -> Result<(usize, Stmt), Stmt> {
+    fn parse_stmt(&mut self, e: Stmt) -> Result<(Node<usize, usize>, Stmt), Stmt> {
         match e {
             Stmt::Local(v) => {
-                let (id, left) = self
+                let (parent, left) = self
                     .parse_pat(v.pat.clone())
                     .map_err(|_| Stmt::Local(v.clone()))?;
                 if let Some((eq, expr)) = v.init.clone() {
-                    let (top, right) =
+                    let (child, right) =
                         self.parse_expr(*expr).map_err(|_| Stmt::Local(v.clone()))?;
-                    let (edge_ident, edge) = self.new_tmp();
-                    self.ad_graph.add_edge(edge, (id, top));
+                    let edge = self.new_tmp();
+                    parent.link(&mut self.ad_graph, edge, &child);
+                    let edge_ident = new_ident(edge);
                     let right = parse_quote! {
                         {
                             #edge_ident = #left.one();
@@ -257,9 +292,9 @@ impl Parser {
                         init: Some((eq, Box::new(right))),
                         ..v
                     };
-                    Ok((id, Stmt::Local(ts)))
+                    Ok((parent, Stmt::Local(ts)))
                 } else {
-                    Ok((id, Stmt::Local(Local { pat: left, ..v })))
+                    Ok((parent, Stmt::Local(Local { pat: left, ..v })))
                 }
             }
 
@@ -307,7 +342,7 @@ impl Fold for Parser {
     }
 }
 
-fn parse_ops(op: BinOp) -> Result<TokenStream, ()> {
+fn parse_ops_tokenstream(op: BinOp) -> Result<TokenStream, ()> {
     match op {
         BinOp::Add(_) => Ok(quote! {grad_add}),
         BinOp::Sub(_) => Ok(quote! {grad_sub}),
@@ -317,96 +352,91 @@ fn parse_ops(op: BinOp) -> Result<TokenStream, ()> {
     }
 }
 
+fn new_ident<T>(name: T) -> Ident
+where
+    T: Display,
+{
+    Ident::new(format!("mady_{}", name).as_str(), Span::call_site())
+}
+
 #[cfg(test)]
 mod tests {
-    use syn::{parse2, Expr};
+    use syn::parse_quote;
 
     use super::{Fold, Parser};
     use quote::quote;
 
     #[test]
     fn test_expr_binary() {
-        let s = quote! {
+        let ast = parse_quote! {
             a + b
         };
-        let ast: Expr = parse2(s).expect("unknow tokenstream");
-        let s = quote! {
+        let res = parse_quote! {
             {
                 let tmp;
-                (tmp, (mad_var_2, mad_var_3)) = a.grad_add(b);
+                (tmp, (mady_3, mady_4)) = a.grad_add(b);
                 tmp
             }
         };
-        let res: Expr = parse2(s).expect("unknow tokenstream");
         let mut parser = Parser::new();
         parser.enter_block();
-        let (.., a) = parser.new_local("a").unwrap();
-        let (.., b) = parser.new_local("b").unwrap();
-        parser.ad_graph.add_node(a);
-        parser.ad_graph.add_node(b);
-        let (top, ast) = parser.parse_expr(ast).unwrap();
+        parser.new_local_node(&"a").unwrap();
+        parser.new_local_node(&"b").unwrap();
+        let (_, ast) = parser.parse_expr(ast).unwrap();
         assert_eq!(ast, res);
-        assert_eq!(&top, parser.ad_graph.roots().first().unwrap());
     }
 
     #[test]
     fn test_expr_assign() {
-        let s = quote! {
+        let ast = parse_quote! {
             {
                 c = a - b;
             }
         };
-        let ast: Expr = parse2(s).expect("unknow tokenstream");
-        let s = quote! {
+        let res = parse_quote! {
             {
                 c = {
-                    mad_var_6 = c.one();
+                    mady_6 = c.one();
                     {
                         let tmp;
-                        (tmp, (mad_var_3, mad_var_4)) = a.grad_sub(b);
+                        (tmp, (mady_4, mady_5)) = a.grad_sub(b);
                         tmp
                     }
                 };
             }
         };
-        let res: Expr = parse2(s).expect("unknow tokenstream");
         let mut parser = Parser::new();
         parser.enter_block();
-        let (.., a) = parser.new_local("a").unwrap();
-        let (.., b) = parser.new_local("b").unwrap();
-        let (.., c) = parser.new_local("c").unwrap();
-        parser.ad_graph.add_node(a);
-        parser.ad_graph.add_node(b);
-        parser.ad_graph.add_node(c);
+        parser.new_local_node(&"a").unwrap();
+        parser.new_local_node(&"b").unwrap();
+        parser.new_local_node(&"c").unwrap();
         let ast = parser.fold_expr(ast);
         assert_eq!(ast, res);
     }
 
     #[test]
     fn test_expr_local_declare() {
-        let s = quote! {
+        let ast = parse_quote! {
             {
                 let (a, b)=(1, 2);
                 let c;
                 c = a * b;
             }
         };
-        let ast: Expr = parse2(s).expect("unknow tokenstream");
-        let s = quote! {
+        let res = parse_quote! {
             {
                 let (a, b)=(1, 2);
                 let c;
                 c = {
-                    mad_var_6 = c.one();
+                    mady_6 = c.one();
                     {
                         let tmp;
-                        (tmp, (mad_var_3, mad_var_4)) = a.grad_mul(b);
+                        (tmp, (mady_4, mady_5)) = a.grad_mul(b);
                         tmp
                     }
                 };
             }
         };
-        let res: Expr = parse2(s).expect("unknow tokenstream");
         let mut parser = Parser::new();
         let ast = parser.fold_expr(ast);
         assert_eq!(ast, res);
@@ -414,41 +444,41 @@ mod tests {
 
     #[test]
     fn test_expr_local_assign() {
-        let s = quote! {
+        let ast = parse_quote! {
             {
                 let (a, b)=(1, 2);
                 let c = a / b;
             }
         };
-        let ast: Expr = parse2(s).expect("unknow tokenstream");
-        let s = quote! {
+        let res = parse_quote! {
             {
                 let (a, b)=(1, 2);
                 let c = {
-                    mad_var_6 = c.one();
+                    mady_6 = c.one();
                     {
                         let tmp;
-                        (tmp, (mad_var_3, mad_var_4)) = a.grad_div(b);
+                        (tmp, (mady_4, mady_5)) = a.grad_div(b);
                         tmp
                     }
                 };
             }
         };
-        let res: Expr = parse2(s).expect("unknow tokenstream");
         let mut parser = Parser::new();
         let ast = parser.fold_expr(ast);
         assert_eq!(ast, res);
     }
 
-    // #[test]
-    // fn test_gen_var() {
-    //     let mut parser = Parser::new();
-    //     for _ in 0..10 {
-    //         parser.new_tmp();
-    //     }
+    #[test]
+    fn test_gen_var() {
+        // let mut parser = Parser::new();
+        // parser.new_tmp();
+        // parser.new_tmp()
 
-    //     assert_eq!(parser.gen_vars().len(), 10);
-    // }
+        // quote!{
+
+        // }
+        // assert_eq!(parser.gen_vars(), 10);
+    }
 }
 
 /*
