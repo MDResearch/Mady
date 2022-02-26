@@ -192,7 +192,7 @@ impl Parser {
                 let edge_right = self.new_tmp();
                 ops.link(&mut self.ad_graph, edge_left, &left);
                 ops.link(&mut self.ad_graph, edge_right, &right);
-                
+
                 let edge_left_ident = new_ident(edge_left);
                 let edge_right_ident = new_ident(edge_right);
                 let ts = parse_quote! {
