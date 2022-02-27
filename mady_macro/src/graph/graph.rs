@@ -99,7 +99,7 @@ impl<N, E> Graph<N, E> {
         }
         IterTopological {
             zero,
-            graph: &self,
+            graph: self,
             in_degree,
         }
     }
@@ -111,7 +111,7 @@ impl<'b, N, E> Iterator for IterTopological<'b, N, E> {
         if !self.zero.is_empty() {
             let out = self.zero.pop_back().unwrap();
             for &c in self.graph.children[out].iter() {
-                self.in_degree[c] = self.in_degree[c] - 1;
+                self.in_degree[c] -= 1;
                 if self.in_degree[c] == 0 {
                     self.zero.push_back(c);
                 }
@@ -212,7 +212,7 @@ mod tests {
         g.add_edge("", (&node_b, &node_a));
         g.add_edge("", (&node_c, &node_b));
 
-        let nodes: Vec<_> = g.topological_iter().map(|x| x).collect();
+        let nodes: Vec<_> = g.topological_iter().collect();
 
         dbg!(&nodes);
 
@@ -238,7 +238,7 @@ mod tests {
         g.add_edge("", (&node_a, &node_c));
         g.add_edge("", (&node_f, &node_c));
 
-        let nodes: Vec<_> = g.topological_iter().map(|x| x).collect();
+        let nodes: Vec<_> = g.topological_iter().collect();
 
         dbg!(&nodes);
 

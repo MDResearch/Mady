@@ -7,11 +7,10 @@ use crate::graph::{Graph, Node};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::fold::{
-    fold_block, fold_expr, fold_expr_assign, fold_ident, fold_item_fn, fold_local, fold_pat,
-    fold_stmt, Fold,
+    fold_block, fold_expr, fold_pat, Fold,
 };
 use syn::{
-    parse2, parse_quote, parse_str, BinOp, Block, Expr, ExprAssign, ItemFn, Local, Pat, Stmt,
+    parse_quote, BinOp, Block, Expr, ExprAssign, ItemFn, Local, Pat, Stmt,
 };
 
 impl<N, E> Node<N, E>
@@ -57,8 +56,8 @@ impl Parser {
 
     fn new_tmp_node(&mut self) -> Node<usize, usize> {
         let index = self.new_tmp();
-        let node = self.ad_graph.add_node(index);
-        node
+        
+        self.ad_graph.add_node(index)
     }
 
     /// add a var to stack block
@@ -157,7 +156,7 @@ impl Parser {
     fn gen_fn(mut self, i: ItemFn) -> ItemFn {
         let i = self.fold_item_fn(i);
         let block = i.block;
-        let (vars, grads) = self.gen_vars();
+        let (vars, _grads) = self.gen_vars();
         let block = parse_quote! {
             {
                 #vars
@@ -239,7 +238,7 @@ impl Parser {
                 };
 
                 let ts = ExprAssign {
-                    left: Box::new(left.clone()),
+                    left: Box::new(left),
                     right: Box::new(right),
                     ..v
                 };
@@ -299,11 +298,11 @@ impl Parser {
             }
 
             // todo `const`
-            Stmt::Item(v) => todo!(),
+            Stmt::Item(_v) => todo!(),
             Stmt::Expr(v) => self
                 .parse_expr(v)
                 .map(|(id, expr)| (id, Stmt::Expr(expr)))
-                .map_err(|expr| Stmt::Expr(expr)),
+                .map_err(Stmt::Expr),
             Stmt::Semi(v, t) => match self.parse_expr(v) {
                 Ok((id, expr)) => Ok((id, Stmt::Semi(expr, t))),
                 Err(expr) => Err(Stmt::Semi(expr, t)),
@@ -364,7 +363,7 @@ mod tests {
     use syn::parse_quote;
 
     use super::{Fold, Parser};
-    use quote::quote;
+    
 
     #[test]
     fn test_expr_binary() {
