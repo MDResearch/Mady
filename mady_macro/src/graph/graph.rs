@@ -10,7 +10,7 @@ pub struct Edge<N, E>(usize, PhantomData<N>, PhantomData<E>);
 pub struct IterTopological<'a, N, E> {
     zero: LinkedList<usize>,
     in_degree: Vec<usize>,
-    g: &'a Graph<N, E>,
+    graph: &'a Graph<N, E>,
 }
 
 /// fast add edit node & edge
@@ -19,7 +19,7 @@ pub struct IterTopological<'a, N, E> {
 #[derive(Debug, Clone)]
 pub struct Graph<N, E> {
     children: Vec<Vec<usize>>,
-    // (parents, children)
+    parents: Vec<Vec<usize>>,
     table_edge: Vec<E>,
     // lookup table for edge id and edge value(E)
     table_node: Vec<N>,
@@ -36,6 +36,7 @@ impl<N, E> Graph<N, E> {
     pub fn new() -> Self {
         Self {
             children: vec![],
+            parents: vec![],
             table_node: vec![],
             table_edge: vec![],
         }
@@ -46,6 +47,7 @@ impl<N, E> Graph<N, E> {
         let index = self.table_node.len();
         self.table_node.push(value);
         self.children.push(vec![]);
+        self.parents.push(vec![]);
         Node::new(index)
     }
 
@@ -53,6 +55,7 @@ impl<N, E> Graph<N, E> {
     pub fn add_edge(&mut self, value: E, from_to: (&Node<N, E>, &Node<N, E>)) -> Edge<N, E> {
         let index = self.table_edge.len();
         self.children[from_to.0.index()].push(from_to.1.index());
+        self.parents[from_to.1.index()].push(from_to.0.index());
         self.table_edge.push(value);
         Edge::new(index)
     }
@@ -83,10 +86,11 @@ impl<N, E> Graph<N, E> {
     // N is amount of edge
     /// use topolohival sort to get the order of caculation
     pub fn topological_iter<'a>(&'a self) -> impl Iterator<Item = Node<N, E>> + 'a {
-        let mut in_degree = vec![0; self.table_node.len()];
-        self.children
-            .iter()
-            .for_each(|x| x.iter().for_each(|&y| in_degree[y] = in_degree[y] + 1));
+        let in_degree: Vec<usize> = self.parents.iter().map(|x| x.len()).collect();
+        // let mut in_degree = vec![0; self.table_node.len()];
+        // self.children
+        //     .iter()
+        //     .for_each(|x| x.iter().for_each(|&y| in_degree[y] = in_degree[y] + 1));
         let mut zero = std::collections::LinkedList::new();
         for c in 0..in_degree.len() {
             if in_degree[c] == 0 {
@@ -95,7 +99,7 @@ impl<N, E> Graph<N, E> {
         }
         IterTopological {
             zero,
-            g: &self,
+            graph: &self,
             in_degree,
         }
     }
@@ -106,7 +110,7 @@ impl<'b, N, E> Iterator for IterTopological<'b, N, E> {
     fn next(&mut self) -> Option<Self::Item> {
         if !self.zero.is_empty() {
             let out = self.zero.pop_back().unwrap();
-            for &c in self.g.children[out].iter() {
+            for &c in self.graph.children[out].iter() {
                 self.in_degree[c] = self.in_degree[c] - 1;
                 if self.in_degree[c] == 0 {
                     self.zero.push_back(c);
@@ -133,6 +137,10 @@ impl<N, E> Node<N, E> {
 
     pub fn children<'a>(&mut self, graph: &'a Graph<N, E>) -> &'a Vec<usize> {
         &graph.children[self.index()]
+    }
+
+    pub fn parents<'a>(&mut self, graph: &'a Graph<N, E>) -> &'a Vec<usize> {
+        &graph.parents[self.index()]
     }
 
     pub fn link(&self, graph: &mut Graph<N, E>, value: E, to: &Node<N, E>) {
