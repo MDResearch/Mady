@@ -1,5 +1,5 @@
 use proc_macro::TokenStream;
-use syn::{Expr};
+use syn::Expr;
 
 pub fn parse(_attr: TokenStream, input: TokenStream) -> TokenStream {
     // crate::parser::parse(input);

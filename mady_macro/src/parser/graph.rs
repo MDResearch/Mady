@@ -6,12 +6,8 @@ use std::hash::{Hash, Hasher};
 use crate::graph::{Graph, Node};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
-use syn::fold::{
-    fold_block, fold_expr, fold_pat, Fold,
-};
-use syn::{
-    parse_quote, BinOp, Block, Expr, ExprAssign, ItemFn, Local, Pat, Stmt,
-};
+use syn::fold::{fold_block, fold_expr, fold_pat, Fold};
+use syn::{parse_quote, BinOp, Block, Expr, ExprAssign, ItemFn, Local, Pat, Stmt};
 
 impl<N, E> Node<N, E>
 where
@@ -56,7 +52,7 @@ impl Parser {
 
     fn new_tmp_node(&mut self) -> Node<usize, usize> {
         let index = self.new_tmp();
-        
+
         self.ad_graph.add_node(index)
     }
 
@@ -363,7 +359,6 @@ mod tests {
     use syn::parse_quote;
 
     use super::{Fold, Parser};
-    
 
     #[test]
     fn test_expr_binary() {
