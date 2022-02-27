@@ -15,6 +15,7 @@
 - 環境
     - [Rust 2021](https://www.rust-lang.org/tools/install)
     - [Git](https://git-scm.com/)
+    - [Just](https://just.systems/)
 - 工具
     - [VSCode](https://code.visualstudio.com)
     - [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=matklad.rust-analyzer)
@@ -34,10 +35,9 @@
 ## 基本原則
 
 當有新的程式碼要`PUSH`先確認過以下幾點
-1. `cargo test --all` 通過
-2. `cargo fmt` 整理程式碼
-3. 確認並更改 [Project](https://github.com/orgs/MDResearch/projects/3)
-4. 有 `breakthrough change` 請另行討論
+1. `just a` 通過 (其他指令可以用 `just -l` 查看)
+2. 確認並更改 [Project](https://github.com/orgs/MDResearch/projects/3)
+3. 有 `breakthrough change` 請另行討論
 
 
 ## 油圖
