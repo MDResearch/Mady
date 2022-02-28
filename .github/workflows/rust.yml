@@ -10,13 +10,27 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-
+  CI:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
-    - name: Build All
-      run: cargo build -v
+    - name: Setup just
+        uses: extractions/setup-just@v1
+    - name: Check All
+      run: just c
+    - name: Build
+      run: just b
     - name: Tests All
-      run: cargo test -v --all
+      run: just t
+    - name: FMT
+      run: just f
+    - name: Lint
+      run: just l
+    - name: Commit Change
+      run: |
+        git config --global user.name "CI"
+        git config --global user.email "ci@mady.ci"
+        git add -A
+        git commit -m "CI"
+        git push
+    
