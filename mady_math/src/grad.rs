@@ -289,7 +289,7 @@ impl_trait![
     GradMin,
     fn grad_min(self, i: Self) -> (Self, (Self, Self)) {
         let re = std::cmp::min(self, i);
-        if (re == self) {
+        if re == self {
             return (re, (1 as Self, 0 as Self));
         } else {
             return (re, (0 as Self, 1 as Self));
@@ -313,7 +313,7 @@ impl_trait![
     GradMax,
     fn grad_max(self, i: Self) -> (Self, (Self, Self)) {
         let re = std::cmp::max(self, i);
-        if (re == self) {
+        if re == self {
             return (re, (1 as Self, 0 as Self));
         } else {
             return (re, (0 as Self, 1 as Self));
@@ -336,8 +336,8 @@ impl_trait![
 impl_trait![
     GradPow,
     fn grad_pow(self, i: u32) -> (Self, (Self,)) {
-        let a: Self = i.clone() as Self;
-        let b = self.clone().pow(i.clone() - 1);
+        let a: Self = i as Self;
+        let b = self.pow(i.clone() - 1);
         let out = a * b;
         (self.pow(i), (out,))
     },
@@ -381,7 +381,7 @@ impl_trait![
     GradPowf,
     fn grad_powf(self, i: Self) -> (Self, (Self,)) {
         let a: Self = i.clone() as Self;
-        let b = self.clone().powf(i.clone() - 1.0);
+        let b = self.powf(i.clone() - 1.0);
         let out = a * b;
         (self.powf(i), (out,))
     },

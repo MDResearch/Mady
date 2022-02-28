@@ -7,7 +7,9 @@ use crate::graph::{Edge, Graph, Node};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::fold::{fold_block, fold_expr, fold_pat, Fold};
-use syn::{parse_quote, BinOp, Block, Expr, ExprAssign, FnArg, ItemFn, Local, Pat, Stmt};
+use syn::{
+    parse_quote, BinOp, Block, Expr, ExprAssign, ExprReturn, FnArg, ItemFn, Local, Pat, Stmt,
+};
 
 impl<N, E> Node<N, E>
 where
@@ -31,7 +33,6 @@ where
 struct Parser {
     variables: Vec<Variable>,
     stack: Vec<LinkedList<usize>>,
-    grads: Vec<usize>,
     // the index in self.varibles
     ad_graph: Graph<usize, usize>,
 }
@@ -58,7 +59,9 @@ impl Parser {
     ///
     /// use stack<list<Varible>> to record varible
     pub fn new() -> Self {
-        Default::default()
+        let mut tmp: Self = Default::default();
+        tmp.enter_block();
+        tmp
     }
 
     fn new_tmp(&mut self) -> usize {
@@ -83,7 +86,7 @@ impl Parser {
     where
         T: Hash,
     {
-        if self.stack.is_empty() {
+        if self.stack.len() == 1 {
             Err("No Block in Stack")?;
         }
 
@@ -99,14 +102,10 @@ impl Parser {
         Ok(node)
     }
 
-    fn new_grad_node<T>(&mut self, name: T) -> Result<Node<usize, usize>, Box<dyn Error>>
+    fn new_grad_arg_node<T>(&mut self, name: T) -> Node<usize, usize>
     where
         T: Hash,
     {
-        if self.stack.is_empty() {
-            Err("No Block in Stack")?;
-        }
-
         let index = self.variables.len();
         let mut hasher = DefaultHasher::new();
         name.hash(&mut hasher);
@@ -115,9 +114,9 @@ impl Parser {
             ty: Ty::GRAD,
         });
         let node = self.ad_graph.add_node(index);
-        self.stack.last_mut().unwrap().push_back(node.index());
+        self.stack.first_mut().unwrap().push_back(node.index());
 
-        Ok(node)
+        node
     }
 
     fn find_local(&mut self, ident: &Ident) -> Option<Node<usize, usize>> {
@@ -150,7 +149,7 @@ impl Parser {
         Ok(())
     }
 
-    fn gen_vars(&mut self) -> (TokenStream, TokenStream) {
+    fn gen_vars(&mut self) -> TokenStream {
         // mark roots
         for i in self.ad_graph.roots() {
             let &index = Node::new(i).value(&self.ad_graph);
@@ -170,10 +169,6 @@ impl Parser {
                     }
                 }
                 Ty::GRAD => {
-                    // (grad,grad,...)
-                    let tmp = quote! {#ident, };
-                    grads.extend(tmp);
-
                     quote! {
                         let #ident = Zero::zero();
                     }
@@ -191,10 +186,8 @@ impl Parser {
             };
             ts.extend(stmt);
         }
-        grads = quote! {
-            (#grads)
-        };
-        (ts, grads)
+
+        ts
     }
 
     fn gen_backward(&self) -> TokenStream {
@@ -219,7 +212,7 @@ impl Parser {
 
         // gen fn
         let block = self.fold_block(*i.block);
-        let (vars, grads) = self.gen_vars();
+        let vars = self.gen_vars();
         let backward = self.gen_backward();
         let block = parse_quote! {
             {
@@ -326,6 +319,9 @@ impl Parser {
                 if let Ok(node) = self.new_local_node(&v.ident) {
                     Ok((node, Pat::Ident(v)))
                 } else {
+                    // arg node
+                    // use Err prevent unexpect linking
+                    self.new_grad_arg_node(&v.ident);
                     Err(Pat::Ident(v))
                 }
             }
@@ -388,6 +384,33 @@ impl Fold for Parser {
         match self.parse_expr(i) {
             Ok((.., v)) => v,
             Err(v) => v,
+        }
+    }
+
+    fn fold_expr_return(&mut self, i: ExprReturn) -> ExprReturn {
+        let arg: Vec<_> = self
+            .stack
+            .first()
+            .unwrap()
+            .iter()
+            .map(|&x| new_ident(x))
+            .collect();
+        let expr: Expr = match i.expr {
+            Some(e) => {
+                let tmp = fold_expr(self, *e);
+                parse_quote! {
+                    (#tmp, (#(#arg),*))
+                }
+            }
+            None => {
+                parse_quote! {
+                    #(#arg),*
+                }
+            }
+        };
+        ExprReturn {
+            expr: Some(Box::new(expr)),
+            ..i
         }
     }
 
@@ -545,7 +568,7 @@ mod tests {
         let mut parser = Parser::new();
         parser.enter_block();
         parser.new_tmp();
-        let grad = parser.new_grad_node("").unwrap();
+        let grad = parser.new_grad_arg_node("");
         let root = parser.new_tmp_node();
         root.link(&mut parser.ad_graph, 0, &grad);
 
@@ -556,9 +579,28 @@ mod tests {
             let mady_1 = Zero::zero();
             let mady_2 = One::one();
         };
-        assert_eq!(ast.0.to_string(), res.to_string());
-        assert_eq!(ast.1.to_string(), quote! {(mady_1,)}.to_string());
+        assert_eq!(ast.to_string(), res.to_string());
     }
+
+    // #[test]
+    // fn test_gen_backward() {
+    //     // let mut parser = Parser::new();
+    //     // parser.enter_block();
+    //     // parser.new_tmp();
+    //     // let grad = parser.new_grad_node("").unwrap();
+    //     // let root = parser.new_tmp_node();
+    //     // root.link(&mut parser.ad_graph, 0, &grad);
+
+    //     // let ast = parser.gen_vars();
+
+    //     // let res = quote! {
+    //     //     let mady_0 = Zero::zero();
+    //     //     let mady_1 = Zero::zero();
+    //     //     let mady_2 = One::one();
+    //     // };
+    //     // assert_eq!(ast.0.to_string(), res.to_string());
+    //     // assert_eq!(ast.1.to_string(), quote! {(mady_1,)}.to_string());
+    // }
 }
 
 /*
