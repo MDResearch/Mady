@@ -381,7 +381,7 @@ impl_trait![
     GradPowf,
     fn grad_powf(self, i: Self) -> (Self, (Self,)) {
         let a: Self = i.clone() as Self;
-        let b = self.clone().powf(i.clone() - (1 as Self));
+        let b = self.clone().powf(i.clone() - 1.0);
         let out = a * b;
         (self.powf(i), (out,))
     },

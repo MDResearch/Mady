@@ -94,7 +94,7 @@ impl<N, E> Graph<N, E> {
         self.table
             .iter()
             .map(|x| &x.1)
-            .for_each(|y| y.iter().for_each(|z| in_degree[z.1] = in_degree[z.1] + 1));
+            .for_each(|y| y.iter().for_each(|z| in_degree[z.1] += 1));
         // self.children
         //     .iter()
         //     .for_each(|x| x.iter().for_each(|&y| in_degree[y] = in_degree[y] + 1));
@@ -165,7 +165,7 @@ impl<N, E> Edge<N, E> {
     }
 
     pub fn value<'a>(&self, graph: &'a Graph<N, E>) -> &'a E {
-        &graph.edge(self)
+        graph.edge(self)
     }
 
     pub fn value_mut<'a>(&self, graph: &'a mut Graph<N, E>) -> &'a mut E {
