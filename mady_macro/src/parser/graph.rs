@@ -3,15 +3,24 @@ use std::error::Error;
 use std::fmt::Display;
 use std::hash::{Hash, Hasher};
 
-use crate::graph::{Graph, Node};
+use crate::graph::{Edge, Graph, Node};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::fold::{fold_block, fold_expr, fold_pat, Fold};
-use syn::{parse_quote, BinOp, Block, Expr, ExprAssign, ItemFn, Local, Pat, Stmt};
+use syn::{parse_quote, BinOp, Block, Expr, ExprAssign, FnArg, ItemFn, Local, Pat, Stmt};
 
 impl<N, E> Node<N, E>
 where
     N: Display,
+{
+    fn ident(&self, graph: &Graph<N, E>) -> Ident {
+        new_ident(self.value(graph))
+    }
+}
+
+impl<N, E> Edge<N, E>
+where
+    E: Display,
 {
     fn ident(&self, graph: &Graph<N, E>) -> Ident {
         new_ident(self.value(graph))
@@ -74,6 +83,10 @@ impl Parser {
     where
         T: Hash,
     {
+        if self.stack.is_empty() {
+            Err("No Block in Stack")?;
+        }
+
         let index = self.variables.len();
         let mut hasher = DefaultHasher::new();
         name.hash(&mut hasher);
@@ -82,10 +95,7 @@ impl Parser {
             ty: Ty::TMP,
         });
         let node = self.ad_graph.add_node(index);
-        self.stack
-            .last_mut()
-            .ok_or("No Block in Stack")?
-            .push_back(node.index());
+        self.stack.last_mut().unwrap().push_back(node.index());
         Ok(node)
     }
 
@@ -93,6 +103,10 @@ impl Parser {
     where
         T: Hash,
     {
+        if self.stack.is_empty() {
+            Err("No Block in Stack")?;
+        }
+
         let index = self.variables.len();
         let mut hasher = DefaultHasher::new();
         name.hash(&mut hasher);
@@ -101,10 +115,8 @@ impl Parser {
             ty: Ty::GRAD,
         });
         let node = self.ad_graph.add_node(index);
-        self.stack
-            .last_mut()
-            .ok_or("No Block in Stack")?
-            .push_back(node.index());
+        self.stack.last_mut().unwrap().push_back(node.index());
+
         Ok(node)
     }
 
@@ -138,9 +150,16 @@ impl Parser {
         Ok(())
     }
 
-    fn gen_vars(&self) -> (TokenStream, Vec<Ident>) {
+    fn gen_vars(&mut self) -> (TokenStream, TokenStream) {
+        // mark roots
+        for i in self.ad_graph.roots() {
+            let &index = Node::new(i).value(&self.ad_graph);
+            self.variables[index].ty = Ty::TOP;
+        }
+
+        // gen tokenstream
         let mut ts = TokenStream::new();
-        let mut grads = vec![];
+        let mut grads = TokenStream::new();
         for (i, var) in self.variables.iter().enumerate() {
             let ident = new_ident(i);
 
@@ -151,7 +170,10 @@ impl Parser {
                     }
                 }
                 Ty::GRAD => {
-                    grads.push(ident.clone());
+                    // (grad,grad,...)
+                    let tmp = quote! {#ident, };
+                    grads.extend(tmp);
+
                     quote! {
                         let #ident = Zero::zero();
                     }
@@ -169,22 +191,41 @@ impl Parser {
             };
             ts.extend(stmt);
         }
+        grads = quote! {
+            (#grads)
+        };
         (ts, grads)
     }
 
     fn gen_backward(&self) -> TokenStream {
-        unimplemented!("working on it")
+        let mut ts = TokenStream::new();
+        for node in self.ad_graph.topological_iter() {
+            let node_ident = node.ident(&self.ad_graph);
+            for edge in node.children(&self.ad_graph) {
+                let edge_ident = edge.ident(&self.ad_graph);
+                let to_ident = edge.to(&self.ad_graph).ident(&self.ad_graph);
+                let stmt = quote! {
+                    #to_ident += #node_ident.clone() * #edge_ident;
+                };
+                ts.extend(stmt);
+            }
+        }
+        ts
     }
 
-    // cousming method
-    fn gen_fn(mut self, i: ItemFn) -> ItemFn {
-        let i = self.fold_item_fn(i);
-        let block = i.block;
-        let (vars, _grads) = self.gen_vars();
+    fn gen_fn(&mut self, i: ItemFn) -> ItemFn {
+        // gen grad var node
+        self.fold_signature(i.sig.clone());
+
+        // gen fn
+        let block = self.fold_block(*i.block);
+        let (vars, grads) = self.gen_vars();
+        let backward = self.gen_backward();
         let block = parse_quote! {
             {
                 #vars
                 #block
+                #backward
             }
         };
         ItemFn { block, ..i }
@@ -387,7 +428,7 @@ mod tests {
     use proc_macro2::TokenStream;
     use syn::parse_quote;
 
-    use crate::parser::graph::new_ident;
+    use crate::{graph::Node, parser::graph::new_ident};
 
     use super::{Fold, Parser};
 
@@ -504,16 +545,19 @@ mod tests {
         let mut parser = Parser::new();
         parser.enter_block();
         parser.new_tmp();
-        parser.new_grad_node("").unwrap();
+        let grad = parser.new_grad_node("").unwrap();
+        let root = parser.new_tmp_node();
+        root.link(&mut parser.ad_graph, 0, &grad);
 
         let ast = parser.gen_vars();
 
         let res = quote! {
             let mady_0 = Zero::zero();
             let mady_1 = Zero::zero();
+            let mady_2 = One::one();
         };
         assert_eq!(ast.0.to_string(), res.to_string());
-        assert_eq!(ast.1[0], new_ident(1))
+        assert_eq!(ast.1.to_string(), quote! {(mady_1,)}.to_string());
     }
 }
 
