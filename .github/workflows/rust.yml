@@ -32,5 +32,6 @@ jobs:
         git config --global user.email "ci@mady.ci"
         git add -A
         git commit -m "FMT & Autofix"
-        git push
-    
+        if [ $? -eq 0 ]; then
+          git push
+        fi
