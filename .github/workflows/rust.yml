@@ -35,3 +35,4 @@ jobs:
         if [ $? -eq 0 ]; then
           git push
         fi
+        exit 0
