@@ -24,8 +24,6 @@ jobs:
       run: just t
     - name: FMT
       run: just f
-    - name: Lint
-      run: just l
     - name: Commit Change
       run: |
         git config --global user.name "CI"
