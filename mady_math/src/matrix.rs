@@ -1,7 +1,7 @@
 //! define the datastructure,matrix.
 //! describe all the implement of matrix
 
-use crate::{impl_ops_all, tensor::Tensor};
+use crate::{impl_ops_all, tensor::Tensor, matrix};
 use std::ops::{Add, Mul, Sub};
 
 // reexport
@@ -90,35 +90,54 @@ where
     pub fn convolution(&self, cor: &Self, step: usize) -> Vec<usize> {
         todo!();
         let mut ret = vec![];
-        ret.resize(cor.shape.iter().product(), 0);
+        ret.resize(self.shape.iter().product(), 0);
         // product() mean muiltple all the
-        let mut st = self.into_row_iter();
+        let mut dst = self.into_row_iter().enumerate();
+        // data start
+
+        let mut cst = cor.into_row_iter().enumerate();
+        // core start
+
 
         let mut pass = 0;
         let len_diff = self.shape[1] - cor.shape[1];
         loop {
+
+
+            let matrix_now = dst.next();
+            let core_now = cst.next();
+
+            let matrix_now_val : (usize,&T);
+            let core_now_val : (usize,&T);
+
+            march matrix_now {
+
+                Some(x) => matrix_now_val = x,
+                None => println!("problem!!! at line 115"),
+            };
+
+// help me I don't how to use option
+
+            ret[pass] = matrix_now_val.1*core_now_val.1;
             pass += 1;
 
-            let matrix_now = st.next();
 
             if pass == cor.shape[1] {
-                st.skip(len_diff);
+                dst.skip(len_diff);
             }
-
-            break;
+            
+            if pass == cor.shape.iter().product(){
+            break;                
+            };
         }
-
-        // for i in  st{
-        //     for j in  {
-        //         ret = self.data.0[j] * cor[j - i];
-        //         // compiler error : filed '0' of struct 'Tensor' is private private filed. (how to solve)
-        //     }
-        // }
         ret
     }
 
-    // help me about above by YZ
+
+
 }
+
+
 
 impl<T> From<(Tensor<T>, [usize; 2])> for Matrix<T>
 where
@@ -387,4 +406,10 @@ mod tests {
             Matrix::from((Tensor::from(vec![1, 2, 3, 4, 5, 6]), [2, 3]))
         )
     }
+
+    #[test]
+    fn test(){
+        ()
+    }
+
 }
