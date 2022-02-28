@@ -31,6 +31,6 @@ jobs:
         git config --global user.name "CI"
         git config --global user.email "ci@mady.ci"
         git add -A
-        git commit -m "CI"
+        git commit -m "FMT & Autofix"
         git push
     
