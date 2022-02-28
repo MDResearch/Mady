@@ -93,11 +93,17 @@ where
     }
 }
 
-pub trait GradMin: Sized {
+pub trait GradMin: Sized
+where
+    Self: Min,
+{
     fn grad_min(self: Self, i: Self) -> (Self, (Self, Self));
 }
 
-pub trait GradMax: Sized {
+pub trait GradMax: Sized
+where
+    Self: Max,
+{
     fn grad_max(self: Self, i: Self) -> (Self, (Self, Self));
 }
 
@@ -230,6 +236,18 @@ impl_trait![
 ];
 
 impl_trait![
+    Max,
+    fn max(self, i: Self) -> Self {
+        if self > i {
+            return self;
+        }
+        i
+    },
+    f32,
+    f64
+];
+
+impl_trait![
     Min,
     fn min(self, i: Self) -> Self {
         std::cmp::min(self, i)
@@ -246,6 +264,18 @@ impl_trait![
     i64,
     i128,
     isize
+];
+
+impl_trait![
+    Min,
+    fn min(self, i: Self) -> Self {
+        if self < i {
+            return self;
+        }
+        i
+    },
+    f32,
+    f64
 ];
 
 impl_trait![
@@ -288,8 +318,8 @@ impl_trait![
 impl_trait![
     GradMin,
     fn grad_min(self, i: Self) -> (Self, (Self, Self)) {
-        let re = std::cmp::min(self, i);
-        if (re == self) {
+        let re = Min::min(self, i);
+        if re == self {
             return (re, (1 as Self, 0 as Self));
         } else {
             return (re, (0 as Self, 1 as Self));
@@ -306,14 +336,16 @@ impl_trait![
     i32,
     i64,
     i128,
-    isize
+    isize,
+    f32,
+    f64
 ];
 
 impl_trait![
     GradMax,
     fn grad_max(self, i: Self) -> (Self, (Self, Self)) {
-        let re = std::cmp::max(self, i);
-        if (re == self) {
+        let re = Max::max(self, i);
+        if re == self {
             return (re, (1 as Self, 0 as Self));
         } else {
             return (re, (0 as Self, 1 as Self));
@@ -330,7 +362,9 @@ impl_trait![
     i32,
     i64,
     i128,
-    isize
+    isize,
+    f32,
+    f64
 ];
 
 impl_trait![
@@ -439,5 +473,21 @@ mod tests {
         let b = 2;
 
         assert_eq!(a.grad_pow(b), (4.pow(2), (4.pow(2 - 1) * 2,)));
+    }
+
+    #[test]
+    fn grad_min() {
+        let a = 8.0;
+        let b = 20.0;
+
+        assert_eq!(a.grad_min(b), (a, (1.0, 0.0)));
+    }
+
+    #[test]
+    fn grad_max() {
+        let a = 8.0;
+        let b = 20.0;
+
+        assert_eq!(a.grad_max(b), (b, (0.0, 1.0)));
     }
 }
