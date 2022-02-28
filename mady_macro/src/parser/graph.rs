@@ -30,7 +30,18 @@ struct Parser {
 #[derive(Debug, Clone)]
 struct Variable {
     hash: Option<u64>,
-    grads: bool,
+    ty: Ty,
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+enum Ty {
+    TMP,
+    GRAD,
+    TOP,
+    IF,
+    IFEL,
+    FOR,
+    LOOP,
 }
 
 impl Parser {
@@ -45,7 +56,7 @@ impl Parser {
         let index = self.variables.len();
         self.variables.push(Variable {
             hash: None,
-            grads: false,
+            ty: Ty::TMP,
         });
         index
     }
@@ -68,7 +79,7 @@ impl Parser {
         name.hash(&mut hasher);
         self.variables.push(Variable {
             hash: Some(hasher.finish()),
-            grads: false,
+            ty: Ty::TMP,
         });
         let node = self.ad_graph.add_node(index);
         self.stack
@@ -87,7 +98,7 @@ impl Parser {
         name.hash(&mut hasher);
         self.variables.push(Variable {
             hash: Some(hasher.finish()),
-            grads: true,
+            ty: Ty::GRAD,
         });
         let node = self.ad_graph.add_node(index);
         self.stack
@@ -132,11 +143,29 @@ impl Parser {
         let mut grads = vec![];
         for (i, var) in self.variables.iter().enumerate() {
             let ident = new_ident(i);
-            if var.grads {
-                grads.push(ident.clone());
-            }
-            let stmt = quote! {
-                #ident = Zero::zero();
+
+            let stmt = match var.ty {
+                Ty::TMP => {
+                    quote! {
+                        let #ident = Zero::zero();
+                    }
+                }
+                Ty::GRAD => {
+                    grads.push(ident.clone());
+                    quote! {
+                        let #ident = Zero::zero();
+                    }
+                }
+                Ty::TOP => {
+                    quote! {
+                        let #ident = One::one();
+                    }
+                }
+                Ty::IF | Ty::IFEL | Ty::FOR | Ty::LOOP => {
+                    quote! {
+                        let #ident;
+                    }
+                }
             };
             ts.extend(stmt);
         }
@@ -144,8 +173,7 @@ impl Parser {
     }
 
     fn gen_backward(&self) -> TokenStream {
-        // todo wait @Eason0729 complete fix graph
-        unimplemented!("wait @Eason0729")
+        unimplemented!("working on it")
     }
 
     // cousming method
@@ -356,16 +384,21 @@ where
 
 #[cfg(test)]
 mod tests {
+    use proc_macro2::TokenStream;
     use syn::parse_quote;
 
+    use crate::parser::graph::new_ident;
+
     use super::{Fold, Parser};
+
+    use quote::quote;
 
     #[test]
     fn test_expr_binary() {
         let ast = parse_quote! {
             a + b
         };
-        let res = parse_quote! {
+        let res = quote! {
             {
                 let tmp;
                 (tmp, (mady_3, mady_4)) = a.grad_add(b);
@@ -377,7 +410,8 @@ mod tests {
         parser.new_local_node(&"a").unwrap();
         parser.new_local_node(&"b").unwrap();
         let (_, ast) = parser.parse_expr(ast).unwrap();
-        assert_eq!(ast, res);
+        let ast = quote! {#ast};
+        assert_eq!(ast.to_string(), res.to_string());
     }
 
     #[test]
@@ -387,7 +421,7 @@ mod tests {
                 c = a - b;
             }
         };
-        let res = parse_quote! {
+        let res = quote! {
             {
                 c = {
                     mady_6 = c.one();
@@ -405,7 +439,8 @@ mod tests {
         parser.new_local_node(&"b").unwrap();
         parser.new_local_node(&"c").unwrap();
         let ast = parser.fold_expr(ast);
-        assert_eq!(ast, res);
+        let ast = quote! {#ast};
+        assert_eq!(ast.to_string(), res.to_string());
     }
 
     #[test]
@@ -417,7 +452,7 @@ mod tests {
                 c = a * b;
             }
         };
-        let res = parse_quote! {
+        let res = quote! {
             {
                 let (a, b)=(1, 2);
                 let c;
@@ -433,7 +468,8 @@ mod tests {
         };
         let mut parser = Parser::new();
         let ast = parser.fold_expr(ast);
-        assert_eq!(ast, res);
+        let ast = quote! {#ast};
+        assert_eq!(ast.to_string(), res.to_string());
     }
 
     #[test]
@@ -444,7 +480,7 @@ mod tests {
                 let c = a / b;
             }
         };
-        let res = parse_quote! {
+        let res = quote! {
             {
                 let (a, b)=(1, 2);
                 let c = {
@@ -459,19 +495,25 @@ mod tests {
         };
         let mut parser = Parser::new();
         let ast = parser.fold_expr(ast);
-        assert_eq!(ast, res);
+        let ast = quote! {#ast};
+        assert_eq!(ast.to_string(), res.to_string());
     }
 
     #[test]
     fn test_gen_var() {
-        // let mut parser = Parser::new();
-        // parser.new_tmp();
-        // parser.new_tmp()
+        let mut parser = Parser::new();
+        parser.enter_block();
+        parser.new_tmp();
+        parser.new_grad_node("").unwrap();
 
-        // quote!{
+        let ast = parser.gen_vars();
 
-        // }
-        // assert_eq!(parser.gen_vars(), 10);
+        let res = quote! {
+            let mady_0 = Zero::zero();
+            let mady_1 = Zero::zero();
+        };
+        assert_eq!(ast.0.to_string(), res.to_string());
+        assert_eq!(ast.1[0], new_ident(1))
     }
 }
 
