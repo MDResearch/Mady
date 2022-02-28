@@ -34,4 +34,3 @@ jobs:
         if ! git commit -m "FMT & Autofix" ; then
           git push
         fi
-        exit 0
