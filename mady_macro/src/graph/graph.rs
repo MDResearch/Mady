@@ -18,7 +18,7 @@ pub struct IterTopological<'a, N, E> {
 /// raw method only
 #[derive(Debug, Clone)]
 pub struct Graph<N, E> {
-    node_mix: Vec<(N, Vec<(E, usize)>)>, // extend of children
+    table: Vec<(N, Vec<(E, usize)>)>, // extend of children
 }
 
 impl<N, E> Default for Graph<N, E> {
@@ -30,43 +30,59 @@ impl<N, E> Default for Graph<N, E> {
 impl<N, E> Graph<N, E> {
     pub fn new() -> Self {
         Self {
-            node_mix: vec![], //children
+            table: vec![], //children
         }
     }
 
     /// return id for the node
     pub fn add_node(&mut self, value: N) -> Node<N, E> {
-        let index = self.node_mix.len();
-        self.node_mix.push((value, vec![]));
+        let index = self.table.len();
+        self.table.push((value, vec![]));
         Node::new(index)
     }
 
     /// nodes (parents, children)
     pub fn add_edge(&mut self, value: E, from_to: (&Node<N, E>, &Node<N, E>)) -> Edge<N, E> {
-        self.node_mix[from_to.0 .0].1.push((value, from_to.1 .0));
-        Edge::new(from_to.0 .0, from_to.1 .0)
+        let index = self.table[from_to.0.index()].1.len();
+        self.table[from_to.0.index()]
+            .1
+            .push((value, from_to.1.index()));
+        Edge::new(from_to.0.index(), index)
     }
 
     /// modify node value
-    pub fn edit_node(&mut self, node: &Node<N, E>, value: N) {
-        self.node_mix[node.index()].0 = value;
+    pub fn node_mut(&mut self, node: &Node<N, E>) -> &mut N {
+        &mut self.table[node.index()].0
     }
 
     /// modify edge value
-    pub fn edit_edge(&mut self, edge: &Edge<N, E>, value: E) {
-        self.node_mix[edge.0].1[edge.1].0 = value;
+    pub fn edge_mut(&mut self, edge: &Edge<N, E>) -> &mut E {
+        let index = edge.index();
+        &mut self.table[index.0].1[index.1].0
     }
 
     /// read node value
     /// ([edge id], value)
     pub fn node(&self, node: &Node<N, E>) -> &N {
-        &self.node_mix[node.index()].0
+        &self.table[node.index()].0
     }
 
     /// read edge value
     /// (to node, value)
     pub fn edge(&self, edge: &Edge<N, E>) -> &E {
-        &self.node_mix[edge.0].1[edge.1].0
+        let index = edge.index();
+        &self.table[index.0].1[index.1].0
+    }
+
+    pub fn children(&self, node: &Node<N, E>) -> Vec<Edge<N, E>> {
+        let parent = node.index();
+        let tmp = self.table[parent]
+            .1
+            .iter()
+            .enumerate()
+            .map(|(i, ..)| Edge::new(parent, i))
+            .collect();
+        tmp
     }
 
     // O(n^2)
@@ -74,8 +90,8 @@ impl<N, E> Graph<N, E> {
     /// use topolohival sort to get the order of caculation
     pub fn topological_iter<'a>(&'a self) -> impl Iterator<Item = Node<N, E>> + 'a {
         // let in_degree: Vec<usize> = self.parents.iter().map(|x| x.len()).collect();
-        let mut in_degree = vec![0; self.node_mix.len()];
-        self.node_mix
+        let mut in_degree = vec![0; self.table.len()];
+        self.table
             .iter()
             .map(|x| &x.1)
             .for_each(|y| y.iter().for_each(|z| in_degree[z.1] = in_degree[z.1] + 1));
@@ -101,7 +117,7 @@ impl<'b, N, E> Iterator for IterTopological<'b, N, E> {
     fn next(&mut self) -> Option<Self::Item> {
         if !self.zero.is_empty() {
             let out = self.zero.pop_back().unwrap();
-            for c in self.graph.node_mix[out].1.iter().map(|x| x.1) {
+            for c in self.graph.table[out].1.iter().map(|x| x.1) {
                 self.in_degree[c] -= 1;
                 if self.in_degree[c] == 0 {
                     self.zero.push_back(c);
@@ -126,19 +142,13 @@ impl<N, E> Node<N, E> {
         graph.node(self)
     }
 
-    pub fn children<'a>(&mut self, graph: &'a Graph<N, E>) -> Vec<Edge<N, E>> {
-        let parent = self.index();
-        let h: Vec<Edge<N, E>> = graph.node_mix[self.index()]
-            .1
-            .iter()
-            .map(|x| Edge::new(parent, x.1))
-            .collect();
-        h
+    pub fn value_mut<'a>(&self, graph: &'a mut Graph<N, E>) -> &'a mut N {
+        graph.node_mut(self)
     }
 
-    // pub fn parents<'a>(&mut self, graph: &'a Graph<N, E>) -> &'a Vec<usize> {
-    //     &graph.parents[self.index()]
-    // }
+    pub fn children<'a>(&self, graph: &'a Graph<N, E>) -> Vec<Edge<N, E>> {
+        graph.children(self)
+    }
 
     pub fn link(&self, graph: &mut Graph<N, E>, value: E, to: &Node<N, E>) {
         graph.add_edge(value, (self, to));
@@ -146,16 +156,25 @@ impl<N, E> Node<N, E> {
 }
 
 impl<N, E> Edge<N, E> {
-    pub fn new(f: usize, t: usize) -> Self {
-        Self(f, t, PhantomData, PhantomData)
+    pub fn new(from: usize, index: usize) -> Self {
+        Self(from, index, PhantomData, PhantomData)
     }
 
-    pub fn index(&self) -> usize {
-        self.0
+    pub fn index(&self) -> (usize, usize) {
+        (self.0, self.1)
     }
 
     pub fn value<'a>(&self, graph: &'a Graph<N, E>) -> &'a E {
-        &graph.node_mix[self.0].1[self.1].0
+        &graph.edge(self)
+    }
+
+    pub fn value_mut<'a>(&self, graph: &'a mut Graph<N, E>) -> &'a mut E {
+        graph.edge_mut(self)
+    }
+
+    pub fn to<'a>(&self, graph: &'a Graph<N, E>) -> Node<N, E> {
+        let index = self.index();
+        Node::new(graph.table[index.0].1[index.1].1)
     }
 }
 
