@@ -78,7 +78,7 @@ impl<N, E> Graph<N, E> {
         self.node_mix
             .iter()
             .map(|x| &x.1)
-            .for_each(|y| y.iter().for_each(|z| in_degree[z.1] = in_degree[z.1] + 1));
+            .for_each(|y| y.iter().for_each(|z| in_degree[z.1] += 1));
         // self.children
         //     .iter()
         //     .for_each(|x| x.iter().for_each(|&y| in_degree[y] = in_degree[y] + 1));
