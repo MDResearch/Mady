@@ -1,6 +1,6 @@
 pub mod prelude {
-    pub use mady_math::prelude::*;
     pub use mady_macro::*;
+    pub use mady_math::prelude::*;
 }
 
 pub use mady_macro as _;

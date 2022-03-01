@@ -7,9 +7,7 @@ use crate::graph::{Edge, Graph, Node};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::fold::{fold_block, fold_expr, fold_pat, Fold};
-use syn::{
-    parse_quote, BinOp, Block, Expr, ExprAssign, ExprReturn, FnArg, ItemFn, Local, Pat, Stmt,
-};
+use syn::{parse_quote, BinOp, Block, Expr, ExprAssign, ExprReturn, ItemFn, Local, Pat, Stmt};
 
 impl<N, E> Node<N, E>
 where
@@ -87,7 +85,7 @@ impl Parser {
         T: Hash,
     {
         if self.stack.len() == 1 {
-            Err("No Block in Stack")?;
+            return Err("No Block in Stack".into());
         }
 
         let index = self.variables.len();
@@ -158,7 +156,7 @@ impl Parser {
 
         // gen tokenstream
         let mut ts = TokenStream::new();
-        let mut grads = TokenStream::new();
+        let _grads = TokenStream::new();
         for (i, var) in self.variables.iter().enumerate() {
             let ident = new_ident(i);
 
@@ -448,10 +446,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use proc_macro2::TokenStream;
-    use syn::parse_quote;
 
-    use crate::{graph::Node, parser::graph::new_ident};
+    use syn::parse_quote;
 
     use super::{Fold, Parser};
 

@@ -1,7 +1,7 @@
 //! define the datastructure,matrix.
 //! describe all the implement of matrix
 
-use crate::{impl_ops_all, tensor::Tensor, matrix};
+use crate::{impl_ops_all, matrix, tensor::Tensor};
 use std::ops::{Add, Mul, Sub};
 
 // reexport
@@ -87,57 +87,49 @@ where
     //
     // st = start, sl = side length
     // todo!!
-//     pub fn convolution(&self, cor: &Self, step: usize) -> Vec<usize> {
-//         todo!();
-//         let mut ret = vec![];
-//         ret.resize(self.shape.iter().product(), 0);
-//         // product() mean muiltple all the
-//         let mut dst = self.into_row_iter().enumerate();
-//         // data start
+    //     pub fn convolution(&self, cor: &Self, step: usize) -> Vec<usize> {
+    //         todo!();
+    //         let mut ret = vec![];
+    //         ret.resize(self.shape.iter().product(), 0);
+    //         // product() mean muiltple all the
+    //         let mut dst = self.into_row_iter().enumerate();
+    //         // data start
 
-//         let mut cst = cor.into_row_iter().enumerate();
-//         // core start
+    //         let mut cst = cor.into_row_iter().enumerate();
+    //         // core start
 
+    //         let mut pass = 0;
+    //         let len_diff = self.shape[1] - cor.shape[1];
+    //         loop {
 
-//         let mut pass = 0;
-//         let len_diff = self.shape[1] - cor.shape[1];
-//         loop {
+    //             let matrix_now = dst.next();
+    //             let core_now = cst.next();
 
+    //             let matrix_now_val : (usize,&T);
+    //             let core_now_val : (usize,&T);
 
-//             let matrix_now = dst.next();
-//             let core_now = cst.next();
+    //             march matrix_now {
 
-//             let matrix_now_val : (usize,&T);
-//             let core_now_val : (usize,&T);
+    //                 Some(x) => matrix_now_val = x,
+    //                 None => println!("problem!!! at line 115"),
+    //             };
 
-//             march matrix_now {
+    // // help me I don't how to use option
 
-//                 Some(x) => matrix_now_val = x,
-//                 None => println!("problem!!! at line 115"),
-//             };
+    //             ret[pass] = matrix_now_val.1*core_now_val.1;
+    //             pass += 1;
 
-// // help me I don't how to use option
+    //             if pass == cor.shape[1] {
+    //                 dst.skip(len_diff);
+    //             }
 
-//             ret[pass] = matrix_now_val.1*core_now_val.1;
-//             pass += 1;
-
-
-//             if pass == cor.shape[1] {
-//                 dst.skip(len_diff);
-//             }
-            
-//             if pass == cor.shape.iter().product(){
-//             break;                
-//             };
-//         }
-//         ret
-//     }
-
-
-
+    //             if pass == cor.shape.iter().product(){
+    //             break;
+    //             };
+    //         }
+    //         ret
+    //     }
 }
-
-
 
 impl<T> From<(Tensor<T>, [usize; 2])> for Matrix<T>
 where
@@ -408,8 +400,7 @@ mod tests {
     }
 
     #[test]
-    fn test(){
+    fn test() {
         ()
     }
-
 }

@@ -5,6 +5,6 @@ mod graph;
 mod parser;
 
 #[proc_macro_attribute]
-pub fn grad(attr: TokenStream, input: TokenStream) -> TokenStream {
+pub fn grad(_attr: TokenStream, _input: TokenStream) -> TokenStream {
     todo!()
 }
