@@ -5,6 +5,10 @@ version = 3
 [[package]]
 name = "mady"
 version = "0.1.0"
+dependencies = [
+ "mady_macro",
+ "mady_math",
+]
 
 [[package]]
 name = "mady_macro"

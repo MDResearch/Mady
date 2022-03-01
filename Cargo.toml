@@ -1,13 +1,17 @@
 [package]
+authors = ["by EHY <https://github.com/organizations/MDResearch/> "]
 edition = "2021"
 name = "mady"
 version = "0.1.0"
-authors = ["by EHY <https://github.com/organizations/MDResearch/> "]
 
-[dependencies]
+[dependencies.mady_math]
+path = "./mady_math"
+
+[dependencies.mady_macro]
+path = "./mady_macro"
 
 [workspace]
 members = [
-    "mady_math",
-    "mady_macro",
+  "mady_math",
+  "mady_macro",
 ]
