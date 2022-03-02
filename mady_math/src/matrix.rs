@@ -61,7 +61,7 @@ where
     // 9 10 11
 
     /// traverse the matrix by row
-    pub fn into_row_iter<'a>(&'a self) -> impl Iterator<Item = &T> + 'a {
+    pub fn into_row_iter(&self) -> impl Iterator<Item = &T> {
         self.data.iter()
     }
 
@@ -75,7 +75,7 @@ where
     // 3  7 11
 
     /// traverse the matrix by colume
-    pub fn into_col_iter<'a>(&'a self) -> impl Iterator<Item = &T> + 'a {
+    pub fn into_col_iter(&self) -> impl Iterator<Item = &T> {
         // 第1直排到第N直排的迭代器
         (0..self.shape[1])
             // flat_map 用來攤平 ex: [[1,2],[3,4],[5,6]] -> [1,2,3,4,5,6]
@@ -84,51 +84,56 @@ where
             // map用來取迭代器的值 , map會自己抓上面flat_map跳到的位置n
             .map(move |n| self.data.iter().nth(n).unwrap())
     }
-    //
+}
+
+impl<T> Matrix<T>
+where
+    T: Copy + Mul<Output = T> + Default,
+{
     // st = start, sl = side length
-    // todo!!
-    //     pub fn convolution(&self, cor: &Self, step: usize) -> Vec<usize> {
-    //         todo!();
-    //         let mut ret = vec![];
-    //         ret.resize(self.shape.iter().product(), 0);
-    //         // product() mean muiltple all the
-    //         let mut dst = self.into_row_iter().enumerate();
-    //         // data start
+    pub fn convolution(&self, cor: &Self) -> Vec<T> {
+        let mut ret: Vec<T> = vec![];
+        ret.resize(self.shape.iter().product(), Default::default());
+        // product() mean muiltple all the
+        let mut dst = self.into_row_iter().enumerate();
+        // data start
 
-    //         let mut cst = cor.into_row_iter().enumerate();
-    //         // core start
+        let mut cst = cor.into_row_iter().enumerate();
+        // core start
 
-    //         let mut pass = 0;
-    //         let len_diff = self.shape[1] - cor.shape[1];
-    //         loop {
+        // let mut pass = 0;
+        // let len_diff = self.shape[1] - cor.shape[1];
 
-    //             let matrix_now = dst.next();
-    //             let core_now = cst.next();
+        loop {
+            let matrix_now = &dst.next().unwrap();
+            let core_now = &cst.next().unwrap();
 
-    //             let matrix_now_val : (usize,&T);
-    //             let core_now_val : (usize,&T);
+             let matrix_now_val: (usize, &T);
+             let core_now_val: (usize, &T);
 
-    //             march matrix_now {
+            // match matrix_now {
+            //     &Some(x) => matrix_now_val = x,
+            //     None => unreachable!(),
+            // };
+            // match core_now {
+            //     &Some(x) => core_now_val = x,
+            //     None => println!("problem!!! at line 120"),
+            // };
 
-    //                 Some(x) => matrix_now_val = x,
-    //                 None => println!("problem!!! at line 115"),
-    //             };
 
-    // // help me I don't how to use option
+            // ret[pass] = *matrix_now.1 * *core_now.1;
+            // pass += 1;
 
-    //             ret[pass] = matrix_now_val.1*core_now_val.1;
-    //             pass += 1;
+            // if pass >= cor.shape[1] {
+            //     dst.skip(len_diff);
+            // }
 
-    //             if pass == cor.shape[1] {
-    //                 dst.skip(len_diff);
-    //             }
-
-    //             if pass == cor.shape.iter().product(){
-    //             break;
-    //             };
-    //         }
-    //         ret
-    //     }
+            // if pass == cor.shape.iter().product() {
+            //     break;
+            // };
+        }
+        ret
+    }
 }
 
 impl<T> From<(Tensor<T>, [usize; 2])> for Matrix<T>
@@ -399,8 +404,18 @@ mod tests {
         )
     }
 
-    #[test]
-    fn test() {
-        ()
-    }
+//     #[test]
+//     fn convolution_test() {
+//         let mat = mat![1,2,3,
+//                                     4,5,6,
+//                                     7,8,9,
+//                                     ;3,3];
+
+//         let concore = mat![1,2,
+//                                     3,4,
+//                                     ;2,2];
+//         // println!("{}",mat.convolution(&concore,1)/);
+//         dbg!(mat.convolution(&concore, 1));
+//         //assert_eq!(mat.convolution(&concore,1),vec![1,4,12,20]);
+//     }
 }
