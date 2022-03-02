@@ -29,11 +29,21 @@ where
 
 #[derive(Debug, Default, Clone)]
 struct Parser {
+    // local variables
     variables: Vec<Variable>,
+    // temporary variables
     stack: Vec<LinkedList<usize>>,
-    // the index in self.varibles
+    // graph
     ad_graph: Graph<usize, usize>,
 }
+
+// let a=(b+c)*d;
+// -------------
+// let tmp_00001=b+c;
+// let a=tmp_00001*d;
+// -------------
+// tmp_00001 is tmp
+// a,b,c,d is local
 
 #[derive(Debug, Clone)]
 struct Variable {
