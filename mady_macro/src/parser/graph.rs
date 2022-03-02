@@ -588,7 +588,6 @@ mod tests {
         assert_eq!(ast.to_string(), res.to_string());
     }
 
-
     // #[test]
     // fn test_gen_backward() {
     //     // let mut parser = Parser::new();

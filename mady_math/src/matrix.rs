@@ -108,8 +108,8 @@ where
             let matrix_now = &dst.next().unwrap();
             let core_now = &cst.next().unwrap();
 
-             let matrix_now_val: (usize, &T);
-             let core_now_val: (usize, &T);
+            let matrix_now_val: (usize, &T);
+            let core_now_val: (usize, &T);
 
             // match matrix_now {
             //     &Some(x) => matrix_now_val = x,
@@ -119,7 +119,6 @@ where
             //     &Some(x) => core_now_val = x,
             //     None => println!("problem!!! at line 120"),
             // };
-
 
             // ret[pass] = *matrix_now.1 * *core_now.1;
             // pass += 1;
@@ -404,18 +403,18 @@ mod tests {
         )
     }
 
-//     #[test]
-//     fn convolution_test() {
-//         let mat = mat![1,2,3,
-//                                     4,5,6,
-//                                     7,8,9,
-//                                     ;3,3];
+    //     #[test]
+    //     fn convolution_test() {
+    //         let mat = mat![1,2,3,
+    //                                     4,5,6,
+    //                                     7,8,9,
+    //                                     ;3,3];
 
-//         let concore = mat![1,2,
-//                                     3,4,
-//                                     ;2,2];
-//         // println!("{}",mat.convolution(&concore,1)/);
-//         dbg!(mat.convolution(&concore, 1));
-//         //assert_eq!(mat.convolution(&concore,1),vec![1,4,12,20]);
-//     }
+    //         let concore = mat![1,2,
+    //                                     3,4,
+    //                                     ;2,2];
+    //         // println!("{}",mat.convolution(&concore,1)/);
+    //         dbg!(mat.convolution(&concore, 1));
+    //         //assert_eq!(mat.convolution(&concore,1),vec![1,4,12,20]);
+    //     }
 }
