@@ -20,12 +20,18 @@ where
 
 #[derive(Debug, Default, Clone)]
 struct Parser {
-    variables: Vec<Variable>,
-    stack: Vec<LinkedList<usize>>,
-    grads: Vec<usize>,
-    // the index in self.varibles
-    ad_graph: Graph<usize, usize>,
+    variables: Vec<Variable>,      // local variables
+    stack: Vec<LinkedList<usize>>, // temporary variables
+    ad_graph: Graph<usize, usize>, // graph
 }
+
+// let a=(b+c)*d;
+// -------------
+// let tmp_00001=b+c;
+// let a=tmp_00001*d;
+// -------------
+// tmp_00001 is tmp
+// a,b,c,d is local
 
 #[derive(Debug, Clone)]
 struct Variable {
