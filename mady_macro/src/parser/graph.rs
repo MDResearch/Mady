@@ -163,12 +163,12 @@ impl Parser {
             let stmt = match var.ty {
                 Ty::TMP => {
                     quote! {
-                        let #ident = Zero::zero();
+                        let mut #ident = Zero::zero();
                     }
                 }
                 Ty::GRAD => {
                     quote! {
-                        let #ident = Zero::zero();
+                        let mut #ident = Zero::zero();
                     }
                 }
                 Ty::TOP => {
@@ -571,12 +571,13 @@ mod tests {
         let ast = parser.gen_vars();
 
         let res = quote! {
-            let mady_0 = Zero::zero();
-            let mady_1 = Zero::zero();
+            let mut mady_0 = Zero::zero();
+            let mut mady_1 = Zero::zero();
             let mady_2 = One::one();
         };
         assert_eq!(ast.to_string(), res.to_string());
     }
+
 
     // #[test]
     // fn test_gen_backward() {
