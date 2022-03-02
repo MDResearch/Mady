@@ -1,11 +1,10 @@
 extern crate proc_macro;
 use proc_macro::TokenStream;
 
-mod ad;
 mod graph;
 mod parser;
 
 #[proc_macro_attribute]
-pub fn ad(attr: TokenStream, input: TokenStream) -> TokenStream {
-    dbg!(ad::parse(attr, input))
+pub fn grad(_attr: TokenStream, _input: TokenStream) -> TokenStream {
+    todo!()
 }

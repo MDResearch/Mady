@@ -25,4 +25,4 @@ lint:
     cargo clippy --all --fix
 
 # run all task
-all: check test build lint fmt
+all: lint fmt check test build

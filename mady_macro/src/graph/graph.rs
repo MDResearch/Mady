@@ -85,6 +85,19 @@ impl<N, E> Graph<N, E> {
         tmp
     }
 
+    pub fn roots(&self) -> Vec<usize> {
+        let mut in_degree = vec![0; self.table.len()];
+        self.table
+            .iter()
+            .map(|x| &x.1)
+            .for_each(|y| y.iter().for_each(|z| in_degree[z.1] += 1));
+        in_degree
+            .iter()
+            .enumerate()
+            .filter_map(|(i, x)| (x == &0).then(|| i))
+            .collect()
+    }
+
     // O(n^2)
     // N is amount of edge
     /// use topolohival sort to get the order of caculation
