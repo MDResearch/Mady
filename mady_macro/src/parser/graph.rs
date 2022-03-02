@@ -29,11 +29,21 @@ where
 
 #[derive(Debug, Default, Clone)]
 struct Parser {
+    // local variables
     variables: Vec<Variable>,
+    // temporary variables
     stack: Vec<LinkedList<usize>>,
-    // the index in self.varibles
+    // graph
     ad_graph: Graph<usize, usize>,
 }
+
+// let a=(b+c)*d;
+// -------------
+// let tmp_00001=b+c;
+// let a=tmp_00001*d;
+// -------------
+// tmp_00001 is tmp
+// a,b,c,d is local
 
 #[derive(Debug, Clone)]
 struct Variable {
@@ -163,12 +173,12 @@ impl Parser {
             let stmt = match var.ty {
                 Ty::TMP => {
                     quote! {
-                        let #ident = Zero::zero();
+                        let mut #ident = Zero::zero();
                     }
                 }
                 Ty::GRAD => {
                     quote! {
-                        let #ident = Zero::zero();
+                        let mut #ident = Zero::zero();
                     }
                 }
                 Ty::TOP => {
@@ -571,12 +581,13 @@ mod tests {
         let ast = parser.gen_vars();
 
         let res = quote! {
-            let mady_0 = Zero::zero();
-            let mady_1 = Zero::zero();
+            let mut mady_0 = Zero::zero();
+            let mut mady_1 = Zero::zero();
             let mady_2 = One::one();
         };
         assert_eq!(ast.to_string(), res.to_string());
     }
+
 
     // #[test]
     // fn test_gen_backward() {
