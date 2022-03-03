@@ -28,13 +28,14 @@ where
 }
 
 #[derive(Debug, Default, Clone)]
-struct Parser {
-    // local variables
-    variables: Vec<Variable>,
+struct BlockParser {
+    grads: Vec<usize>,
     // temporary variables
+    variables: Vec<Variable>,
+    // local variables
     stack: Vec<LinkedList<usize>>,
     // graph
-    ad_graph: Graph<usize, usize>,
+    graph: Graph<usize, usize>,
 }
 
 // let a=(b+c)*d;
@@ -62,14 +63,24 @@ enum Ty {
     LOOP,
 }
 
-impl Parser {
+impl BlockParser {
     /// create new Parser
     ///
     /// use stack<list<Varible>> to record varible
-    pub fn new() -> Self {
-        let mut tmp: Self = Default::default();
-        tmp.enter_block();
+    pub fn new<T, K>(grads: T) -> Self
+    where
+        T: IntoIterator<Item = K>,
+        K: Hash,
+    {
+        let mut tmp = Self::default();
+        for i in grads {
+            tmp.new_grad_node(i);
+        }
         tmp
+    }
+
+    pub fn parse(&mut self, i: Block) -> Block {
+        self.gen_block(i)
     }
 
     fn new_tmp(&mut self) -> usize {
@@ -84,7 +95,7 @@ impl Parser {
     fn new_tmp_node(&mut self) -> Node<usize, usize> {
         let index = self.new_tmp();
 
-        self.ad_graph.add_node(index)
+        self.graph.add_node(index)
     }
 
     /// add a var to stack block
@@ -94,7 +105,7 @@ impl Parser {
     where
         T: Hash,
     {
-        if self.stack.len() == 1 {
+        if self.stack.is_empty() {
             return Err("No Block in Stack".into());
         }
 
@@ -105,12 +116,12 @@ impl Parser {
             hash: Some(hasher.finish()),
             ty: Ty::TMP,
         });
-        let node = self.ad_graph.add_node(index);
+        let node = self.graph.add_node(index);
         self.stack.last_mut().unwrap().push_back(node.index());
         Ok(node)
     }
 
-    fn new_grad_arg_node<T>(&mut self, name: T) -> Node<usize, usize>
+    fn new_grad_node<T>(&mut self, name: T) -> Node<usize, usize>
     where
         T: Hash,
     {
@@ -121,7 +132,7 @@ impl Parser {
             hash: Some(hasher.finish()),
             ty: Ty::GRAD,
         });
-        let node = self.ad_graph.add_node(index);
+        let node = self.graph.add_node(index);
         self.stack.first_mut().unwrap().push_back(node.index());
 
         node
@@ -159,8 +170,8 @@ impl Parser {
 
     fn gen_vars(&mut self) -> TokenStream {
         // mark roots
-        for i in self.ad_graph.roots() {
-            let &index = Node::new(i).value(&self.ad_graph);
+        for i in self.graph.roots() {
+            let &index = Node::new(i).value(&self.graph);
             self.variables[index].ty = Ty::TOP;
         }
 
@@ -198,13 +209,20 @@ impl Parser {
         ts
     }
 
+    fn gen_return(&self) -> TokenStream {
+        let arg: Vec<_> = self.grads.iter().map(|&x| new_ident(x)).collect();
+        quote! {
+            #(#arg),*
+        }
+    }
+
     fn gen_backward(&self) -> TokenStream {
         let mut ts = TokenStream::new();
-        for node in self.ad_graph.topological_iter() {
-            let node_ident = node.ident(&self.ad_graph);
-            for edge in node.children(&self.ad_graph) {
-                let edge_ident = edge.ident(&self.ad_graph);
-                let to_ident = edge.to(&self.ad_graph).ident(&self.ad_graph);
+        for node in self.graph.topological_iter() {
+            let node_ident = node.ident(&self.graph);
+            for edge in node.children(&self.graph) {
+                let edge_ident = edge.ident(&self.graph);
+                let to_ident = edge.to(&self.graph).ident(&self.graph);
                 let stmt = quote! {
                     #to_ident += #node_ident.clone() * #edge_ident;
                 };
@@ -214,26 +232,43 @@ impl Parser {
         ts
     }
 
-    fn gen_fn(&mut self, i: ItemFn) -> ItemFn {
-        // gen grad var node
-        self.fold_signature(i.sig.clone());
-
+    fn gen_block(&mut self, i: Block) -> Block {
         // gen fn
-        let block = self.fold_block(*i.block);
+        let mut block = self.fold_block(i);
+
+        // gen return
+        let return_expr = match block.stmts.last() {
+            Some(Stmt::Expr(..)) => {
+                let grads = self.gen_return();
+                let expr = block.stmts.pop();
+                quote! {
+                    (#expr, #grads)
+                }
+            }
+            Some(Stmt::Semi(Expr::Return(..), ..)) => {
+                let expr = block.stmts.pop();
+                quote! {
+                    #expr
+                }
+            }
+            _ => panic!("cannot compile without return value"),
+        };
+
         let vars = self.gen_vars();
         let backward = self.gen_backward();
-        let block = parse_quote! {
+
+        parse_quote! {
             {
                 #vars
                 #block
                 #backward
+                #return_expr
             }
-        };
-        ItemFn { block, ..i }
+        }
     }
 }
 
-impl Parser {
+impl BlockParser {
     fn parse_expr(&mut self, e: Expr) -> Result<(Node<usize, usize>, Expr), Expr> {
         match e {
             // a + b
@@ -255,8 +290,8 @@ impl Parser {
                     .map_err(|_| Expr::Binary(v.clone()))?;
                 let edge_left = self.new_tmp();
                 let edge_right = self.new_tmp();
-                ops.link(&mut self.ad_graph, edge_left, &left);
-                ops.link(&mut self.ad_graph, edge_right, &right);
+                ops.link(&mut self.graph, edge_left, &left);
+                ops.link(&mut self.graph, edge_right, &right);
 
                 let edge_left_ident = new_ident(edge_left);
                 let edge_right_ident = new_ident(edge_right);
@@ -293,7 +328,7 @@ impl Parser {
                     .parse_expr(*v.right.clone())
                     .map_err(|_| Expr::Assign(v.clone()))?;
                 let edge = self.new_tmp();
-                parent.link(&mut self.ad_graph, edge, &child);
+                parent.link(&mut self.graph, edge, &child);
                 let edge_ident = new_ident(edge);
 
                 let right = parse_quote! {
@@ -327,9 +362,6 @@ impl Parser {
                 if let Ok(node) = self.new_local_node(&v.ident) {
                     Ok((node, Pat::Ident(v)))
                 } else {
-                    // arg node
-                    // use Err prevent unexpect linking
-                    self.new_grad_arg_node(&v.ident);
                     Err(Pat::Ident(v))
                 }
             }
@@ -347,7 +379,7 @@ impl Parser {
                     let (child, right) =
                         self.parse_expr(*expr).map_err(|_| Stmt::Local(v.clone()))?;
                     let edge = self.new_tmp();
-                    parent.link(&mut self.ad_graph, edge, &child);
+                    parent.link(&mut self.graph, edge, &child);
                     let edge_ident = new_ident(edge);
                     let right = parse_quote! {
                         {
@@ -380,7 +412,7 @@ impl Parser {
     }
 }
 
-impl Fold for Parser {
+impl Fold for BlockParser {
     fn fold_pat(&mut self, i: Pat) -> Pat {
         match self.parse_pat(i) {
             Ok((.., v)) => v,
@@ -396,25 +428,15 @@ impl Fold for Parser {
     }
 
     fn fold_expr_return(&mut self, i: ExprReturn) -> ExprReturn {
-        let arg: Vec<_> = self
-            .stack
-            .first()
-            .unwrap()
-            .iter()
-            .map(|&x| new_ident(x))
-            .collect();
+        let grads = self.gen_return();
         let expr: Expr = match i.expr {
             Some(e) => {
                 let tmp = fold_expr(self, *e);
                 parse_quote! {
-                    (#tmp, (#(#arg),*))
+                    (#tmp, #grads)
                 }
             }
-            None => {
-                parse_quote! {
-                    #(#arg),*
-                }
-            }
+            None => panic!("cannot compile without return value"),
         };
         ExprReturn {
             expr: Some(Box::new(expr)),
@@ -457,9 +479,10 @@ where
 #[cfg(test)]
 mod tests {
 
+    use proc_macro2::Ident;
     use syn::parse_quote;
 
-    use super::{Fold, Parser};
+    use super::{BlockParser, Fold};
 
     use quote::quote;
 
@@ -475,7 +498,7 @@ mod tests {
                 tmp
             }
         };
-        let mut parser = Parser::new();
+        let mut parser = BlockParser::new::<_, Ident>([]);
         parser.enter_block();
         parser.new_local_node(&"a").unwrap();
         parser.new_local_node(&"b").unwrap();
@@ -503,7 +526,7 @@ mod tests {
                 };
             }
         };
-        let mut parser = Parser::new();
+        let mut parser = BlockParser::new::<_, Ident>([]);
         parser.enter_block();
         parser.new_local_node(&"a").unwrap();
         parser.new_local_node(&"b").unwrap();
@@ -536,7 +559,7 @@ mod tests {
                 };
             }
         };
-        let mut parser = Parser::new();
+        let mut parser = BlockParser::new::<_, Ident>([]);
         let ast = parser.fold_expr(ast);
         let ast = quote! {#ast};
         assert_eq!(ast.to_string(), res.to_string());
@@ -563,7 +586,7 @@ mod tests {
                 };
             }
         };
-        let mut parser = Parser::new();
+        let mut parser = BlockParser::new::<_, Ident>([]);
         let ast = parser.fold_expr(ast);
         let ast = quote! {#ast};
         assert_eq!(ast.to_string(), res.to_string());
@@ -571,12 +594,12 @@ mod tests {
 
     #[test]
     fn test_gen_var() {
-        let mut parser = Parser::new();
+        let mut parser = BlockParser::new::<_, Ident>([]);
         parser.enter_block();
         parser.new_tmp();
-        let grad = parser.new_grad_arg_node("");
+        let grad = parser.new_grad_node("");
         let root = parser.new_tmp_node();
-        root.link(&mut parser.ad_graph, 0, &grad);
+        root.link(&mut parser.graph, 0, &grad);
 
         let ast = parser.gen_vars();
 
