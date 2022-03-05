@@ -28,7 +28,7 @@ where
 }
 
 #[derive(Debug, Default, Clone)]
-struct BlockParser {
+struct Parser {
     grads: Vec<usize>,
     // temporary variables
     variables: Vec<Variable>,
@@ -36,6 +36,11 @@ struct BlockParser {
     stack: Vec<LinkedList<usize>>,
     // graph
     graph: Graph<usize, usize>,
+}
+
+#[derive(Debug, Default, Clone)]
+struct ParserConfig{
+    grads: Vec<usize>,
 }
 
 // let a=(b+c)*d;
@@ -63,7 +68,7 @@ enum Ty {
     LOOP,
 }
 
-impl BlockParser {
+impl Parser {
     /// create new Parser
     ///
     /// use stack<list<Varible>> to record varible
@@ -82,7 +87,9 @@ impl BlockParser {
     pub fn parse(&mut self, i: Block) -> Block {
         self.gen_block(i)
     }
+}
 
+impl Parser {
     fn new_tmp(&mut self) -> usize {
         let index = self.variables.len();
         self.variables.push(Variable {
@@ -117,7 +124,7 @@ impl BlockParser {
             ty: Ty::TMP,
         });
         let node = self.graph.add_node(index);
-        self.stack.last_mut().unwrap().push_back(node.index());
+        self.stack.last_mut().unwrap().push_front(node.index());
         Ok(node)
     }
 
@@ -133,7 +140,7 @@ impl BlockParser {
             ty: Ty::GRAD,
         });
         let node = self.graph.add_node(index);
-        self.stack.first_mut().unwrap().push_back(node.index());
+        self.stack.first_mut().unwrap().push_front(node.index());
 
         node
     }
@@ -144,12 +151,19 @@ impl BlockParser {
         let hash = hasher.finish();
 
         for list in self.stack.iter().rev() {
-            for &index in list.iter() {
+            for &index in list {
                 if self.variables[index].hash == Some(hash) {
                     return Some(Node::new(index));
                 }
             }
         }
+
+        for &index in &self.grads {
+            if self.variables[index].hash == Some(hash) {
+                return Some(Node::new(index));
+            }
+        }
+
         None
     }
 
@@ -268,7 +282,7 @@ impl BlockParser {
     }
 }
 
-impl BlockParser {
+impl Parser {
     fn parse_expr(&mut self, e: Expr) -> Result<(Node<usize, usize>, Expr), Expr> {
         match e {
             // a + b
@@ -412,7 +426,7 @@ impl BlockParser {
     }
 }
 
-impl Fold for BlockParser {
+impl Fold for Parser {
     fn fold_pat(&mut self, i: Pat) -> Pat {
         match self.parse_pat(i) {
             Ok((.., v)) => v,
@@ -482,7 +496,7 @@ mod tests {
     use proc_macro2::Ident;
     use syn::parse_quote;
 
-    use super::{BlockParser, Fold};
+    use super::{Parser, Fold};
 
     use quote::quote;
 
@@ -498,7 +512,7 @@ mod tests {
                 tmp
             }
         };
-        let mut parser = BlockParser::new::<_, Ident>([]);
+        let mut parser = Parser::new::<_, Ident>([]);
         parser.enter_block();
         parser.new_local_node(&"a").unwrap();
         parser.new_local_node(&"b").unwrap();
@@ -526,7 +540,7 @@ mod tests {
                 };
             }
         };
-        let mut parser = BlockParser::new::<_, Ident>([]);
+        let mut parser = Parser::new::<_, Ident>([]);
         parser.enter_block();
         parser.new_local_node(&"a").unwrap();
         parser.new_local_node(&"b").unwrap();
@@ -559,7 +573,7 @@ mod tests {
                 };
             }
         };
-        let mut parser = BlockParser::new::<_, Ident>([]);
+        let mut parser = Parser::new::<_, Ident>([]);
         let ast = parser.fold_expr(ast);
         let ast = quote! {#ast};
         assert_eq!(ast.to_string(), res.to_string());
@@ -586,7 +600,7 @@ mod tests {
                 };
             }
         };
-        let mut parser = BlockParser::new::<_, Ident>([]);
+        let mut parser = Parser::new::<_, Ident>([]);
         let ast = parser.fold_expr(ast);
         let ast = quote! {#ast};
         assert_eq!(ast.to_string(), res.to_string());
@@ -594,7 +608,7 @@ mod tests {
 
     #[test]
     fn test_gen_var() {
-        let mut parser = BlockParser::new::<_, Ident>([]);
+        let mut parser = Parser::new::<_, Ident>([]);
         parser.enter_block();
         parser.new_tmp();
         let grad = parser.new_grad_node("");
