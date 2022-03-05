@@ -5,9 +5,14 @@ use std::hash::{Hash, Hasher};
 
 use crate::graph::{Edge, Graph, Node};
 use proc_macro2::{Ident, Span, TokenStream};
-use quote::quote;
-use syn::fold::{fold_block, fold_expr, fold_pat, Fold};
-use syn::{parse_quote, BinOp, Block, Expr, ExprAssign, ExprReturn, ItemFn, Local, Pat, Stmt};
+use quote::{quote, ToTokens};
+use syn::fold::{fold_block, fold_expr, fold_pat, fold_signature, Fold};
+use syn::parse::{Parse, ParseStream};
+use syn::punctuated::Punctuated;
+use syn::{
+    parse_quote, BinOp, Block, Expr, ExprAssign, ExprReturn, Field, FnArg, ItemFn, Local, Pat,
+    PatIdent, PatType, ReturnType, Signature, Stmt, Token,
+};
 
 impl<N, E> Node<N, E>
 where
@@ -28,7 +33,7 @@ where
 }
 
 #[derive(Debug, Default, Clone)]
-struct Parser {
+struct InnerParser {
     grads: Vec<usize>,
     // temporary variables
     variables: Vec<Variable>,
@@ -39,8 +44,9 @@ struct Parser {
 }
 
 #[derive(Debug, Default, Clone)]
-struct ParserConfig{
-    grads: Vec<usize>,
+pub struct Parser {
+    grads: Vec<Ident>,
+    ty: Vec<Ident>,
 }
 
 // let a=(b+c)*d;
@@ -68,11 +74,11 @@ enum Ty {
     LOOP,
 }
 
-impl Parser {
+impl InnerParser {
     /// create new Parser
     ///
     /// use stack<list<Varible>> to record varible
-    pub fn new<T, K>(grads: T) -> Self
+    fn new<T, K>(grads: T) -> Self
     where
         T: IntoIterator<Item = K>,
         K: Hash,
@@ -84,12 +90,10 @@ impl Parser {
         tmp
     }
 
-    pub fn parse(&mut self, i: Block) -> Block {
+    fn gen(&mut self, i: Block) -> Block {
         self.gen_block(i)
     }
-}
 
-impl Parser {
     fn new_tmp(&mut self) -> usize {
         let index = self.variables.len();
         self.variables.push(Variable {
@@ -140,7 +144,7 @@ impl Parser {
             ty: Ty::GRAD,
         });
         let node = self.graph.add_node(index);
-        self.stack.first_mut().unwrap().push_front(node.index());
+        self.grads.push(node.index());
 
         node
     }
@@ -226,7 +230,7 @@ impl Parser {
     fn gen_return(&self) -> TokenStream {
         let arg: Vec<_> = self.grads.iter().map(|&x| new_ident(x)).collect();
         quote! {
-            #(#arg),*
+            (#(#arg),*)
         }
     }
 
@@ -282,7 +286,7 @@ impl Parser {
     }
 }
 
-impl Parser {
+impl InnerParser {
     fn parse_expr(&mut self, e: Expr) -> Result<(Node<usize, usize>, Expr), Expr> {
         match e {
             // a + b
@@ -426,7 +430,7 @@ impl Parser {
     }
 }
 
-impl Fold for Parser {
+impl Fold for InnerParser {
     fn fold_pat(&mut self, i: Pat) -> Pat {
         match self.parse_pat(i) {
             Ok((.., v)) => v,
@@ -483,6 +487,65 @@ fn parse_ops_tokenstream(op: BinOp) -> Result<TokenStream, ()> {
     }
 }
 
+impl Parse for Parser {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let tmp = Punctuated::<Ident, Token![,]>::parse_terminated(input)?;
+        Ok(Self {
+            ty: tmp.into_iter().collect(),
+            ..Default::default()
+        })
+    }
+}
+
+impl Fold for Parser {
+    fn fold_fn_arg(&mut self, i: FnArg) -> FnArg {
+        if let FnArg::Typed(PatType { pat: i, .. }) = i.clone() {
+            if let Pat::Ident(PatIdent { ident, .. }) = *i {
+                self.grads.push(ident);
+            }
+        }
+        i
+    }
+
+    fn fold_return_type(&mut self, i: ReturnType) -> ReturnType {
+        match i {
+            ReturnType::Default => panic!("cannot compile without return value"),
+            ReturnType::Type(arr, ty) => {
+                let ty = *ty;
+                let arg = self.ty.clone();
+                let ty = parse_quote! {
+                    (#ty, (#(#arg),*))
+                };
+                ReturnType::Type(arr, Box::new(ty))
+            }
+        }
+    }
+
+    fn fold_signature(&mut self, i: syn::Signature) -> syn::Signature {
+        let ident = Ident::new(
+            format!("{}{}", "grad_", i.ident).as_str(),
+            Span::call_site(),
+        );
+        let sig = Signature { ident, ..i };
+        fold_signature(self, sig)
+    }
+}
+
+impl Parser {
+    pub fn gen(&mut self, i: ItemFn) -> TokenStream {
+        let org = i.clone();
+        let sig = self.fold_signature(i.sig);
+        let block = Box::new(InnerParser::new(&self.grads).gen(*i.block));
+
+        let i = ItemFn { sig, block, ..i };
+        quote! {
+            #org
+
+            #i
+        }
+    }
+}
+
 fn new_ident<T>(name: T) -> Ident
 where
     T: Display,
@@ -493,12 +556,9 @@ where
 #[cfg(test)]
 mod tests {
 
-    use proc_macro2::Ident;
-    use syn::parse_quote;
+    use syn::parse2;
 
-    use super::{Parser, Fold};
-
-    use quote::quote;
+    use super::*;
 
     #[test]
     fn test_expr_binary() {
@@ -512,7 +572,7 @@ mod tests {
                 tmp
             }
         };
-        let mut parser = Parser::new::<_, Ident>([]);
+        let mut parser = InnerParser::new::<_, Ident>([]);
         parser.enter_block();
         parser.new_local_node(&"a").unwrap();
         parser.new_local_node(&"b").unwrap();
@@ -540,7 +600,7 @@ mod tests {
                 };
             }
         };
-        let mut parser = Parser::new::<_, Ident>([]);
+        let mut parser = InnerParser::new::<_, Ident>([]);
         parser.enter_block();
         parser.new_local_node(&"a").unwrap();
         parser.new_local_node(&"b").unwrap();
@@ -573,7 +633,7 @@ mod tests {
                 };
             }
         };
-        let mut parser = Parser::new::<_, Ident>([]);
+        let mut parser = InnerParser::new::<_, Ident>([]);
         let ast = parser.fold_expr(ast);
         let ast = quote! {#ast};
         assert_eq!(ast.to_string(), res.to_string());
@@ -600,7 +660,7 @@ mod tests {
                 };
             }
         };
-        let mut parser = Parser::new::<_, Ident>([]);
+        let mut parser = InnerParser::new::<_, Ident>([]);
         let ast = parser.fold_expr(ast);
         let ast = quote! {#ast};
         assert_eq!(ast.to_string(), res.to_string());
@@ -608,7 +668,7 @@ mod tests {
 
     #[test]
     fn test_gen_var() {
-        let mut parser = Parser::new::<_, Ident>([]);
+        let mut parser = InnerParser::new::<_, Ident>([]);
         parser.enter_block();
         parser.new_tmp();
         let grad = parser.new_grad_node("");
@@ -625,91 +685,41 @@ mod tests {
         assert_eq!(ast.to_string(), res.to_string());
     }
 
-    // #[test]
-    // fn test_gen_backward() {
-    //     // let mut parser = Parser::new();
-    //     // parser.enter_block();
-    //     // parser.new_tmp();
-    //     // let grad = parser.new_grad_node("").unwrap();
-    //     // let root = parser.new_tmp_node();
-    //     // root.link(&mut parser.ad_graph, 0, &grad);
+    #[test]
+    fn test_gen_backward() {
+        let ast = parse_quote! {
+            {
+                let c;
+                c = a * b;
+            }
+        };
+        let res = quote! {
+            mady_3 += mady_2.clone() * mady_6;
+            mady_0 += mady_3.clone() * mady_4;
+            mady_1 += mady_3.clone() * mady_5;
+        };
+        let mut parser = InnerParser::new::<_, &str>(["a", "b"]);
+        parser.fold_expr(ast);
+        let ast = parser.gen_backward();
+        assert_eq!(ast.to_string(), res.to_string());
+    }
 
-    //     // let ast = parser.gen_vars();
+    #[test]
+    fn test_gen_macro() {
+        let ast = parse_quote! {
+            fn a_plus_b(a: usize, b: usize) -> usize {
+                a + b
+            }
+        };
+        let res = quote! {
+            mady_3 += mady_2.clone() * mady_6;
+            mady_0 += mady_3.clone() * mady_4;
+            mady_1 += mady_3.clone() * mady_5;
+        };
+        let mut parser: Parser =
+            parse2(quote![usize, usize]).expect("cannot parse grad macro attr");
 
-    //     // let res = quote! {
-    //     //     let mady_0 = Zero::zero();
-    //     //     let mady_1 = Zero::zero();
-    //     //     let mady_2 = One::one();
-    //     // };
-    //     // assert_eq!(ast.0.to_string(), res.to_string());
-    //     // assert_eq!(ast.1.to_string(), quote! {(mady_1,)}.to_string());
-    // }
+        let ast = parser.gen(ast);
+        assert_eq!(ast.to_string(), res.to_string());
+    }
 }
-
-/*
-ast = Local(
-    Local {
-        attrs: [],
-        let_token: Let,
-        pat: Ident(
-            PatIdent {
-                attrs: [],
-                by_ref: None,
-                mutability: None,
-                ident: Ident(
-                    r,
-                ),
-                subpat: None,
-            },
-        ),
-        init: Some(
-            (
-                Eq,
-                Binary(
-                    ExprBinary {
-                        attrs: [],
-                        left: Path(
-                            ExprPath {
-                                attrs: [],
-                                qself: None,
-                                path: Path {
-                                    leading_colon: None,
-                                    segments: [
-                                        PathSegment {
-                                            ident: Ident(
-                                                a,
-                                            ),
-                                            arguments: None,
-                                        },
-                                    ],
-                                },
-                            },
-                        ),
-                        op: Mul(
-                            Star,
-                        ),
-                        right: Path(
-                            ExprPath {
-                                attrs: [],
-                                qself: None,
-                                path: Path {
-                                    leading_colon: None,
-                                    segments: [
-                                        PathSegment {
-                                            ident: Ident(
-                                                b,
-                                            ),
-                                            arguments: None,
-                                        },
-                                    ],
-                                },
-                            },
-                        ),
-                    },
-                ),
-            ),
-        ),
-        semi_token: Semi,
-    },
-)
-*/
