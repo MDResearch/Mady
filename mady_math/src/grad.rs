@@ -50,7 +50,7 @@ where
     }
 }
 
-trait GradSub<Rhs = Self>
+pub trait GradSub<Rhs = Self>
 where
     Self: Sub<Rhs> + One + Neg,
     Rhs: One,
@@ -119,7 +119,7 @@ pub trait GradPowf: Sized {
     fn grad_powf(self: Self, i: Self) -> (Self, (Self,));
 }
 
-trait Gradtanh: Sized {
+pub trait Gradtanh: Sized {
     fn grad_tanh(i: Self) -> (Self, (Self,));
 }
 
@@ -423,13 +423,13 @@ impl_trait![
     f64
 ];
 
-impl_trait![GradAdd, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64];
+impl_trait![GradAdd, u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize, f32, f64];
 
-impl_trait![GradSub, i8, i16, i32, i64, i128, f32, f64];
+impl_trait![GradSub, i8, i16, i32, i64, i128, isize, f32, f64];
 
-impl_trait![GradMul, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64];
+impl_trait![GradMul, u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize, f32, f64];
 
-impl_trait![GradDiv, i8, i16, i32, i64, i128, f32, f64];
+impl_trait![GradDiv, i8, i16, i32, i64, i128, isize, f32, f64];
 
 #[cfg(test)]
 mod tests {

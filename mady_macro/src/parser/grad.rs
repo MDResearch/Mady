@@ -6,8 +6,13 @@ use std::hash::{Hash, Hasher};
 use crate::graph::{Edge, Graph, Node};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
-use syn::fold::{fold_block, fold_expr, fold_pat, Fold};
-use syn::{parse_quote, BinOp, Block, Expr, ExprAssign, ExprReturn, ItemFn, Local, Pat, Stmt};
+use syn::fold::{fold_block, fold_expr, fold_pat, fold_signature, Fold};
+use syn::parse::{Parse, ParseStream};
+use syn::punctuated::Punctuated;
+use syn::{
+    parse_quote, BinOp, Block, Expr, ExprAssign, ExprReturn, FnArg, ItemFn, Local, Pat, PatIdent,
+    PatType, ReturnType, Signature, Stmt, Token, Type,
+};
 
 impl<N, E> Node<N, E>
 where
@@ -28,13 +33,22 @@ where
 }
 
 #[derive(Debug, Default, Clone)]
-struct Parser {
-    // local variables
-    variables: Vec<Variable>,
+struct InnerParser {
+    grads: Vec<usize>,
+    top_ty: Vec<Type>,
     // temporary variables
+    variables: Vec<Variable>,
+    // local variables
     stack: Vec<LinkedList<usize>>,
     // graph
-    ad_graph: Graph<usize, usize>,
+    graph: Graph<usize, usize>,
+}
+
+#[derive(Debug, Default, Clone)]
+pub struct Parser {
+    grads: Vec<Ident>,
+    ty: Vec<Ident>,
+    return_ty: Vec<Type>,
 }
 
 // let a=(b+c)*d;
@@ -62,14 +76,27 @@ enum Ty {
     LOOP,
 }
 
-impl Parser {
+impl InnerParser {
     /// create new Parser
     ///
     /// use stack<list<Varible>> to record varible
-    pub fn new() -> Self {
-        let mut tmp: Self = Default::default();
-        tmp.enter_block();
+    fn new<T, K>(grads: T, top_ty: Vec<Type>) -> Self
+    where
+        T: IntoIterator<Item = K>,
+        K: Hash,
+    {
+        let mut tmp = Self {
+            top_ty,
+            ..Default::default()
+        };
+        for i in grads {
+            tmp.new_grad_node(i);
+        }
         tmp
+    }
+
+    fn gen(&mut self, i: Block) -> Block {
+        self.gen_block(i)
     }
 
     fn new_tmp(&mut self) -> usize {
@@ -84,7 +111,7 @@ impl Parser {
     fn new_tmp_node(&mut self) -> Node<usize, usize> {
         let index = self.new_tmp();
 
-        self.ad_graph.add_node(index)
+        self.graph.add_node(index)
     }
 
     /// add a var to stack block
@@ -94,7 +121,7 @@ impl Parser {
     where
         T: Hash,
     {
-        if self.stack.len() == 1 {
+        if self.stack.is_empty() {
             return Err("No Block in Stack".into());
         }
 
@@ -105,12 +132,12 @@ impl Parser {
             hash: Some(hasher.finish()),
             ty: Ty::TMP,
         });
-        let node = self.ad_graph.add_node(index);
-        self.stack.last_mut().unwrap().push_back(node.index());
+        let node = self.graph.add_node(index);
+        self.stack.last_mut().unwrap().push_front(node.index());
         Ok(node)
     }
 
-    fn new_grad_arg_node<T>(&mut self, name: T) -> Node<usize, usize>
+    fn new_grad_node<T>(&mut self, name: T) -> Node<usize, usize>
     where
         T: Hash,
     {
@@ -121,8 +148,8 @@ impl Parser {
             hash: Some(hasher.finish()),
             ty: Ty::GRAD,
         });
-        let node = self.ad_graph.add_node(index);
-        self.stack.first_mut().unwrap().push_back(node.index());
+        let node = self.graph.add_node(index);
+        self.grads.push(node.index());
 
         node
     }
@@ -133,12 +160,19 @@ impl Parser {
         let hash = hasher.finish();
 
         for list in self.stack.iter().rev() {
-            for &index in list.iter() {
+            for &index in list {
                 if self.variables[index].hash == Some(hash) {
                     return Some(Node::new(index));
                 }
             }
         }
+
+        for &index in &self.grads {
+            if self.variables[index].hash == Some(hash) {
+                return Some(Node::new(index));
+            }
+        }
+
         None
     }
 
@@ -157,83 +191,115 @@ impl Parser {
         Ok(())
     }
 
-    fn gen_vars(&mut self) -> TokenStream {
+    fn gen_vars(&mut self) -> Vec<Stmt> {
         // mark roots
-        for i in self.ad_graph.roots() {
-            let &index = Node::new(i).value(&self.ad_graph);
+        for i in self.graph.roots() {
+            let &index = Node::new(i).value(&self.graph);
             self.variables[index].ty = Ty::TOP;
         }
 
         // gen tokenstream
-        let mut ts = TokenStream::new();
-        let _grads = TokenStream::new();
+        let mut stmts = vec![];
+        let mut top_ty = self.top_ty.iter();
         for (i, var) in self.variables.iter().enumerate() {
             let ident = new_ident(i);
 
             let stmt = match var.ty {
                 Ty::TMP => {
-                    quote! {
-                        let #ident = Zero::zero();
+                    parse_quote! {
+                        let mut #ident = Zero::zero();
                     }
                 }
                 Ty::GRAD => {
-                    quote! {
-                        let #ident = Zero::zero();
+                    parse_quote! {
+                        let mut #ident = Zero::zero();
                     }
                 }
                 Ty::TOP => {
-                    quote! {
-                        let #ident = One::one();
+                    let ty = top_ty
+                        .next()
+                        .expect("cannot get top (return) type in array");
+                    parse_quote! {
+                        let #ident: #ty = One::one();
                     }
                 }
                 Ty::IF | Ty::IFEL | Ty::FOR | Ty::LOOP => {
-                    quote! {
+                    parse_quote! {
                         let #ident;
                     }
                 }
             };
-            ts.extend(stmt);
+            stmts.push(stmt);
         }
 
-        ts
+        stmts
     }
 
-    fn gen_backward(&self) -> TokenStream {
-        let mut ts = TokenStream::new();
-        for node in self.ad_graph.topological_iter() {
-            let node_ident = node.ident(&self.ad_graph);
-            for edge in node.children(&self.ad_graph) {
-                let edge_ident = edge.ident(&self.ad_graph);
-                let to_ident = edge.to(&self.ad_graph).ident(&self.ad_graph);
-                let stmt = quote! {
+    fn gen_return(&self) -> TokenStream {
+        let arg: Vec<_> = self.grads.iter().map(|&x| new_ident(x)).collect();
+        quote! {
+            (#(#arg),*)
+        }
+    }
+
+    fn gen_backward(&self) -> Vec<Stmt> {
+        let mut stmts = vec![];
+        for node in self.graph.topological_iter() {
+            let node_ident = node.ident(&self.graph);
+            for edge in node.children(&self.graph) {
+                let edge_ident = edge.ident(&self.graph);
+                let to_ident = edge.to(&self.graph).ident(&self.graph);
+                let stmt = parse_quote! {
                     #to_ident += #node_ident.clone() * #edge_ident;
                 };
-                ts.extend(stmt);
+                stmts.push(stmt);
             }
         }
-        ts
+        stmts
     }
 
-    fn gen_fn(&mut self, i: ItemFn) -> ItemFn {
-        // gen grad var node
-        self.fold_signature(i.sig.clone());
-
+    fn gen_block(&mut self, i: Block) -> Block {
         // gen fn
-        let block = self.fold_block(*i.block);
+        let mut block = self.fold_block(i).stmts;
+
+        // gen return
+        let return_expr = match block.last() {
+            Some(Stmt::Expr(..)) => {
+                let grads = self.gen_return();
+                let expr = block
+                    .last_mut()
+                    .expect("cannot compile without return value");
+                *expr = parse_quote! {
+                    let mady_return = #expr;
+                };
+                quote! {
+                    (mady_return, #grads)
+                }
+            }
+            Some(Stmt::Semi(Expr::Return(..), ..)) => {
+                let expr = block.pop().expect("cannot compile without return value");
+                quote! {
+                    #expr
+                }
+            }
+            _ => panic!("cannot compile without return value"),
+        };
+
         let vars = self.gen_vars();
         let backward = self.gen_backward();
-        let block = parse_quote! {
+
+        parse_quote! {
             {
-                #vars
-                #block
-                #backward
+                #(#vars)*
+                #(#block)*
+                #(#backward)*
+                #return_expr
             }
-        };
-        ItemFn { block, ..i }
+        }
     }
 }
 
-impl Parser {
+impl InnerParser {
     fn parse_expr(&mut self, e: Expr) -> Result<(Node<usize, usize>, Expr), Expr> {
         match e {
             // a + b
@@ -255,16 +321,17 @@ impl Parser {
                     .map_err(|_| Expr::Binary(v.clone()))?;
                 let edge_left = self.new_tmp();
                 let edge_right = self.new_tmp();
-                ops.link(&mut self.ad_graph, edge_left, &left);
-                ops.link(&mut self.ad_graph, edge_right, &right);
+                ops.link(&mut self.graph, edge_left, &left);
+                ops.link(&mut self.graph, edge_right, &right);
 
                 let edge_left_ident = new_ident(edge_left);
                 let edge_right_ident = new_ident(edge_right);
                 let ts = parse_quote! {
                     {
-                        let tmp;
-                        (tmp, (#edge_left_ident, #edge_right_ident)) = #left_expr.#ops_ts(#right_expr);
-                        tmp
+                        let (mady_tmp0, (mady_tmp1, mady_tmp2)) = #left_expr.#ops_ts(#right_expr);
+                        #edge_left_ident = mady_tmp1;
+                        #edge_right_ident = mady_tmp2;
+                        mady_tmp0
                     }
                 };
                 Ok((ops, ts))
@@ -293,7 +360,7 @@ impl Parser {
                     .parse_expr(*v.right.clone())
                     .map_err(|_| Expr::Assign(v.clone()))?;
                 let edge = self.new_tmp();
-                parent.link(&mut self.ad_graph, edge, &child);
+                parent.link(&mut self.graph, edge, &child);
                 let edge_ident = new_ident(edge);
 
                 let right = parse_quote! {
@@ -327,9 +394,6 @@ impl Parser {
                 if let Ok(node) = self.new_local_node(&v.ident) {
                     Ok((node, Pat::Ident(v)))
                 } else {
-                    // arg node
-                    // use Err prevent unexpect linking
-                    self.new_grad_arg_node(&v.ident);
                     Err(Pat::Ident(v))
                 }
             }
@@ -348,7 +412,7 @@ impl Parser {
                     let (child, right) =
                         self.parse_expr(*expr).map_err(|_| Stmt::Local(v.clone()))?;
                     let edge = self.new_tmp();
-                    parent.link(&mut self.ad_graph, edge, &child);
+                    parent.link(&mut self.graph, edge, &child);
                     let edge_ident = new_ident(edge);
                     let right = parse_quote! {
                         {
@@ -381,7 +445,7 @@ impl Parser {
     }
 }
 
-impl Fold for Parser {
+impl Fold for InnerParser {
     fn fold_pat(&mut self, i: Pat) -> Pat {
         match self.parse_pat(i) {
             Ok((.., v)) => v,
@@ -397,25 +461,15 @@ impl Fold for Parser {
     }
 
     fn fold_expr_return(&mut self, i: ExprReturn) -> ExprReturn {
-        let arg: Vec<_> = self
-            .stack
-            .first()
-            .unwrap()
-            .iter()
-            .map(|&x| new_ident(x))
-            .collect();
+        let grads = self.gen_return();
         let expr: Expr = match i.expr {
             Some(e) => {
                 let tmp = fold_expr(self, *e);
                 parse_quote! {
-                    (#tmp, (#(#arg),*))
+                    (#tmp, #grads)
                 }
             }
-            None => {
-                parse_quote! {
-                    #(#arg),*
-                }
-            }
+            None => panic!("cannot compile without return value"),
         };
         ExprReturn {
             expr: Some(Box::new(expr)),
@@ -448,6 +502,75 @@ fn parse_ops_tokenstream(op: BinOp) -> Result<TokenStream, ()> {
     }
 }
 
+impl Parse for Parser {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let tmp = Punctuated::<Ident, Token![,]>::parse_terminated(input)?;
+        Ok(Self {
+            ty: tmp.into_iter().collect(),
+            ..Default::default()
+        })
+    }
+}
+
+impl Fold for Parser {
+    fn fold_fn_arg(&mut self, i: FnArg) -> FnArg {
+        if let FnArg::Typed(PatType { pat: i, .. }) = i.clone() {
+            if let Pat::Ident(PatIdent { ident, .. }) = *i {
+                self.grads.push(ident);
+            }
+        }
+        i
+    }
+
+    fn fold_return_type(&mut self, i: ReturnType) -> ReturnType {
+        match i {
+            ReturnType::Default => panic!("cannot compile without return value"),
+            ReturnType::Type(arr, ty) => {
+                let ty = *ty;
+                match ty {
+                    Type::Path(_) => self.return_ty.push(ty.clone()),
+                    Type::Array(_)
+                    | Type::Ptr(_)
+                    | Type::Reference(_)
+                    | Type::Slice(_)
+                    | Type::Tuple(_) => unimplemented!("not support destructure"),
+                    _ => panic!("unsupport type"),
+                }
+
+                let arg = self.ty.clone();
+                let ty = parse_quote! {
+                    (#ty, (#(#arg),*))
+                };
+                ReturnType::Type(arr, Box::new(ty))
+            }
+        }
+    }
+
+    fn fold_signature(&mut self, i: syn::Signature) -> syn::Signature {
+        let ident = Ident::new(
+            format!("{}{}", "grad_", i.ident).as_str(),
+            Span::call_site(),
+        );
+        let sig = Signature { ident, ..i };
+        fold_signature(self, sig)
+    }
+}
+
+impl Parser {
+    pub fn gen(&mut self, i: ItemFn) -> TokenStream {
+        let org = i.clone();
+        let sig = self.fold_signature(i.sig);
+        let block = Box::new(InnerParser::new(&self.grads, self.return_ty.clone()).gen(*i.block));
+
+        let i = ItemFn { sig, block, ..i };
+        quote! {
+            #org
+
+            #i
+        }
+    }
+}
+
 fn new_ident<T>(name: T) -> Ident
 where
     T: Display,
@@ -458,11 +581,7 @@ where
 #[cfg(test)]
 mod tests {
 
-    use syn::parse_quote;
-
-    use super::{Fold, Parser};
-
-    use quote::quote;
+    use super::*;
 
     #[test]
     fn test_expr_binary() {
@@ -471,12 +590,13 @@ mod tests {
         };
         let res = quote! {
             {
-                let tmp;
-                (tmp, (mady_3, mady_4)) = a.grad_add(b);
-                tmp
+                let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_add(b);
+                mady_3 = mady_tmp1;
+                mady_4 = mady_tmp2;
+                mady_tmp0
             }
         };
-        let mut parser = Parser::new();
+        let mut parser = InnerParser::new::<_, Ident>([], vec![]);
         parser.enter_block();
         parser.new_local_node(&"a").unwrap();
         parser.new_local_node(&"b").unwrap();
@@ -497,14 +617,15 @@ mod tests {
                 c = {
                     mady_6 = c.one();
                     {
-                        let tmp;
-                        (tmp, (mady_4, mady_5)) = a.grad_sub(b);
-                        tmp
+                        let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_sub(b);
+                        mady_4 = mady_tmp1;
+                        mady_5 = mady_tmp2;
+                        mady_tmp0
                     }
                 };
             }
         };
-        let mut parser = Parser::new();
+        let mut parser = InnerParser::new::<_, Ident>([], vec![]);
         parser.enter_block();
         parser.new_local_node(&"a").unwrap();
         parser.new_local_node(&"b").unwrap();
@@ -530,14 +651,15 @@ mod tests {
                 c = {
                     mady_6 = c.one();
                     {
-                        let tmp;
-                        (tmp, (mady_4, mady_5)) = a.grad_mul(b);
-                        tmp
+                        let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_mul(b);
+                        mady_4 = mady_tmp1;
+                        mady_5 = mady_tmp2;
+                        mady_tmp0
                     }
                 };
             }
         };
-        let mut parser = Parser::new();
+        let mut parser = InnerParser::new::<_, Ident>([], vec![]);
         let ast = parser.fold_expr(ast);
         let ast = quote! {#ast};
         assert_eq!(ast.to_string(), res.to_string());
@@ -557,14 +679,15 @@ mod tests {
                 let c = {
                     mady_6 = c.one();
                     {
-                        let tmp;
-                        (tmp, (mady_4, mady_5)) = a.grad_div(b);
-                        tmp
+                        let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_div(b);
+                        mady_4 = mady_tmp1;
+                        mady_5 = mady_tmp2;
+                        mady_tmp0
                     }
                 };
             }
         };
-        let mut parser = Parser::new();
+        let mut parser = InnerParser::new::<_, Ident>([], vec![]);
         let ast = parser.fold_expr(ast);
         let ast = quote! {#ast};
         assert_eq!(ast.to_string(), res.to_string());
@@ -572,108 +695,66 @@ mod tests {
 
     #[test]
     fn test_gen_var() {
-        let mut parser = Parser::new();
+        let mut parser = InnerParser::new::<_, Ident>([], vec![parse_quote! {usize}]);
         parser.enter_block();
         parser.new_tmp();
-        let grad = parser.new_grad_arg_node("");
+        let grad = parser.new_grad_node("");
         let root = parser.new_tmp_node();
-        root.link(&mut parser.ad_graph, 0, &grad);
+        root.link(&mut parser.graph, 0, &grad);
 
         let ast = parser.gen_vars();
 
+        let ast = quote! {
+            #(#ast)*
+        };
+
         let res = quote! {
-            let mady_0 = Zero::zero();
-            let mady_1 = Zero::zero();
-            let mady_2 = One::one();
+            let mut mady_0 = Zero::zero();
+            let mut mady_1 = Zero::zero();
+            let mady_2: usize = One::one();
+        };
+        assert_eq!(ast.to_string(), res.to_string());
+    }
+
+    #[test]
+    fn test_gen_backward() {
+        let ast = parse_quote! {
+            {
+                let c;
+                c = a * b;
+            }
+        };
+        let res = quote! {
+            mady_3 += mady_2.clone() * mady_6;
+            mady_0 += mady_3.clone() * mady_4;
+            mady_1 += mady_3.clone() * mady_5;
+        };
+        let mut parser = InnerParser::new::<_, &str>(["a", "b"], vec![parse_quote! {usize}]);
+        parser.fold_expr(ast);
+        let ast = parser.gen_backward();
+        let ast = quote! {
+            #(#ast)*
         };
         assert_eq!(ast.to_string(), res.to_string());
     }
 
     // #[test]
-    // fn test_gen_backward() {
-    //     // let mut parser = Parser::new();
-    //     // parser.enter_block();
-    //     // parser.new_tmp();
-    //     // let grad = parser.new_grad_node("").unwrap();
-    //     // let root = parser.new_tmp_node();
-    //     // root.link(&mut parser.ad_graph, 0, &grad);
+    // fn test_gen_macro() {
+    //     let ast = parse_quote! {
+    //         fn a_plus_b(a: usize, b: usize) -> usize {
+    //             let c = a + b;
+    //             c
+    //         }
+    //     };
+    //     let res = quote! {
+    //         mady_3 += mady_2.clone() * mady_6;
+    //         mady_0 += mady_3.clone() * mady_4;
+    //         mady_1 += mady_3.clone() * mady_5;
+    //     };
+    //     let mut parser: Parser =
+    //         parse2(quote![usize, usize]).expect("cannot parse grad macro attr");
 
-    //     // let ast = parser.gen_vars();
-
-    //     // let res = quote! {
-    //     //     let mady_0 = Zero::zero();
-    //     //     let mady_1 = Zero::zero();
-    //     //     let mady_2 = One::one();
-    //     // };
-    //     // assert_eq!(ast.0.to_string(), res.to_string());
-    //     // assert_eq!(ast.1.to_string(), quote! {(mady_1,)}.to_string());
+    //     let ast = parser.gen(ast);
+    //     assert_eq!(ast.to_string(), res.to_string());
     // }
 }
-
-/*
-ast = Local(
-    Local {
-        attrs: [],
-        let_token: Let,
-        pat: Ident(
-            PatIdent {
-                attrs: [],
-                by_ref: None,
-                mutability: None,
-                ident: Ident(
-                    r,
-                ),
-                subpat: None,
-            },
-        ),
-        init: Some(
-            (
-                Eq,
-                Binary(
-                    ExprBinary {
-                        attrs: [],
-                        left: Path(
-                            ExprPath {
-                                attrs: [],
-                                qself: None,
-                                path: Path {
-                                    leading_colon: None,
-                                    segments: [
-                                        PathSegment {
-                                            ident: Ident(
-                                                a,
-                                            ),
-                                            arguments: None,
-                                        },
-                                    ],
-                                },
-                            },
-                        ),
-                        op: Mul(
-                            Star,
-                        ),
-                        right: Path(
-                            ExprPath {
-                                attrs: [],
-                                qself: None,
-                                path: Path {
-                                    leading_colon: None,
-                                    segments: [
-                                        PathSegment {
-                                            ident: Ident(
-                                                b,
-                                            ),
-                                            arguments: None,
-                                        },
-                                    ],
-                                },
-                            },
-                        ),
-                    },
-                ),
-            ),
-        ),
-        semi_token: Semi,
-    },
-)
-*/
