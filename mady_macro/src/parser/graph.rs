@@ -339,6 +339,7 @@ impl Parser {
 
     fn parse_stmt(&mut self, e: Stmt) -> Result<(Node<usize, usize>, Stmt), Stmt> {
         match e {
+            // ex: let a:usize = 5;
             Stmt::Local(v) => {
                 let (parent, left) = self
                     .parse_pat(v.pat.clone())
