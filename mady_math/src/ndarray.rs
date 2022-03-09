@@ -15,7 +15,7 @@ struct D2;
 
 impl<T> NDArray<T, D1>
 where
-    T: Mul<Output = T> + Add<Output = T> + Zero + Copy,
+    T: Mul<Output = T> + Add<Output = T> + Zero<O0 = T> + Copy,
 {
     fn new(data: Vec<T>) -> Self {
         Self {
@@ -31,7 +31,7 @@ where
             .iter()
             .zip(i.data.iter())
             .map(|(&x, &y)| x * y)
-            .fold(Zero::zero(), |a, b| a + b);
+            .fold(T::zero(), |a, b| a + b);
     }
 
     fn cross(self: Self, i: Self) -> NDArray<T, D1> {

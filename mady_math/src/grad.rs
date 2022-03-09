@@ -1,5 +1,6 @@
 //! about the std ops trait
 
+
 /// return one in a type
 ///
 /// `a * a.one() = a`
@@ -96,7 +97,7 @@ pub trait GradMax {
 //     fn grad_tanh(i: Self) -> (Self, (Self,));
 // }
 
-pub mod impl_one {
+mod impl_one {
     use super::One;
     use crate::impl_trait;
 
@@ -127,7 +128,7 @@ pub mod impl_one {
     impl_trait![parse_f, f32, f64];
 }
 
-pub mod impl_zero {
+mod impl_zero {
     use super::Zero;
     use crate::impl_trait;
 
