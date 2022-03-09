@@ -15,6 +15,20 @@ use std::ops::{Add, Mul, Sub};
 /// ```
 pub use crate::mat;
 
+// trait Derivatives<T>
+// where
+//     T: Copy,
+// {
+//     fn derivatives(self: Self, i: Matrix<T>) -> Matrix<T>;
+// }
+
+// impl<T> Derivatives<T> for Matrix<T>
+// where
+//     T: Copy,
+// {
+//     fn derivatives(self: Self, i: Matrix<T>) -> Matrix<T> {}
+// }
+
 // 0  1  2
 // 3  4  5
 // 6  7  8
@@ -91,9 +105,10 @@ where
     T: Copy + Mul<Output = T> + Default,
 {
     // st = start, sl = side length
-    pub fn convolution(&self, cor: &Self) -> Vec<T> {
+    // one part
+    pub fn one_part_convolution(&self, cor: &Self) -> Vec<T> {
         let mut ret: Vec<T> = vec![];
-        ret.resize(self.shape.iter().product(), Default::default());
+        ret.resize(cor.shape.iter().product(), Default::default());
         // product() mean muiltple all the
         let mut dst = self.into_row_iter().enumerate();
         // data start
@@ -101,8 +116,9 @@ where
         let mut cst = cor.into_row_iter().enumerate();
         // core start
 
-        // let mut pass = 0;
-        // let len_diff = self.shape[1] - cor.shape[1];
+        let mut pass = 0;
+        let mut all_pass: usize = 0;
+        let len_diff = self.shape[1] - cor.shape[1];
 
         loop {
             let matrix_now = &dst.next().unwrap();
@@ -120,16 +136,20 @@ where
             //     None => println!("problem!!! at line 120"),
             // };
 
-            // ret[pass] = *matrix_now.1 * *core_now.1;
-            // pass += 1;
+            ret[all_pass] = *matrix_now.1 * *core_now.1;
+            pass += 1;
+            all_pass += 1;
 
-            // if pass >= cor.shape[1] {
-            //     dst.skip(len_diff);
-            // }
+            if pass >= cor.shape[1] {
+                for i in 0..len_diff {
+                    dst.next();
+                }
+                pass = 0;
+            }
 
-            // if pass == cor.shape.iter().product() {
-            //     break;
-            // };
+            if all_pass == cor.shape.iter().product() {
+                break;
+            };
         }
         ret
     }
@@ -165,6 +185,21 @@ where
     }
 }
 // 使&a與a(借用或不借用)都可以作為參數
+
+// Add Matrix
+// impl_ops_all!(+[<K, T> where T: Add<K> + Copy,K: Copy,<T as Add<K>>::Output: Copy]
+//     (left:Matrix<T>, right:Matrix<K>)->Matrix<<T as Add<K>>::Output> {
+//         // !for debug
+//         if cfg!(debug_assertions) {
+//             assert_eq!(left.shape, right.shape)
+//         }
+//         Matrix {
+//             shape: left.shape.clone(),
+//             // 這裡可以直接+，來源自macros.rs
+//             data: &left.data + &right.data,
+//         }
+//     }
+// );
 
 // Add Matrix
 impl_ops_all!(+[<K, T> where T: Add<K> + Copy,K: Copy,<T as Add<K>>::Output: Copy]
@@ -403,18 +438,18 @@ mod tests {
         )
     }
 
-    //     #[test]
-    //     fn convolution_test() {
-    //         let mat = mat![1,2,3,
-    //                                     4,5,6,
-    //                                     7,8,9,
-    //                                     ;3,3];
+    #[test]
+    fn convolution_test() {
+        let mat = mat![1,2,3,
+                                        4,5,6,
+                                        7,8,9,
+                                        ;3,3];
 
-    //         let concore = mat![1,2,
-    //                                     3,4,
-    //                                     ;2,2];
-    //         // println!("{}",mat.convolution(&concore,1)/);
-    //         dbg!(mat.convolution(&concore, 1));
-    //         //assert_eq!(mat.convolution(&concore,1),vec![1,4,12,20]);
-    //     }
+        let concore = mat![1,2,
+                                        3,4,
+                                        ;2,2];
+        // println!("{}",mat.convolution(&concore,1)/);
+        //dbg!(mat.convolution(&concore,));
+        assert_eq!(mat.one_part_convolution(&concore), vec![1, 4, 12, 20]);
+    }
 }
