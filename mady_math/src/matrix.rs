@@ -15,6 +15,20 @@ use std::ops::{Add, Mul, Sub};
 /// ```
 pub use crate::mat;
 
+// trait Derivatives<T>
+// where
+//     T: Copy,
+// {
+//     fn derivatives(self: Self, i: Matrix<T>) -> Matrix<T>;
+// }
+
+// impl<T> Derivatives<T> for Matrix<T>
+// where
+//     T: Copy,
+// {
+//     fn derivatives(self: Self, i: Matrix<T>) -> Matrix<T> {}
+// }
+
 // 0  1  2
 // 3  4  5
 // 6  7  8
@@ -171,6 +185,21 @@ where
     }
 }
 // 使&a與a(借用或不借用)都可以作為參數
+
+// Add Matrix
+// impl_ops_all!(+[<K, T> where T: Add<K> + Copy,K: Copy,<T as Add<K>>::Output: Copy]
+//     (left:Matrix<T>, right:Matrix<K>)->Matrix<<T as Add<K>>::Output> {
+//         // !for debug
+//         if cfg!(debug_assertions) {
+//             assert_eq!(left.shape, right.shape)
+//         }
+//         Matrix {
+//             shape: left.shape.clone(),
+//             // 這裡可以直接+，來源自macros.rs
+//             data: &left.data + &right.data,
+//         }
+//     }
+// );
 
 // Add Matrix
 impl_ops_all!(+[<K, T> where T: Add<K> + Copy,K: Copy,<T as Add<K>>::Output: Copy]

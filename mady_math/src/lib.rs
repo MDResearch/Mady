@@ -1,5 +1,6 @@
 pub mod grad;
 pub mod matrix;
+pub mod ndarray;
 pub mod tensor;
 #[macro_use]
 mod macros;
