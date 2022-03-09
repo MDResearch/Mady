@@ -127,7 +127,7 @@ where
             all_pass += 1;
 
             if pass >= cor.shape[1] {
-                for i in 0..len_diff{
+                for i in 0..len_diff {
                     dst.next();
                 }
                 pass = 0;
@@ -140,7 +140,6 @@ where
         ret
     }
 }
-
 
 impl<T> From<(Tensor<T>, [usize; 2])> for Matrix<T>
 where
@@ -410,18 +409,18 @@ mod tests {
         )
     }
 
-        #[test]
-        fn convolution_test() {
-            let mat = mat![1,2,3,
+    #[test]
+    fn convolution_test() {
+        let mat = mat![1,2,3,
                                         4,5,6,
                                         7,8,9,
                                         ;3,3];
 
-            let concore = mat![1,2,
+        let concore = mat![1,2,
                                         3,4,
                                         ;2,2];
-            // println!("{}",mat.convolution(&concore,1)/);
-            //dbg!(mat.convolution(&concore,));
-            assert_eq!(mat.one_part_convolution(&concore),vec![1,4,12,20]);
-        }
+        // println!("{}",mat.convolution(&concore,1)/);
+        //dbg!(mat.convolution(&concore,));
+        assert_eq!(mat.one_part_convolution(&concore), vec![1, 4, 12, 20]);
+    }
 }
