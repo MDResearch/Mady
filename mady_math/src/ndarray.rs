@@ -3,6 +3,7 @@ use super::grad::Zero;
 use std::{
     marker::PhantomData,
     ops::{Add, Div, Mul, Neg, Sub},
+    process::Output,
 };
 
 #[derive(Debug)]
@@ -53,16 +54,17 @@ where
         NDArray::<T, D1>::new(result)
     }
 
-    fn derivatives(self: Self, i: Self) -> NDArray<T, D2> {
-        let mut result = vec![];
-        for j in 0..self.size[0] {
-            for c in 0..self.size[0] {
-                result.push(self.data[c] / i.data[j]);
-            }
-        }
+    // wrong one
+    // fn jacobian(self: Self, i: NDArray<T, D1>) -> NDArray<T, D2> {
+    //     let mut result = vec![];
+    //     for j in 0..self.size[0] {
+    //         for c in 0..self.size[0] {
+    //             result.push(self.data[c] / i.data[j]);
+    //         }
+    //     }
 
-        NDArray::<T, D2>::new(result, (self.size[0], self.size[0]))
-    }
+    //     NDArray::<T, D2>::new(result, (self.size[0], self.size[0]))
+    // }
 
     fn add(self: Self, i: Self) -> Self {
         if cfg!(debug_assertions) {
@@ -89,7 +91,7 @@ where
 
 impl<T> NDArray<T, D2>
 where
-    T: Mul<Output = T> + Add<Output = T> + Div<Output = T> + Zero + Copy,
+    T: Mul<Output = T> + Add<Output = T> + Div<Output = T> + Zero<O0 = T> + Copy,
 {
     fn new(data: Vec<T>, size: (usize, usize)) -> Self {
         if cfg!(debug_assertions) {
@@ -120,7 +122,7 @@ where
             assert_eq!(self.size[0], i.size[0]);
         }
         for j in 0..self.size[1] {
-            let mut sum = Zero::zero();
+            let mut sum: T = T::zero();
             for c in 0..self.size[0] {
                 sum = sum + self.data[j * self.size[0] + c] * i.data[c];
             }
@@ -139,7 +141,7 @@ where
             assert_eq!(self.size[0], i.size[0]);
         }
         for j in 0..self.size[1] {
-            let mut sum: T = Zero::zero();
+            let mut sum: T = T::zero();
             for c in 0..self.size[0] {
                 sum = sum + self.data[j * self.size[0] + c] * i.data[c];
             }
@@ -176,7 +178,7 @@ mod tests {
     fn d1_m_derivatives() {
         let vec_a = NDArray::<f32, D1>::new(vec![1.0, 2.0]);
         let vec_b = NDArray::<f32, D1>::new(vec![6.0, 7.0]);
-        let result = vec_a.derivatives(vec_b);
+        let result = vec_a.jacobian(vec_b);
 
         assert_eq!(
             result.data,
