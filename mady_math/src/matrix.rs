@@ -1,7 +1,7 @@
 //! define the datastructure,matrix.
 //! describe all the implement of matrix
 
-use crate::{impl_ops_all, matrix, tensor::Tensor};
+use crate::{impl_ops_all, tensor::Tensor};
 use std::ops::{Add, Mul, Sub};
 
 // reexport
@@ -124,8 +124,8 @@ where
             let matrix_now = &dst.next().unwrap();
             let core_now = &cst.next().unwrap();
 
-            let matrix_now_val: (usize, &T);
-            let core_now_val: (usize, &T);
+            let _matrix_now_val: (usize, &T);
+            let _core_now_val: (usize, &T);
 
             // match matrix_now {
             //     &Some(x) => matrix_now_val = x,
@@ -141,7 +141,7 @@ where
             all_pass += 1;
 
             if pass >= cor.shape[1] {
-                for i in 0..len_diff {
+                for _i in 0..len_diff {
                     dst.next();
                 }
                 pass = 0;
@@ -209,7 +209,7 @@ impl_ops_all!(+[<K, T> where T: Add<K> + Copy,K: Copy,<T as Add<K>>::Output: Cop
             assert_eq!(left.shape, right.shape)
         }
         Matrix {
-            shape: left.shape.clone(),
+            shape: left.shape,
             // 這裡可以直接+，來源自macros.rs
             data: &left.data + &right.data,
         }
@@ -224,7 +224,7 @@ impl_ops_all!(+[<K, T> where T: Add<K> + Copy,K: Copy,<T as Add<K>>::Output: Cop
             assert_eq!(left.shape, [right.0.shape[1],right.0.shape[0]])
         }
         Matrix {
-            shape: left.shape.clone(),
+            shape: left.shape,
             data: Tensor::from(left.into_row_iter().zip(right.into_row_iter()).map(|(&a,&b)| a + b).collect::<Vec<_>>()),
         }
     }
@@ -238,7 +238,7 @@ impl_ops_all!(-[<K, T> where T: Sub<K> + Copy,K: Copy,<T as Sub<K>>::Output: Cop
             assert_eq!(left.shape, right.shape)
         }
         Matrix {
-            shape: left.shape.clone(),
+            shape: left.shape,
             data: &left.data - &right.data,
         }
     }
@@ -336,7 +336,7 @@ impl_ops_all!(+[<K, T> where T: Add<K> + Copy,K: Copy,<T as Add<K>>::Output: Cop
         }
         Transpose(
             Matrix {
-                shape: left.0.shape.clone(),
+                shape: left.0.shape,
                 data: &left.0.data + &right.0.data,
             }
         )
@@ -351,7 +351,7 @@ impl_ops_all!(+[<K, T> where T: Add<K> + Copy,K: Copy,<T as Add<K>>::Output: Cop
             assert_eq!(left.0.shape, [right.shape[1],right.shape[0]])
         }
         Matrix {
-            shape: right.shape.clone(),
+            shape: right.shape,
             data: Tensor::from(left.into_row_iter().zip(right.into_row_iter()).map(|(&a,&b)| a + b).collect::<Vec<_>>()),
         }
     }
@@ -366,7 +366,7 @@ impl_ops_all!(-[<K, T> where T: Sub<K> + Copy,K: Copy,<T as Sub<K>>::Output: Cop
         }
         Transpose(
             Matrix {
-                shape: left.0.shape.clone(),
+                shape: left.0.shape,
                 data: &left.0.data - &right.0.data,
             }
         )

@@ -71,14 +71,14 @@ pub trait GradMin {
     type O0;
     type G0;
     type G1;
-    fn grad_min(self: Self, i: Self) -> (Self::O0, (Self::G0, Self::G1));
+    fn grad_min(self, i: Self) -> (Self::O0, (Self::G0, Self::G1));
 }
 
 pub trait GradMax {
     type O0;
     type G0;
     type G1;
-    fn grad_max(self: Self, i: Self) -> (Self::O0, (Self::G0, Self::G1));
+    fn grad_max(self, i: Self) -> (Self::O0, (Self::G0, Self::G1));
 }
 
 // pub trait GradPow {

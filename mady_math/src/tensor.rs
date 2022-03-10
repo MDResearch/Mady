@@ -3,7 +3,7 @@
 
 use std::ops::{Add, Mul, Sub};
 
-use crate::{impl_ops, impl_ops_all, impl_ops_trait};
+use crate::impl_ops_all;
 
 pub use crate::ten;
 
@@ -185,7 +185,7 @@ mod tests {
 
     #[test]
     fn clone() {
-        assert_eq!(Tensor::new(0, 5), Tensor::new(0, 5).clone());
+        assert_eq!(Tensor::new(0, 5), Tensor::new(0, 5));
     }
 
     #[test]

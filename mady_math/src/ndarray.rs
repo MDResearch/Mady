@@ -2,8 +2,7 @@ use super::grad::Zero;
 
 use std::{
     marker::PhantomData,
-    ops::{Add, Div, Mul, Neg, Sub},
-    process::Output,
+    ops::{Add, Div, Mul},
 };
 
 #[derive(Debug)]
@@ -31,7 +30,7 @@ where
         }
     }
 
-    fn dot(self: Self, i: Self) -> T {
+    fn dot(self, i: Self) -> T {
         if cfg!(debug_assertions) {
             assert_eq!(self.size, i.size);
         }
@@ -42,7 +41,7 @@ where
             .fold(T::zero(), |a, b| a + b)
     }
 
-    fn mul(self: Self, i: Self) -> Self {
+    fn mul(self, i: Self) -> Self {
         if cfg!(debug_assertions) {
             assert_eq!(self.size, i.size);
         }
@@ -66,7 +65,7 @@ where
     //     NDArray::<T, D2>::new(result, (self.size[0], self.size[0]))
     // }
 
-    fn add(self: Self, i: Self) -> Self {
+    fn add(self, i: Self) -> Self {
         if cfg!(debug_assertions) {
             assert_eq!(self.size, i.size);
         }
@@ -78,7 +77,7 @@ where
         NDArray::<T, D1>::new(result)
     }
 
-    fn cross(self: Self, i: Self) -> NDArray<T, D1> {
+    fn cross(self, i: Self) -> NDArray<T, D1> {
         // https://zh.wikipedia.org/wiki/%E7%9F%A9%E9%98%B5%E5%BE%AE%E7%A7%AF%E5%88%86
         // https://en.wikipedia.org/wiki/Matrix_calculus
 
@@ -104,7 +103,7 @@ where
         }
     }
 
-    fn add(self: Self, i: Self) -> Self {
+    fn add(self, i: Self) -> Self {
         if cfg!(debug_assertions) {
             assert_eq!(self.size, i.size);
         }
@@ -116,7 +115,7 @@ where
         NDArray::<T, D2>::new(result, (self.size[0], self.size[1]))
     }
 
-    fn mul(self: Self, i: NDArray<T, D1>) -> NDArray<T, D1> {
+    fn mul(self, i: NDArray<T, D1>) -> NDArray<T, D1> {
         let mut result = vec![];
         if cfg!(debug_assertions) {
             assert_eq!(self.size[0], i.size[0]);
@@ -132,10 +131,7 @@ where
         NDArray::<T, D1>::new(result)
     }
 
-    fn grad_mul(
-        self: Self,
-        i: NDArray<T, D1>,
-    ) -> (NDArray<T, D1>, (NDArray<T, D2>, NDArray<T, D1>)) {
+    fn grad_mul(self, i: NDArray<T, D1>) -> (NDArray<T, D1>, (NDArray<T, D2>, NDArray<T, D1>)) {
         let mut result = vec![];
         if cfg!(debug_assertions) {
             assert_eq!(self.size[0], i.size[0]);
@@ -153,8 +149,9 @@ where
     }
 }
 
+#[cfg(test)]
 mod tests {
-    use super::{NDArray, D1, D2};
+    use super::*;
 
     #[test]
     fn d1_dot() {
@@ -162,7 +159,7 @@ mod tests {
         let vec_b = NDArray::<i32, D1>::new(vec![6, 7, 3]);
         let result = vec_a.dot(vec_b);
 
-        assert_eq!(result, 29 as i32);
+        assert_eq!(result, 29_i32);
     }
 
     #[test]
