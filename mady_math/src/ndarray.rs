@@ -40,6 +40,18 @@ where
             .fold(Zero::zero(), |a, b| a + b)
     }
 
+    fn add(self: Self, i: Self) -> Self {
+        if cfg!(debug_assertions) {
+            assert_eq!(self.size, i.size);
+        }
+        let mut result = vec![];
+        for c in 0..self.data.len() {
+            result.push(self.data[c] + i.data[c]);
+        }
+
+        NDArray::<T, D1>::new(result)
+    }
+
     fn cross(self: Self, i: Self) -> NDArray<T, D1> {
         // https://zh.wikipedia.org/wiki/%E7%9F%A9%E9%98%B5%E5%BE%AE%E7%A7%AF%E5%88%86
         // https://en.wikipedia.org/wiki/Matrix_calculus
@@ -64,6 +76,18 @@ where
             size: vec![size.0, size.1],
             data,
         }
+    }
+
+    fn add(self: Self, i: Self) -> Self {
+        if cfg!(debug_assertions) {
+            assert_eq!(self.size, i.size);
+        }
+        let mut result = vec![];
+        for c in 0..self.data.len() {
+            result.push(self.data[c] + i.data[c]);
+        }
+
+        NDArray::<T, D2>::new(result, (self.size[0], self.size[1]))
     }
 
     fn mul(self: Self, i: NDArray<T, D1>) -> NDArray<T, D1> {
@@ -113,6 +137,24 @@ mod tests {
         let result = vec_a.dot(vec_b);
 
         assert_eq!(result, 29 as i32);
+    }
+
+    #[test]
+    fn d1_add() {
+        let vec_a = NDArray::<i32, D1>::new(vec![1, 2, 3]);
+        let vec_b = NDArray::<i32, D1>::new(vec![6, 7, 3]);
+        let result = vec_a.add(vec_b);
+
+        assert_eq!(result.data, vec![7, 9, 6]);
+    }
+
+    #[test]
+    fn d2_add() {
+        let vec_a = NDArray::<i32, D2>::new(vec![1, 2, 3, 4], (2, 2));
+        let vec_b = NDArray::<i32, D2>::new(vec![6, 7, 3, 8], (2, 2));
+        let result = vec_a.add(vec_b);
+
+        assert_eq!(result.data, vec![7, 9, 6, 12]);
     }
 
     #[test]
