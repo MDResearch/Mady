@@ -174,18 +174,17 @@ mod tests {
         assert_eq!(result.data, vec![7, 9, 6]);
     }
 
-    #[test]
-    fn d1_m_derivatives() {
-        let vec_a = NDArray::<f32, D1>::new(vec![1.0, 2.0]);
-        let vec_b = NDArray::<f32, D1>::new(vec![6.0, 7.0]);
-        let result = vec_a.jacobian(vec_b);
+    // #[test]
+    // fn d1_m_derivatives() {
+    //     let vec_a = NDArray::<f32, D1>::new(vec![1.0, 2.0]);
+    //     let vec_b = NDArray::<f32, D1>::new(vec![6.0, 7.0]);
+    //     let result = vec_a.jacobian(vec_b);
 
-        assert_eq!(
-            result.data,
-            vec![1.0 / 6.0, 2.0 / 6.0, 1.0 / 7.0, 2.0 / 7.0]
-        );
-    }
-
+    //     assert_eq!(
+    //         result.data,
+    //         vec![1.0 / 6.0, 2.0 / 6.0, 1.0 / 7.0, 2.0 / 7.0]
+    //     );
+    // }
     #[test]
     fn d1_mul() {
         let vec_a = NDArray::<i32, D1>::new(vec![1, 2, 3]);
