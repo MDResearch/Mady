@@ -3,6 +3,7 @@ use super::grad::Zero;
 use std::{
     marker::PhantomData,
     ops::{Add, Div, Mul, Neg, Sub},
+    process::Output,
 };
 
 #[derive(Debug)]
@@ -89,7 +90,7 @@ where
 
 impl<T> NDArray<T, D2>
 where
-    T: Mul<Output = T> + Add<Output = T> + Div<Output = T> + Zero + Copy,
+    T: Mul<Output = T> + Add<Output = T> + Div<Output = T> + Zero<O0 = T> + Copy,
 {
     fn new(data: Vec<T>, size: (usize, usize)) -> Self {
         if cfg!(debug_assertions) {
@@ -120,7 +121,7 @@ where
             assert_eq!(self.size[0], i.size[0]);
         }
         for j in 0..self.size[1] {
-            let mut sum = Zero::zero();
+            let mut sum: T = T::zero();
             for c in 0..self.size[0] {
                 sum = sum + self.data[j * self.size[0] + c] * i.data[c];
             }
@@ -139,7 +140,7 @@ where
             assert_eq!(self.size[0], i.size[0]);
         }
         for j in 0..self.size[1] {
-            let mut sum: T = Zero::zero();
+            let mut sum: T = T::zero();
             for c in 0..self.size[0] {
                 sum = sum + self.data[j * self.size[0] + c] * i.data[c];
             }
