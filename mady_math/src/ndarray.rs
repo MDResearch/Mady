@@ -19,7 +19,7 @@ struct D2;
 
 impl<T> NDArray<T, D1>
 where
-    T: Mul<Output = T> + Add<Output = T> + Zero + Copy,
+    T: Mul<Output = T> + Add<Output = T> + Div<Output = T> + Zero + Copy,
 {
     fn new(data: Vec<T>) -> Self {
         Self {
@@ -38,6 +38,29 @@ where
             .zip(i.data.iter())
             .map(|(&x, &y)| x * y)
             .fold(Zero::zero(), |a, b| a + b)
+    }
+
+    fn mul(self: Self, i: Self) -> Self {
+        if cfg!(debug_assertions) {
+            assert_eq!(self.size, i.size);
+        }
+        let mut result = vec![];
+        for c in 0..self.data.len() {
+            result.push(self.data[c] * i.data[c]);
+        }
+
+        NDArray::<T, D1>::new(result)
+    }
+
+    fn derivatives(self: Self, i: Self) -> NDArray<T, D2> {
+        let mut result = vec![];
+        for j in 0..self.size[0] {
+            for c in 0..self.size[0] {
+                result.push(self.data[c] / i.data[j]);
+            }
+        }
+
+        NDArray::<T, D2>::new(result, (self.size[0], self.size[0]))
     }
 
     fn add(self: Self, i: Self) -> Self {
@@ -65,7 +88,7 @@ where
 
 impl<T> NDArray<T, D2>
 where
-    T: Mul<Output = T> + Add<Output = T> + Zero + Copy,
+    T: Mul<Output = T> + Add<Output = T> + Div<Output = T> + Zero + Copy,
 {
     fn new(data: Vec<T>, size: (usize, usize)) -> Self {
         if cfg!(debug_assertions) {
@@ -146,6 +169,27 @@ mod tests {
         let result = vec_a.add(vec_b);
 
         assert_eq!(result.data, vec![7, 9, 6]);
+    }
+
+    #[test]
+    fn d1_m_derivatives() {
+        let vec_a = NDArray::<f32, D1>::new(vec![1.0, 2.0]);
+        let vec_b = NDArray::<f32, D1>::new(vec![6.0, 7.0]);
+        let result = vec_a.derivatives(vec_b);
+
+        assert_eq!(
+            result.data,
+            vec![1.0 / 6.0, 2.0 / 6.0, 1.0 / 7.0, 2.0 / 7.0]
+        );
+    }
+
+    #[test]
+    fn d1_mul() {
+        let vec_a = NDArray::<i32, D1>::new(vec![1, 2, 3]);
+        let vec_b = NDArray::<i32, D1>::new(vec![6, 7, 3]);
+        let result = vec_a.mul(vec_b);
+
+        assert_eq!(result.data, vec![6, 14, 9]);
     }
 
     #[test]
