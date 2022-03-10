@@ -1,6 +1,5 @@
 //! about the std ops trait
 
-
 /// return one in a type
 ///
 /// `a * a.one() = a`

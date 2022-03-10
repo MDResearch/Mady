@@ -26,28 +26,28 @@
 // }
 
 // fn grad(a: usize, b: usize) -> (usize, (usize, usize)) {
-    // let a:usize=Zero::zero();
-    // let mut mady_0 = Zero::zero();
-    // let mut mady_1 = Zero::zero();
-    // let mady_2: usize = One::one();
-    // // this
-    // let mut mady_3: usize;
-    // let mut mady_4 = Zero::zero();
-    // let mut mady_5 = Zero::zero();
-    // // this
-    // let mut mady_6: usize;
-    // let c = {
-    //     mady_6 = One::one();
-    //     {
-    //         let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_add(b);
-    //         mady_4 = mady_tmp1;
-    //         mady_5 = mady_tmp2;
-    //         mady_tmp0
-    //     }
-    // };
-    // let mady_return = c;
-    // mady_3 = mady_2.clone() * mady_6;
-    // mady_0 += mady_3.clone() * mady_4;
-    // mady_1 += mady_3.clone() * mady_5;
-    // (mady_return, (mady_0, mady_1))
+// let a:usize=Zero::zero();
+// let mut mady_0 = Zero::zero();
+// let mut mady_1 = Zero::zero();
+// let mady_2: usize = One::one();
+// // this
+// let mut mady_3: usize;
+// let mut mady_4 = Zero::zero();
+// let mut mady_5 = Zero::zero();
+// // this
+// let mut mady_6: usize;
+// let c = {
+//     mady_6 = One::one();
+//     {
+//         let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_add(b);
+//         mady_4 = mady_tmp1;
+//         mady_5 = mady_tmp2;
+//         mady_tmp0
+//     }
+// };
+// let mady_return = c;
+// mady_3 = mady_2.clone() * mady_6;
+// mady_0 += mady_3.clone() * mady_4;
+// mady_1 += mady_3.clone() * mady_5;
+// (mady_return, (mady_0, mady_1))
 // }
