@@ -87,6 +87,13 @@ macro_rules! mat {
 
 #[macro_export]
 macro_rules! impl_trait {
+    ($mac:ident,$($ty:ident),+)=>{
+        $(
+            $mac![$ty];
+        )+
+    };
+
+
     // use default
     ($trait_name:ident,$($ty:ident),+ ) => {
         $(
@@ -110,5 +117,20 @@ macro_rules! impl_trait {
                 $fn
             }
         )+
+    };
+
+    ($trait_name:ident,$($fn:item)+,$($ty:ident),+ ) => {
+        $(
+            impl $trait_name for $ty{
+                $fn
+            }
+        )+
+    };
+
+
+    (@ $trait_name:ident,$ty:ty,{$($items:item)+})=>{
+        impl $trait_name for $ty {
+            $($items)+
+        }
     };
 }
