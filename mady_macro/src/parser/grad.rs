@@ -7,11 +7,10 @@ use crate::graph::{Edge, Graph, Node};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::fold::{fold_block, fold_expr, fold_pat, fold_signature, Fold};
-use syn::parse::{Parse, ParseStream};
-use syn::punctuated::Punctuated;
+
 use syn::{
     parse_quote, BinOp, Block, Expr, ExprAssign, ExprReturn, FnArg, ItemFn, Local, Pat, PatIdent,
-    PatType, ReturnType, Signature, Stmt, Token, Type,
+    PatType, ReturnType, Signature, Stmt, Type,
 };
 
 impl<N, E> Node<N, E>

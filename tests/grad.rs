@@ -53,8 +53,7 @@ use mady::prelude::*;
 // }
 
 fn a_plus_b(a: usize, b: usize) -> usize {
-    let c = a + b;
-    c
+    a + b
 }
 fn grad_a_plus_b(a: usize, b: usize) -> (usize, (usize, usize)) {
     let mut mady_0 = usize::zero();
@@ -69,7 +68,7 @@ fn grad_a_plus_b(a: usize, b: usize) -> (usize, (usize, usize)) {
         mady_tmp0
     };
     let mady_return = c;
-    mady_0 += mady_2.clone() * mady_3;
-    mady_1 += mady_2.clone() * mady_4;
+    mady_0 += mady_2 * mady_3;
+    mady_1 += mady_2 * mady_4;
     (mady_return, (mady_0, mady_1))
 }
