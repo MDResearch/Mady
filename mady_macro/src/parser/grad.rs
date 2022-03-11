@@ -9,8 +9,8 @@ use quote::quote;
 use syn::fold::{fold_block, fold_expr, fold_pat, fold_signature, Fold};
 
 use syn::{
-    parse_quote, BinOp, Block, Expr, ExprAssign, ExprReturn, FnArg, ItemFn, Local, Pat, PatIdent,
-    PatType, ReturnType, Signature, Stmt, Type,
+    parse_quote, BinOp, Block, Expr, ExprAssign, ExprParen, ExprReturn, FnArg, ItemFn, Local, Pat,
+    PatIdent, PatType, ReturnType, Signature, Stmt, Type,
 };
 
 impl<N, E> Node<N, E>
@@ -87,7 +87,6 @@ impl InnerParser {
         for (hash, ty) in grads {
             tmp.new_grad_node(hash, ty);
         }
-        dbg!(&tmp);
         tmp
     }
 
@@ -157,7 +156,6 @@ impl InnerParser {
         let mut hasher = DefaultHasher::new();
         ident.hash(&mut hasher);
         let hash = hasher.finish();
-        dbg!((&ident, &hash));
 
         for list in self.stack.iter().rev() {
             for &index in list {
@@ -176,6 +174,22 @@ impl InnerParser {
         None
     }
 
+    fn node_marker(&self, node: Node<usize, usize>) -> &Option<Type> {
+        &self.variables[*node.value(&self.graph)].marker
+    }
+
+    fn marker(&self, pointer: usize) -> &Option<Type> {
+        &self.variables[pointer].marker
+    }
+
+    fn node_marker_mut(&mut self, node: Node<usize, usize>) -> &mut Option<Type> {
+        &mut self.variables[*node.value(&self.graph)].marker
+    }
+
+    fn marker_mut(&mut self, pointer: usize) -> &mut Option<Type> {
+        &mut self.variables[pointer].marker
+    }
+
     /// enter a block
     ///
     /// push link
@@ -192,12 +206,6 @@ impl InnerParser {
     }
 
     fn gen_vars(&mut self) -> Vec<Stmt> {
-        // mark roots
-        for i in self.graph.roots() {
-            let &index = Node::new(i).value(&self.graph);
-            self.variables[index].ty = Ty::TOP;
-        }
-
         // gen tokenstream
         let mut stmts = vec![];
         for (i, var) in self.variables.iter().enumerate() {
@@ -241,13 +249,42 @@ impl InnerParser {
         }
     }
 
-    fn gen_backward(&self) -> Vec<Stmt> {
+    fn gen_backward(&mut self) -> Vec<Stmt> {
+        // mark roots
+        for i in self.graph.roots() {
+            let &index = Node::new(i).value(&self.graph);
+            self.variables[index].ty = Ty::TOP;
+        }
+
+        // clean up
+        for node in self.graph.node_iter() {
+            if self.variables[*node.value(&self.graph)].ty != Ty::TOP {
+                self.variables[*node.value(&self.graph)].marker = None;
+            }
+        }
+
         let mut stmts = vec![];
         for node in self.graph.topological_iter() {
             let node_ident = node.ident(&self.graph);
+            let node_type = self.variables[*node.value(&self.graph)]
+                .marker
+                .clone()
+                .expect("need type");
+
             for edge in node.children(&self.graph) {
                 let edge_ident = edge.ident(&self.graph);
-                let to_ident = edge.to(&self.graph).ident(&self.graph);
+                let edge_type = self.variables[*edge.value(&self.graph)]
+                    .marker
+                    .clone()
+                    .expect("need type");
+                let to = edge.to(&self.graph);
+                let to_ident = to.ident(&self.graph);
+                let to_value = &mut self.variables[*to.value(&self.graph)].marker;
+
+                if to_value == &None {
+                    *to_value = Some(parse_quote! {<#node_type as Mul<#edge_type>>::Output});
+                }
+
                 let stmt = parse_quote! {
                     #to_ident += #node_ident.clone() * #edge_ident;
                 };
@@ -285,8 +322,6 @@ impl InnerParser {
         };
 
         let backward = self.gen_backward();
-        dbg!(&self.graph);
-        dbg!(&self.variables);
         let vars = self.gen_vars();
 
         parse_quote! {
@@ -368,30 +403,48 @@ impl InnerParser {
             //
             // `=` is Expr::Assign
             Expr::Assign(v) => {
-                let (parent, left) = self
+                let (left, left_expr) = self
                     .parse_expr(*v.left.clone())
                     .map_err(|_| Expr::Assign(v.clone()))?;
-                let (child, right) = self
+                let (right, right_expr) = self
                     .parse_expr(*v.right.clone())
                     .map_err(|_| Expr::Assign(v.clone()))?;
                 let edge = self.new_tmp();
-                parent.link(&mut self.graph, edge, &child);
                 let edge_ident = new_ident(edge);
 
-                let right = parse_quote! {
+                left.link(&mut self.graph, edge, &right);
+
+                let right_type = self.node_marker(right).clone().expect("need type");
+
+                *self.node_marker_mut(left) = Some(right_type.clone());
+                *self.marker_mut(edge) = Some(parse_quote! {<#right_type as One>::O0});
+
+                let right_expr = parse_quote! {
                     {
-                        #edge_ident = #left.one();
-                        #right
+                        #edge_ident = #right_type::one();
+                        #right_expr
                     }
                 };
 
-                let ts = ExprAssign {
-                    left: Box::new(left),
-                    right: Box::new(right),
+                let assign = ExprAssign {
+                    left: Box::new(left_expr),
+                    right: Box::new(right_expr),
                     ..v
                 };
 
-                Ok((parent, Expr::Assign(ts)))
+                Ok((left, Expr::Assign(assign)))
+            }
+
+            Expr::Paren(v) => {
+                let (inner, inner_expr) = self
+                    .parse_expr(*v.expr.clone())
+                    .map_err(|_| Expr::Paren(v.clone()))?;
+                let paren = ExprParen {
+                    expr: Box::new(inner_expr),
+                    ..v
+                };
+
+                Ok((inner, Expr::Paren(paren)))
             }
 
             _ => Err(fold_expr(self, e)),
@@ -420,26 +473,37 @@ impl InnerParser {
         match e {
             // ex: let a:usize = 5;
             Stmt::Local(v) => {
-                if let (Some((eq, expr)), Pat::Ident(PatIdent { ident, .. })) =
-                    (v.init.clone(), v.pat.clone())
-                {
-                    let (child, right) =
+                let (left, left_pat) = self
+                    .parse_pat(v.pat.clone())
+                    .map_err(|_| Stmt::Local(v.clone()))?;
+                if let Some((eq, expr)) = v.init.clone() {
+                    let (right, right_expr) =
                         self.parse_expr(*expr).map_err(|_| Stmt::Local(v.clone()))?;
+                    let edge = self.new_tmp();
+                    let edge_ident = new_ident(edge);
 
-                    let mut hasher = DefaultHasher::new();
-                    ident.hash(&mut hasher);
-                    self.variables[*child.value(&self.graph)].hash = Some(hasher.finish());
+                    left.link(&mut self.graph, edge, &right);
+
+                    let right_type = self.node_marker(right).clone().expect("need type");
+
+                    *self.node_marker_mut(left) = Some(right_type.clone());
+                    *self.marker_mut(edge) = Some(parse_quote! {<#right_type as One>::O0});
+
+                    let right_expr = parse_quote! {
+                        {
+                            #edge_ident = #right_type::one();
+                            #right_expr
+                        }
+                    };
                     let local = Local {
-                        init: Some((eq, Box::new(right))),
+                        init: Some((eq, Box::new(right_expr))),
+                        pat: left_pat,
                         ..v
                     };
-                    self.stack.last_mut().unwrap().push_front(child.index());
-                    Ok((child, Stmt::Local(local)))
+
+                    Ok((left, Stmt::Local(local)))
                 } else {
-                    let (parent, left) = self
-                        .parse_pat(v.pat.clone())
-                        .map_err(|_| Stmt::Local(v.clone()))?;
-                    Ok((parent, Stmt::Local(Local { pat: left, ..v })))
+                    Ok((left, Stmt::Local(Local { pat: left_pat, ..v })))
                 }
             }
 
@@ -586,7 +650,6 @@ impl Parser {
     pub fn gen(mut self, i: ItemFn) -> TokenStream {
         let org = i.clone();
         let sig = self.fold_signature(i.sig);
-        dbg!(&self.grads);
         let block = Box::new(InnerParser::new(self.grads).gen(*i.block));
 
         let i = ItemFn { sig, block, ..i };
