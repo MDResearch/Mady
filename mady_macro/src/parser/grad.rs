@@ -90,7 +90,7 @@ impl InnerParser {
         tmp
     }
 
-    fn gen(mut self, i: Block) -> Block {
+    fn gen(&mut self, i: Block) -> Block {
         self.gen_block(i)
     }
 
@@ -245,7 +245,7 @@ impl InnerParser {
     fn gen_return(&self) -> TokenStream {
         let arg: Vec<_> = self.grads.iter().map(|&x| new_ident(x)).collect();
         quote! {
-            (#(#arg),*)
+            (#(#arg),*,)
         }
     }
 
@@ -625,7 +625,7 @@ impl Fold for Parser {
 
                 let arg: Vec<_> = self.grads.iter().map(|x| x.1.clone()).collect();
                 let ty = parse_quote! {
-                    (#ty, (#(#arg),*))
+                    (#ty, (#(#arg),*,))
                 };
                 ReturnType::Type(arr, Box::new(ty))
             }
@@ -648,15 +648,40 @@ impl Parser {
     }
 
     pub fn gen(mut self, i: ItemFn) -> TokenStream {
-        let org = i.clone();
-        let sig = self.fold_signature(i.sig);
-        let block = Box::new(InnerParser::new(self.grads).gen(*i.block));
+        let mut grad = i.clone();
+        grad.sig.inputs = grad
+            .sig
+            .inputs
+            .into_iter()
+            .map(|x| self.fold_fn_arg(x))
+            .collect();
+        
+        grad.sig.ident = Ident::new(
+            format!("{}{}", "grad_", grad.sig.ident).as_str(),
+            Span::call_site(),
+        );
 
-        let i = ItemFn { sig, block, ..i };
+        let mut inner = InnerParser::new(self.grads);
+        grad.block = Box::new(inner.gen(*grad.block));
+
+        // self.grads.
+        self.grads = inner
+            .grads
+            .iter()
+            .map(|&x| {
+                (
+                    Ident::new("ignore", Span::call_site()),
+                    inner.marker(x).clone().expect("need type"),
+                )
+            })
+            .collect();
+
+        grad.sig.output = self.fold_return_type(grad.sig.output);
+
         quote! {
-            #org
-
             #i
+
+            #grad
         }
     }
 }
