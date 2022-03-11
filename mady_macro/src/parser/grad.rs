@@ -655,7 +655,7 @@ impl Parser {
             .into_iter()
             .map(|x| self.fold_fn_arg(x))
             .collect();
-        
+
         grad.sig.ident = Ident::new(
             format!("{}{}", "grad_", grad.sig.ident).as_str(),
             Span::call_site(),
