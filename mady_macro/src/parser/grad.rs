@@ -45,7 +45,7 @@ struct InnerParser {
 
 #[derive(Debug, Default, Clone)]
 pub struct Parser {
-    grads: Vec<(Pat, Type)>,
+    grads: Vec<(Ident, Type)>,
     return_ty: Vec<Type>,
 }
 
@@ -88,6 +88,7 @@ impl InnerParser {
         for (hash, ty) in grads {
             tmp.new_grad_node(hash, ty);
         }
+        dbg!(&tmp);
         tmp
     }
 
@@ -157,6 +158,7 @@ impl InnerParser {
         let mut hasher = DefaultHasher::new();
         ident.hash(&mut hasher);
         let hash = hasher.finish();
+        dbg!((&ident, &hash));
 
         for list in self.stack.iter().rev() {
             for &index in list {
@@ -283,8 +285,10 @@ impl InnerParser {
             _ => panic!("cannot compile without return value"),
         };
 
-        let vars = self.gen_vars();
         let backward = self.gen_backward();
+        dbg!(&self.graph);
+        dbg!(&self.variables);
+        let vars = self.gen_vars();
 
         parse_quote! {
             {
@@ -304,10 +308,7 @@ impl InnerParser {
             //
             // `a + b` is Expr::Binary
             Expr::Binary(v) => {
-                let ops_ts = match parse_ops_tokenstream(v.op) {
-                    Ok(t) => t,
-                    Err(_) => return Err(Expr::Binary(v)),
-                };
+                let (ops_fn, ops_trait) = grad_ops(v.op).map_err(|_| Expr::Binary(v.clone()))?;
 
                 // parent->node(left->right)->edge(left->right)
                 let ops = self.new_tmp_node();
@@ -322,11 +323,28 @@ impl InnerParser {
                 ops.link(&mut self.graph, edge_left, &left);
                 ops.link(&mut self.graph, edge_right, &right);
 
+                let left_type = self.variables[*left.value(&self.graph)]
+                    .marker
+                    .clone()
+                    .expect("need type");
+                let right_type = self.variables[*right.value(&self.graph)]
+                    .marker
+                    .clone()
+                    .expect("need type");
+
+                let ty = quote! {
+                    <#left_type as #ops_trait<#right_type>>
+                };
+
+                self.variables[*ops.value(&self.graph)].marker = Some(parse_quote! {#ty::O0});
+                self.variables[edge_left].marker = Some(parse_quote! {#ty::G0});
+                self.variables[edge_right].marker = Some(parse_quote! {#ty::G1});
+
                 let edge_left_ident = new_ident(edge_left);
                 let edge_right_ident = new_ident(edge_right);
                 let ts = parse_quote! {
                     {
-                        let (mady_tmp0, (mady_tmp1, mady_tmp2)) = #left_expr.#ops_ts(#right_expr);
+                        let (mady_tmp0, (mady_tmp1, mady_tmp2)) = #left_expr.#ops_fn(#right_expr);
                         #edge_left_ident = mady_tmp1;
                         #edge_right_ident = mady_tmp2;
                         mady_tmp0
@@ -403,28 +421,25 @@ impl InnerParser {
         match e {
             // ex: let a:usize = 5;
             Stmt::Local(v) => {
-                let (parent, left) = self
-                    .parse_pat(v.pat.clone())
-                    .map_err(|_| Stmt::Local(v.clone()))?;
-                if let Some((eq, expr)) = v.init.clone() {
+                if let (Some((eq, expr)), Pat::Ident(PatIdent { ident, .. })) =
+                    (v.init.clone(), v.pat.clone())
+                {
                     let (child, right) =
                         self.parse_expr(*expr).map_err(|_| Stmt::Local(v.clone()))?;
-                    let edge = self.new_tmp();
-                    parent.link(&mut self.graph, edge, &child);
-                    let edge_ident = new_ident(edge);
-                    let right = parse_quote! {
-                        {
-                            #edge_ident = #left.one();
-                            #right
-                        }
-                    };
-                    let ts = Local {
-                        pat: left,
+
+                    let mut hasher = DefaultHasher::new();
+                    ident.hash(&mut hasher);
+                    self.variables[*child.value(&self.graph)].hash = Some(hasher.finish());
+                    let local = Local {
                         init: Some((eq, Box::new(right))),
                         ..v
                     };
-                    Ok((parent, Stmt::Local(ts)))
+                    self.stack.last_mut().unwrap().push_front(child.index());
+                    Ok((child, Stmt::Local(local)))
                 } else {
+                    let (parent, left) = self
+                        .parse_pat(v.pat.clone())
+                        .map_err(|_| Stmt::Local(v.clone()))?;
                     Ok((parent, Stmt::Local(Local { pat: left, ..v })))
                 }
             }
@@ -490,20 +505,42 @@ impl Fold for InnerParser {
     }
 }
 
-fn parse_ops_tokenstream(op: BinOp) -> Result<TokenStream, ()> {
+// fn name,trait name
+fn grad_ops(op: BinOp) -> Result<(Ident, Ident), ()> {
     match op {
-        BinOp::Add(_) => Ok(quote! {grad_add}),
-        BinOp::Sub(_) => Ok(quote! {grad_sub}),
-        BinOp::Mul(_) => Ok(quote! {grad_mul}),
-        BinOp::Div(_) => Ok(quote! {grad_div}),
+        BinOp::Add(_) => Ok(grad_fn("add")),
+        BinOp::Sub(_) => Ok(grad_fn("sub")),
+        BinOp::Mul(_) => Ok(grad_fn("mul")),
+        BinOp::Div(_) => Ok(grad_fn("div")),
         _ => Err(()),
     }
+}
+
+// fn name,trait name
+fn grad_fn<T>(name: T) -> (Ident, Ident)
+where
+    T: Into<String>,
+{
+    let name = name.into();
+    let traitname: String = name
+        .split('_')
+        .map(|x| x[..1].to_ascii_uppercase() + &x[1..])
+        .collect();
+
+    let gradfn = format!("grad_{}", name);
+    let gradtrait = format!("Grad{}", traitname);
+    (
+        Ident::new(gradfn.as_str(), Span::call_site()),
+        Ident::new(gradtrait.as_str(), Span::call_site()),
+    )
 }
 
 impl Fold for Parser {
     fn fold_fn_arg(&mut self, i: FnArg) -> FnArg {
         if let FnArg::Typed(PatType { pat, ty, .. }) = i.clone() {
-            self.grads.push((*pat, *ty))
+            if let Pat::Ident(PatIdent { ident, .. }) = *pat {
+                self.grads.push((ident, *ty))
+            }
         }
         i
     }
@@ -550,6 +587,7 @@ impl Parser {
     pub fn gen(mut self, i: ItemFn) -> TokenStream {
         let org = i.clone();
         let sig = self.fold_signature(i.sig);
+        dbg!(&self.grads);
         let block = Box::new(InnerParser::new(self.grads).gen(*i.block));
 
         let i = ItemFn { sig, block, ..i };
@@ -568,183 +606,182 @@ where
     Ident::new(format!("mady_{}", name).as_str(), Span::call_site())
 }
 
-// #[cfg(test)]
-// mod tests {
+#[cfg(test)]
+mod tests {
 
-//     use super::*;
+    use super::*;
 
-//     #[test]
-//     fn test_expr_binary() {
-//         let ast = parse_quote! {
-//             a + b
-//         };
-//         let res = quote! {
-//             {
-//                 let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_add(b);
-//                 mady_3 = mady_tmp1;
-//                 mady_4 = mady_tmp2;
-//                 mady_tmp0
-//             }
-//         };
-//         let mut parser = InnerParser::new::<_, Ident>([]);
-//         parser.enter_block();
-//         parser.new_local_node(&"a").unwrap();
-//         parser.new_local_node(&"b").unwrap();
-//         let (_, ast) = parser.parse_expr(ast).unwrap();
-//         let ast = quote! {#ast};
-//         assert_eq!(ast.to_string(), res.to_string());
-//     }
+    //     #[test]
+    //     fn test_expr_binary() {
+    //         let ast = parse_quote! {
+    //             a + b
+    //         };
+    //         let res = quote! {
+    //             {
+    //                 let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_add(b);
+    //                 mady_3 = mady_tmp1;
+    //                 mady_4 = mady_tmp2;
+    //                 mady_tmp0
+    //             }
+    //         };
+    //         let mut parser = InnerParser::new::<_, Ident>([]);
+    //         parser.enter_block();
+    //         parser.new_local_node(&"a").unwrap();
+    //         parser.new_local_node(&"b").unwrap();
+    //         let (_, ast) = parser.parse_expr(ast).unwrap();
+    //         let ast = quote! {#ast};
+    //         assert_eq!(ast.to_string(), res.to_string());
+    //     }
 
-//     #[test]
-//     fn test_expr_assign() {
-//         let ast = parse_quote! {
-//             {
-//                 c = a - b;
-//             }
-//         };
-//         let res = quote! {
-//             {
-//                 c = {
-//                     mady_6 = c.one();
-//                     {
-//                         let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_sub(b);
-//                         mady_4 = mady_tmp1;
-//                         mady_5 = mady_tmp2;
-//                         mady_tmp0
-//                     }
-//                 };
-//             }
-//         };
-//         let mut parser = InnerParser::new::<_, Ident>([]);
-//         parser.enter_block();
-//         parser.new_local_node(&"a").unwrap();
-//         parser.new_local_node(&"b").unwrap();
-//         parser.new_local_node(&"c").unwrap();
-//         let ast = parser.fold_expr(ast);
-//         let ast = quote! {#ast};
-//         assert_eq!(ast.to_string(), res.to_string());
-//     }
+    //     #[test]
+    //     fn test_expr_assign() {
+    //         let ast = parse_quote! {
+    //             {
+    //                 c = a - b;
+    //             }
+    //         };
+    //         let res = quote! {
+    //             {
+    //                 c = {
+    //                     mady_6 = c.one();
+    //                     {
+    //                         let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_sub(b);
+    //                         mady_4 = mady_tmp1;
+    //                         mady_5 = mady_tmp2;
+    //                         mady_tmp0
+    //                     }
+    //                 };
+    //             }
+    //         };
+    //         let mut parser = InnerParser::new::<_, Ident>([]);
+    //         parser.enter_block();
+    //         parser.new_local_node(&"a").unwrap();
+    //         parser.new_local_node(&"b").unwrap();
+    //         parser.new_local_node(&"c").unwrap();
+    //         let ast = parser.fold_expr(ast);
+    //         let ast = quote! {#ast};
+    //         assert_eq!(ast.to_string(), res.to_string());
+    //     }
 
-//     #[test]
-//     fn test_expr_local_declare() {
-//         let ast = parse_quote! {
-//             {
-//                 let (a, b)=(1, 2);
-//                 let c;
-//                 c = a * b;
-//             }
-//         };
-//         let res = quote! {
-//             {
-//                 let (a, b)=(1, 2);
-//                 let c;
-//                 c = {
-//                     mady_6 = c.one();
-//                     {
-//                         let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_mul(b);
-//                         mady_4 = mady_tmp1;
-//                         mady_5 = mady_tmp2;
-//                         mady_tmp0
-//                     }
-//                 };
-//             }
-//         };
-//         let mut parser = InnerParser::new::<_, Ident>([]);
-//         let ast = parser.fold_expr(ast);
-//         let ast = quote! {#ast};
-//         assert_eq!(ast.to_string(), res.to_string());
-//     }
+    //     #[test]
+    //     fn test_expr_local_declare() {
+    //         let ast = parse_quote! {
+    //             {
+    //                 let (a, b)=(1, 2);
+    //                 let c;
+    //                 c = a * b;
+    //             }
+    //         };
+    //         let res = quote! {
+    //             {
+    //                 let (a, b)=(1, 2);
+    //                 let c;
+    //                 c = {
+    //                     mady_6 = c.one();
+    //                     {
+    //                         let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_mul(b);
+    //                         mady_4 = mady_tmp1;
+    //                         mady_5 = mady_tmp2;
+    //                         mady_tmp0
+    //                     }
+    //                 };
+    //             }
+    //         };
+    //         let mut parser = InnerParser::new::<_, Ident>([]);
+    //         let ast = parser.fold_expr(ast);
+    //         let ast = quote! {#ast};
+    //         assert_eq!(ast.to_string(), res.to_string());
+    //     }
 
-//     #[test]
-//     fn test_expr_local_assign() {
-//         let ast = parse_quote! {
-//             {
-//                 let (a, b)=(1, 2);
-//                 let c = a / b;
-//             }
-//         };
-//         let res = quote! {
-//             {
-//                 let (a, b)=(1, 2);
-//                 let c = {
-//                     mady_6 = c.one();
-//                     {
-//                         let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_div(b);
-//                         mady_4 = mady_tmp1;
-//                         mady_5 = mady_tmp2;
-//                         mady_tmp0
-//                     }
-//                 };
-//             }
-//         };
-//         let mut parser = InnerParser::new::<_, Ident>([]);
-//         let ast = parser.fold_expr(ast);
-//         let ast = quote! {#ast};
-//         assert_eq!(ast.to_string(), res.to_string());
-//     }
+    //     #[test]
+    //     fn test_expr_local_assign() {
+    //         let ast = parse_quote! {
+    //             {
+    //                 let (a, b)=(1, 2);
+    //                 let c = a / b;
+    //             }
+    //         };
+    //         let res = quote! {
+    //             {
+    //                 let (a, b)=(1, 2);
+    //                 let c = {
+    //                     mady_6 = c.one();
+    //                     {
+    //                         let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_div(b);
+    //                         mady_4 = mady_tmp1;
+    //                         mady_5 = mady_tmp2;
+    //                         mady_tmp0
+    //                     }
+    //                 };
+    //             }
+    //         };
+    //         let mut parser = InnerParser::new::<_, Ident>([]);
+    //         let ast = parser.fold_expr(ast);
+    //         let ast = quote! {#ast};
+    //         assert_eq!(ast.to_string(), res.to_string());
+    //     }
 
-//     #[test]
-//     fn test_gen_var() {
-//         let mut parser = InnerParser::new::<_, Ident>([]);
-//         parser.enter_block();
-//         parser.new_tmp();
-//         let grad = parser.new_grad_node("");
-//         let root = parser.new_tmp_node();
-//         root.link(&mut parser.graph, 0, &grad);
+    // #[test]
+    // fn test_gen_var() {
+    //     let mut parser = InnerParser::new::<_, Ident>([]);
+    //     parser.enter_block();
+    //     parser.new_tmp();
+    //     let grad = parser.new_grad_node("", parse_quote! {usize});
+    //     let root = parser.new_tmp_node();
+    //     root.link(&mut parser.graph, 0, &grad);
 
-//         let ast = parser.gen_vars();
+    //     let ast = parser.gen_vars();
 
-//         let ast = quote! {
-//             #(#ast)*
-//         };
+    //     let ast = quote! {
+    //         #(#ast)*
+    //     };
 
-//         let res = quote! {
-//             let mut mady_0 = Zero::zero();
-//             let mut mady_1 = Zero::zero();
-//             let mady_2: usize = One::one();
-//         };
-//         assert_eq!(ast.to_string(), res.to_string());
-//     }
+    //     let res = quote! {
+    //         let mut mady_0 = Zero::zero();
+    //         let mut mady_1 = Zero::zero();
+    //         let mady_2: usize = One::one();
+    //     };
+    //     assert_eq!(ast.to_string(), res.to_string());
+    // }
 
-//     #[test]
-//     fn test_gen_backward() {
-//         let ast = parse_quote! {
-//             {
-//                 let c;
-//                 c = a * b;
-//             }
-//         };
-//         let res = quote! {
-//             mady_3 += mady_2.clone() * mady_6;
-//             mady_0 += mady_3.clone() * mady_4;
-//             mady_1 += mady_3.clone() * mady_5;
-//         };
-//         let mut parser = InnerParser::new::<_, &str>(["a", "b"]);
-//         parser.fold_expr(ast);
-//         let ast = parser.gen_backward();
-//         let ast = quote! {
-//             #(#ast)*
-//         };
-//         assert_eq!(ast.to_string(), res.to_string());
-//     }
+    //     #[test]
+    //     fn test_gen_backward() {
+    //         let ast = parse_quote! {
+    //             {
+    //                 let c;
+    //                 c = a * b;
+    //             }
+    //         };
+    //         let res = quote! {
+    //             mady_3 += mady_2.clone() * mady_6;
+    //             mady_0 += mady_3.clone() * mady_4;
+    //             mady_1 += mady_3.clone() * mady_5;
+    //         };
+    //         let mut parser = InnerParser::new::<_, &str>(["a", "b"]);
+    //         parser.fold_expr(ast);
+    //         let ast = parser.gen_backward();
+    //         let ast = quote! {
+    //             #(#ast)*
+    //         };
+    //         assert_eq!(ast.to_string(), res.to_string());
+    // }
 
-//     // #[test]
-//     // fn test_gen_macro() {
-//     //     let ast = parse_quote! {
-//     //         fn a_plus_b(a: usize, b: usize) -> usize {
-//     //             let c = a + b;
-//     //             c
-//     //         }
-//     //     };
-//     //     let res = quote! {
-//     //         mady_3 += mady_2.clone() * mady_6;
-//     //         mady_0 += mady_3.clone() * mady_4;
-//     //         mady_1 += mady_3.clone() * mady_5;
-//     //     };
-//     //     let mut parser: Parser =
-//     //         parse2(quote![usize, usize]).expect("cannot parse grad macro attr");
+    #[test]
+    fn test_gen_macro() {
+        let ast = parse_quote! {
+            fn a_plus_b(a: usize, b: usize) -> usize {
+                let c = a + b;
+                c
+            }
+        };
+        // let res = quote! {
+        //     mady_3 += mady_2.clone() * mady_6;
+        //     mady_0 += mady_3.clone() * mady_4;
+        //     mady_1 += mady_3.clone() * mady_5;
+        // };
 
-//     //     let ast = parser.gen(ast);
-//     //     assert_eq!(ast.to_string(), res.to_string());
-//     // }
-// }
+        let ast = Parser::new().gen(ast);
+        // assert_eq!(ast.to_string(), res.to_string());
+        dbg!(ast.to_string());
+    }
+}
