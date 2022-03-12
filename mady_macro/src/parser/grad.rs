@@ -9,8 +9,8 @@ use quote::quote;
 use syn::fold::{fold_block, fold_expr, fold_pat, fold_signature, Fold};
 
 use syn::{
-    parse_quote, BinOp, Block, Expr, ExprAssign, ExprMethodCall, ExprParen, ExprReturn, FnArg,
-    ItemFn, Local, Pat, PatIdent, PatType, ReturnType, Signature, Stmt, Type,
+    parse_quote, BinOp, Block, Expr, ExprAssign, ExprParen, ExprReturn, FnArg, ItemFn, Local, Pat,
+    PatIdent, PatType, ReturnType, Signature, Stmt, Type,
 };
 
 impl<N, E> Node<N, E>
