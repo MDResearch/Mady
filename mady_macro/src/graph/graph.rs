@@ -67,6 +67,10 @@ impl<N, E> Graph<N, E> {
         &self.table[node.index()].0
     }
 
+    pub fn node_iter(&self) -> impl Iterator<Item = Node<N, E>> + '_ {
+        self.table.iter().enumerate().map(|(i, ..)| Node::new(i))
+    }
+
     /// read edge value
     /// (to node, value)
     pub fn edge(&self, edge: &Edge<N, E>) -> &E {

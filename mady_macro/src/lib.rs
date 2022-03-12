@@ -6,8 +6,8 @@ mod graph;
 mod parser;
 
 #[proc_macro_attribute]
-pub fn grad(attr: TokenStream, input: TokenStream) -> TokenStream {
-    let mut parser = parse_macro_input!(attr as parser::grad::Parser);
+pub fn grad(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    let parser = parser::grad::Parser::new();
     let itemfn = parse_macro_input!(input as ItemFn);
     parser.gen(itemfn).into()
 }
