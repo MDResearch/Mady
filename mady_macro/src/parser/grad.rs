@@ -9,8 +9,8 @@ use quote::quote;
 use syn::fold::{fold_block, fold_expr, fold_pat, fold_signature, Fold};
 
 use syn::{
-    parse_quote, BinOp, Block, Expr, ExprAssign, ExprParen, ExprReturn, FnArg, ItemFn, Local, Pat,
-    PatIdent, PatType, ReturnType, Signature, Stmt, Type,
+    parse_quote, BinOp, Block, Expr, ExprAssign, ExprMethodCall, ExprParen, ExprReturn, FnArg,
+    ItemFn, Local, Pat, PatIdent, PatType, ReturnType, Signature, Stmt, Type,
 };
 
 impl<N, E> Node<N, E>
@@ -73,6 +73,9 @@ enum Ty {
     FOR,
     LOOP,
 }
+
+#[derive(Debug, Clone)]
+struct Marker(TokenStream);
 
 impl InnerParser {
     /// create new Parser
@@ -357,26 +360,18 @@ impl InnerParser {
                 ops.link(&mut self.graph, edge_left, &left);
                 ops.link(&mut self.graph, edge_right, &right);
 
-                let left_type = self.variables[*left.value(&self.graph)]
-                    .marker
-                    .clone()
-                    .expect("need type");
-                let right_type = self.variables[*right.value(&self.graph)]
-                    .marker
-                    .clone()
-                    .expect("need type");
+                let left_type = self.node_marker(left).clone().expect("need type");
+                let right_type = self.node_marker(right).clone().expect("need type");
 
-                let ty = quote! {
-                    <#left_type as #ops_trait<#right_type>>
-                };
+                let marker = Marker::new(ops_trait, &left_type, &[right_type]);
 
-                self.variables[*ops.value(&self.graph)].marker = Some(parse_quote! {#ty::O0});
-                self.variables[edge_left].marker = Some(parse_quote! {#ty::G0});
-                self.variables[edge_right].marker = Some(parse_quote! {#ty::G1});
+                *self.node_marker_mut(ops) = Some(marker.o(0));
+                *self.marker_mut(edge_left) = Some(marker.g(0));
+                *self.marker_mut(edge_right) = Some(marker.g(1));
 
                 let edge_left_ident = new_ident(edge_left);
                 let edge_right_ident = new_ident(edge_right);
-                let ts = parse_quote! {
+                let expr = parse_quote! {
                     {
                         let (mady_tmp0, (mady_tmp1, mady_tmp2)) = #left_expr.#ops_fn(#right_expr);
                         #edge_left_ident = mady_tmp1;
@@ -384,7 +379,7 @@ impl InnerParser {
                         mady_tmp0
                     }
                 };
-                Ok((ops, ts))
+                Ok((ops, expr))
             }
 
             // a = b + c
@@ -417,7 +412,9 @@ impl InnerParser {
                 let right_type = self.node_marker(right).clone().expect("need type");
 
                 *self.node_marker_mut(left) = Some(right_type.clone());
-                *self.marker_mut(edge) = Some(parse_quote! {<#right_type as One>::O0});
+
+                *self.marker_mut(edge) =
+                    Some(Marker::new(parse_quote! {One}, &right_type, &[]).o(0));
 
                 let right_expr = parse_quote! {
                     {
@@ -445,6 +442,69 @@ impl InnerParser {
                 };
 
                 Ok((inner, Expr::Paren(paren)))
+            }
+
+            Expr::MethodCall(v) => {
+                let (grad_fn, grad_trait) = grad_fn(v.method.clone());
+
+                // parent->node(left->right)->edge(left->right)
+                let grad = self.new_tmp_node();
+
+                let mut args = vec![];
+                let mut types = vec![];
+                let mut tmps = vec![];
+                let mut edge_stmts: Vec<Stmt> = vec![];
+                let mut edges = vec![];
+
+                let receiver = {
+                    let (node, expr) = self
+                        .parse_expr(*v.receiver.clone())
+                        .map_err(|_| Expr::MethodCall(v.clone()))?;
+                    let edge = self.new_tmp();
+                    grad.link(&mut self.graph, edge, &node);
+                    types.push(self.node_marker(node).clone().expect("need type"));
+                    edges.push(edge);
+                    let tmp = Ident::new(format!("mady_tmp{}", 1).as_str(), Span::call_site());
+                    let edge_ident = new_ident(edge);
+                    edge_stmts.push(parse_quote! {
+                        #edge_ident = #tmp;
+                    });
+                    tmps.push(tmp);
+                    expr
+                };
+
+                for (i, expr) in v.args.clone().into_iter().enumerate() {
+                    let (node, expr) = self
+                        .parse_expr(expr)
+                        .map_err(|_| Expr::MethodCall(v.clone()))?;
+                    let edge = self.new_tmp();
+                    grad.link(&mut self.graph, edge, &node);
+                    args.push(expr);
+                    types.push(self.node_marker(node).clone().expect("need type"));
+                    edges.push(edge);
+                    let tmp = Ident::new(format!("mady_tmp{}", i + 2).as_str(), Span::call_site());
+                    let edge_ident = new_ident(edge);
+                    edge_stmts.push(parse_quote! {
+                        #edge_ident = #tmp;
+                    });
+                    tmps.push(tmp);
+                }
+
+                let marker = Marker::new(grad_trait, &types[0], &types[1..]);
+
+                *self.node_marker_mut(grad) = Some(marker.o(0));
+                for (i, &edge) in edges.iter().enumerate() {
+                    *self.marker_mut(edge) = Some(marker.g(i));
+                }
+
+                let expr = parse_quote! {
+                    {
+                        let (mady_tmp0, (#(#tmps),*,)) = #receiver.#grad_fn(#(#args),*);
+                        #(#edge_stmts)*
+                        mady_tmp0
+                    }
+                };
+                Ok((grad, expr))
             }
 
             _ => Err(fold_expr(self, e)),
@@ -487,7 +547,8 @@ impl InnerParser {
                     let right_type = self.node_marker(right).clone().expect("need type");
 
                     *self.node_marker_mut(left) = Some(right_type.clone());
-                    *self.marker_mut(edge) = Some(parse_quote! {<#right_type as One>::O0});
+                    *self.marker_mut(edge) =
+                        Some(Marker::new(parse_quote! {One}, &right_type, &[]).o(0));
 
                     let right_expr = parse_quote! {
                         {
@@ -568,7 +629,7 @@ impl Fold for InnerParser {
     }
 }
 
-// fn name,trait name
+/// fn name,trait name
 fn grad_ops(op: BinOp) -> Result<(Ident, Ident), ()> {
     match op {
         BinOp::Add(_) => Ok(grad_fn("add")),
@@ -579,12 +640,12 @@ fn grad_ops(op: BinOp) -> Result<(Ident, Ident), ()> {
     }
 }
 
-// fn name,trait name
+/// fn name,trait name
 fn grad_fn<T>(name: T) -> (Ident, Ident)
 where
-    T: Into<String>,
+    T: ToString,
 {
-    let name = name.into();
+    let name = name.to_string();
     let traitname: String = name
         .split('_')
         .map(|x| x[..1].to_ascii_uppercase() + &x[1..])
@@ -655,7 +716,7 @@ impl Parser {
             .into_iter()
             .map(|x| self.fold_fn_arg(x))
             .collect();
-        
+
         grad.sig.ident = Ident::new(
             format!("{}{}", "grad_", grad.sig.ident).as_str(),
             Span::call_site(),
@@ -683,6 +744,26 @@ impl Parser {
 
             #grad
         }
+    }
+}
+
+impl Marker {
+    pub fn new(grad_trait: Ident, first_type: &Type, types: &[Type]) -> Self {
+        Self(quote! {
+            <#first_type as #grad_trait<#(#types),*>>
+        })
+    }
+
+    pub fn o(&self, i: usize) -> Type {
+        let ts = self.0.clone();
+        let ty = Ident::new(format!("O{}", i).as_str(), Span::call_site());
+        parse_quote! {#ts::#ty}
+    }
+
+    pub fn g(&self, i: usize) -> Type {
+        let ts = self.0.clone();
+        let ty = Ident::new(format!("G{}", i).as_str(), Span::call_site());
+        parse_quote! {#ts::#ty}
     }
 }
 
@@ -857,8 +938,7 @@ mod tests {
     fn test_gen_macro() {
         let ast = parse_quote! {
             fn a_plus_b(a: usize, b: usize) -> usize {
-                let c = a + b;
-                c
+                a.mul(b)
             }
         };
         // let res = quote! {

@@ -26,6 +26,11 @@ fn with_let(a: usize, b: usize) -> usize {
     c
 }
 
+#[grad]
+fn with_method(a: usize, b: usize) -> usize {
+    a.mul(b)
+}
+
 #[test]
 fn test_ops() {
     assert_eq!(grad_ops_add(6, 23), (ops_add(6, 23), (1, 1)));
@@ -40,4 +45,5 @@ fn test_mult() {
 #[test]
 fn test_systex() {
     assert_eq!(grad_with_let(6, 23), (with_let(6, 23), (23, 6)));
+    assert_eq!(grad_with_method(6, 23), (with_method(6, 23), (23, 6)));
 }
