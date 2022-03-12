@@ -22,8 +22,7 @@ fn mult_mul(a: usize) -> usize {
 
 #[grad]
 fn with_let(a: usize, b: usize) -> usize {
-    let c = a * b;
-    c
+    a * b
 }
 
 #[grad]
