@@ -15,3 +15,8 @@ members = [
   "mady_math",
   "mady_macro",
 ]
+
+[features]
+default = ["macro", "math"]
+macro = []
+math = []
