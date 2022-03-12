@@ -1,5 +1,11 @@
 //! about the std ops trait
 
+use std::{
+    ops::{Add, Div, Mul},
+    process::Output,
+};
+
+use super::ndarray;
 
 /// return one in a type
 ///
@@ -320,6 +326,21 @@ mod impl_div {
     }
 
     impl_trait![parse, i8, i16, i32, i64, i128, isize, f32, f64];
+}
+
+impl<T> GradMul for ndarray::NDArray<T, ndarray::D1>
+where
+    T: Zero<O0 = T> + Copy + Add<Output = T> + Div<Output = T> + Mul<Output = T>,
+{
+    type O0 = Self;
+
+    type G0 = Self;
+
+    type G1 = Self;
+
+    fn grad_mul(self: Self, rhs: Self) -> (Self::O0, (Self::G0, Self::G1)) {
+        (self.mul(&rhs), (rhs, self))
+    }
 }
 
 // impl_trait![

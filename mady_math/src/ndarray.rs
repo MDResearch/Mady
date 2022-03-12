@@ -6,17 +6,15 @@ use std::{
 };
 
 #[derive(Debug)]
-struct NDArray<T, D> {
+pub struct NDArray<T, D> {
     phantom: PhantomData<D>,
     data: Vec<T>,
     size: Vec<usize>,
 }
 
-#[derive(Debug)]
-struct D1;
+pub struct D1;
 
-#[derive(Debug)]
-struct D2;
+pub struct D2;
 
 impl<T> NDArray<T, D1>
 where
@@ -30,7 +28,7 @@ where
         }
     }
 
-    fn dot(self, i: Self) -> T {
+    pub fn dot(self, i: Self) -> T {
         if cfg!(debug_assertions) {
             assert_eq!(self.size, i.size);
         }
@@ -41,7 +39,7 @@ where
             .fold(T::zero(), |a, b| a + b)
     }
 
-    fn mul(self, i: Self) -> Self {
+    pub fn mul(self: &Self, i: &Self) -> Self {
         if cfg!(debug_assertions) {
             assert_eq!(self.size, i.size);
         }
@@ -65,7 +63,7 @@ where
     //     NDArray::<T, D2>::new(result, (self.size[0], self.size[0]))
     // }
 
-    fn add(self, i: Self) -> Self {
+    pub fn add(self, i: Self) -> Self {
         if cfg!(debug_assertions) {
             assert_eq!(self.size, i.size);
         }
@@ -77,7 +75,7 @@ where
         NDArray::<T, D1>::new(result)
     }
 
-    fn cross(self, i: Self) -> NDArray<T, D1> {
+    pub fn cross(self, i: Self) -> NDArray<T, D1> {
         // https://zh.wikipedia.org/wiki/%E7%9F%A9%E9%98%B5%E5%BE%AE%E7%A7%AF%E5%88%86
         // https://en.wikipedia.org/wiki/Matrix_calculus
 
@@ -92,7 +90,7 @@ impl<T> NDArray<T, D2>
 where
     T: Mul<Output = T> + Add<Output = T> + Div<Output = T> + Zero<O0 = T> + Copy,
 {
-    fn new(data: Vec<T>, size: (usize, usize)) -> Self {
+    pub fn new(data: Vec<T>, size: (usize, usize)) -> Self {
         if cfg!(debug_assertions) {
             assert_eq!(size.0 * size.1, data.len());
         }
@@ -103,7 +101,7 @@ where
         }
     }
 
-    fn add(self, i: Self) -> Self {
+    pub fn add(self, i: Self) -> Self {
         if cfg!(debug_assertions) {
             assert_eq!(self.size, i.size);
         }
@@ -115,7 +113,7 @@ where
         NDArray::<T, D2>::new(result, (self.size[0], self.size[1]))
     }
 
-    fn mul(self, i: NDArray<T, D1>) -> NDArray<T, D1> {
+    pub fn mul(self, i: NDArray<T, D1>) -> NDArray<T, D1> {
         let mut result = vec![];
         if cfg!(debug_assertions) {
             assert_eq!(self.size[0], i.size[0]);
@@ -131,22 +129,22 @@ where
         NDArray::<T, D1>::new(result)
     }
 
-    fn grad_mul(self, i: NDArray<T, D1>) -> (NDArray<T, D1>, (NDArray<T, D2>, NDArray<T, D1>)) {
-        let mut result = vec![];
-        if cfg!(debug_assertions) {
-            assert_eq!(self.size[0], i.size[0]);
-        }
-        for j in 0..self.size[1] {
-            let mut sum: T = T::zero();
-            for c in 0..self.size[0] {
-                sum = sum + self.data[j * self.size[0] + c] * i.data[c];
-            }
-            result.push(sum);
-        }
+    // fn grad_mul(self, i: NDArray<T, D1>) -> (NDArray<T, D1>, (NDArray<T, D2>, NDArray<T, D1>)) {
+    //     let mut result = vec![];
+    //     if cfg!(debug_assertions) {
+    //         assert_eq!(self.size[0], i.size[0]);
+    //     }
+    //     for j in 0..self.size[1] {
+    //         let mut sum: T = T::zero();
+    //         for c in 0..self.size[0] {
+    //             sum = sum + self.data[j * self.size[0] + c] * i.data[c];
+    //         }
+    //         result.push(sum);
+    //     }
 
-        NDArray::<T, D1>::new(result);
-        todo!()
-    }
+    //     NDArray::<T, D1>::new(result);
+    //     todo!()
+    // }
 }
 
 #[cfg(test)]
@@ -186,7 +184,7 @@ mod tests {
     fn d1_mul() {
         let vec_a = NDArray::<i32, D1>::new(vec![1, 2, 3]);
         let vec_b = NDArray::<i32, D1>::new(vec![6, 7, 3]);
-        let result = vec_a.mul(vec_b);
+        let result = vec_a.mul(&vec_b);
 
         assert_eq!(result.data, vec![6, 14, 9]);
     }
