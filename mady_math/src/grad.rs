@@ -1,9 +1,6 @@
 //! about the std ops trait
 
-use std::{
-    ops::{Add, Div, Mul},
-    process::Output,
-};
+use std::ops::{Add, Div, Mul};
 
 use super::ndarray;
 
@@ -338,7 +335,7 @@ where
 
     type G1 = Self;
 
-    fn grad_mul(self: Self, rhs: Self) -> (Self::O0, (Self::G0, Self::G1)) {
+    fn grad_mul(self, rhs: Self) -> (Self::O0, (Self::G0, Self::G1)) {
         (self.mul(&rhs), (rhs, self))
     }
 }

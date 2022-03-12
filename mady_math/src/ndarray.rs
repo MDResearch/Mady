@@ -39,7 +39,7 @@ where
             .fold(T::zero(), |a, b| a + b)
     }
 
-    pub fn mul(self: &Self, i: &Self) -> Self {
+    pub fn mul(&self, i: &Self) -> Self {
         if cfg!(debug_assertions) {
             assert_eq!(self.size, i.size);
         }
