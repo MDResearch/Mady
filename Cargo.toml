@@ -10,6 +10,9 @@ path = "./mady_math"
 [dependencies.mady_macro]
 path = "./mady_macro"
 
+[dev-dependencies]
+rand = "0.8.5"
+
 [workspace]
 members = [
   "mady_math",
