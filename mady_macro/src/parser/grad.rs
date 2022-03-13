@@ -485,7 +485,7 @@ impl InnerParser {
                     let tmp = Ident::new(format!("mady_tmp{}", i + 2).as_str(), Span::call_site());
                     let edge_ident = new_ident(edge);
                     edge_stmts.push(parse_quote! {
-                        #edge_ident = #tmp;
+                        #edge_ident += #tmp;
                     });
                     tmps.push(tmp);
                 }
@@ -939,15 +939,10 @@ mod tests {
     // #[test]
     // fn test_gen_macro() {
     //     let ast = parse_quote! {
-    //         fn a_plus_b(a: usize, b: usize) -> usize {
-    //             a.mul(b)
-    //         }
+    //         fn layer(prev: Array1<f64>, weight: Array1<f64>, b: Array0<f64>) -> Array0<f64> {
+    //             prev.dot(weight) + b
+    //         }            
     //     };
-    //     // let res = quote! {
-    //     //     mady_3 += mady_2.clone() * mady_6;
-    //     //     mady_0 += mady_3.clone() * mady_4;
-    //     //     mady_1 += mady_3.clone() * mady_5;
-    //     // };
 
     //     let ast = Parser::new().gen(ast);
     //     // assert_eq!(ast.to_string(), res.to_string());
