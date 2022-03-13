@@ -8,6 +8,6 @@ mod macros;
 pub mod prelude {
     pub use super::grad::*;
     pub use super::matrix::{mat, Matrix};
-    pub use super::ndarray::{NDArray, D1, D2};
+    pub use super::ndarray::*;
     pub use super::tensor::{ten, Tensor};
 }
