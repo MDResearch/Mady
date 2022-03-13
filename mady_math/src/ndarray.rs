@@ -6,7 +6,7 @@ use std::{
 };
 
 #[derive(Debug)]
-pub struct NDArray<T, D> {
+pub struct NDArray<D, T> {
     phantom: PhantomData<D>,
     data: Vec<T>,
     size: Vec<usize>,
@@ -16,7 +16,7 @@ pub struct D1;
 
 pub struct D2;
 
-impl<T> NDArray<T, D1>
+impl<T> NDArray<D1, T>
 where
     T: Mul<Output = T> + Add<Output = T> + Div<Output = T> + Zero<O0 = T> + Copy,
 {
@@ -48,7 +48,7 @@ where
             result.push(self.data[c] * i.data[c]);
         }
 
-        NDArray::<T, D1>::new(result)
+        Self::new(result)
     }
 
     // wrong one
@@ -72,7 +72,7 @@ where
             result.push(self.data[c] + i.data[c]);
         }
 
-        NDArray::<T, D1>::new(result)
+        Self::new(result)
     }
 
     pub fn cross(self, i: Self) -> NDArray<T, D1> {
@@ -86,7 +86,7 @@ where
     }
 }
 
-impl<T> NDArray<T, D2>
+impl<T> NDArray<D2, T>
 where
     T: Mul<Output = T> + Add<Output = T> + Div<Output = T> + Zero<O0 = T> + Copy,
 {
@@ -110,10 +110,10 @@ where
             result.push(self.data[c] + i.data[c]);
         }
 
-        NDArray::<T, D2>::new(result, (self.size[0], self.size[1]))
+        Self::new(result, (self.size[0], self.size[1]))
     }
 
-    pub fn mul(self, i: NDArray<T, D1>) -> NDArray<T, D1> {
+    pub fn mul(self, i: NDArray<D1, T>) -> NDArray<D1, T> {
         let mut result = vec![];
         if cfg!(debug_assertions) {
             assert_eq!(self.size[0], i.size[0]);
@@ -126,7 +126,7 @@ where
             result.push(sum);
         }
 
-        NDArray::<T, D1>::new(result)
+        NDArray::<D1, T>::new(result)
     }
 
     // fn grad_mul(self, i: NDArray<T, D1>) -> (NDArray<T, D1>, (NDArray<T, D2>, NDArray<T, D1>)) {
@@ -153,8 +153,8 @@ mod tests {
 
     #[test]
     fn d1_dot() {
-        let vec_a = NDArray::<i32, D1>::new(vec![1, 2, 3]);
-        let vec_b = NDArray::<i32, D1>::new(vec![6, 7, 3]);
+        let vec_a = NDArray::<D1, i32>::new(vec![1, 2, 3]);
+        let vec_b = NDArray::<D1, i32>::new(vec![6, 7, 3]);
         let result = vec_a.dot(vec_b);
 
         assert_eq!(result, 29_i32);
@@ -162,8 +162,8 @@ mod tests {
 
     #[test]
     fn d1_add() {
-        let vec_a = NDArray::<i32, D1>::new(vec![1, 2, 3]);
-        let vec_b = NDArray::<i32, D1>::new(vec![6, 7, 3]);
+        let vec_a = NDArray::<D1, i32>::new(vec![1, 2, 3]);
+        let vec_b = NDArray::<D1, i32>::new(vec![6, 7, 3]);
         let result = vec_a.add(vec_b);
 
         assert_eq!(result.data, vec![7, 9, 6]);
@@ -182,8 +182,8 @@ mod tests {
     // }
     #[test]
     fn d1_mul() {
-        let vec_a = NDArray::<i32, D1>::new(vec![1, 2, 3]);
-        let vec_b = NDArray::<i32, D1>::new(vec![6, 7, 3]);
+        let vec_a = NDArray::<D1, i32>::new(vec![1, 2, 3]);
+        let vec_b = NDArray::<D1, i32>::new(vec![6, 7, 3]);
         let result = vec_a.mul(&vec_b);
 
         assert_eq!(result.data, vec![6, 14, 9]);
@@ -191,8 +191,8 @@ mod tests {
 
     #[test]
     fn d2_add() {
-        let vec_a = NDArray::<i32, D2>::new(vec![1, 2, 3, 4], (2, 2));
-        let vec_b = NDArray::<i32, D2>::new(vec![6, 7, 3, 8], (2, 2));
+        let vec_a = NDArray::<D2, i32>::new(vec![1, 2, 3, 4], (2, 2));
+        let vec_b = NDArray::<D2, i32>::new(vec![6, 7, 3, 8], (2, 2));
         let result = vec_a.add(vec_b);
 
         assert_eq!(result.data, vec![7, 9, 6, 12]);
@@ -200,8 +200,8 @@ mod tests {
 
     #[test]
     fn d2_mul_d1() {
-        let vec_a = NDArray::<i32, D2>::new(vec![1, 2, 3, 4], (2, 2));
-        let vec_b = NDArray::<i32, D1>::new(vec![7, 1]);
+        let vec_a = NDArray::<D2, i32>::new(vec![1, 2, 3, 4], (2, 2));
+        let vec_b = NDArray::<D1, i32>::new(vec![7, 1]);
         let result = vec_a.mul(vec_b);
 
         assert_eq!(result.data[0], 9);

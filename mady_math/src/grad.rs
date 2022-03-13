@@ -6,6 +6,7 @@ use super::ndarray;
 
 /// return one in a type
 ///
+/// one must can
 /// `a * a.one() = a`
 /// and
 /// `a.one() * a = a`
@@ -14,6 +15,12 @@ pub trait One: Sized {
     fn one() -> Self::O0;
 }
 
+/// return zero in a type
+///
+/// zero must can
+/// `a + a.zero() = a`
+/// and
+/// `a.zero() * a = a`
 pub trait Zero: Sized {
     type O0;
     fn zero() -> Self::O0;
@@ -325,7 +332,7 @@ mod impl_div {
     impl_trait![parse, i8, i16, i32, i64, i128, isize, f32, f64];
 }
 
-impl<T> GradMul for ndarray::NDArray<T, ndarray::D1>
+impl<T> GradMul for ndarray::NDArray<ndarray::D1, T>
 where
     T: Zero<O0 = T> + Copy + Add<Output = T> + Div<Output = T> + Mul<Output = T>,
 {
