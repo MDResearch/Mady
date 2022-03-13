@@ -779,176 +779,178 @@ mod tests {
 
     use super::*;
 
-    //     #[test]
-    //     fn test_expr_binary() {
-    //         let ast = parse_quote! {
-    //             a + b
-    //         };
-    //         let res = quote! {
-    //             {
-    //                 let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_add(b);
-    //                 mady_3 = mady_tmp1;
-    //                 mady_4 = mady_tmp2;
-    //                 mady_tmp0
-    //             }
-    //         };
-    //         let mut parser = InnerParser::new::<_, Ident>([]);
-    //         parser.enter_block();
-    //         parser.new_local_node(&"a").unwrap();
-    //         parser.new_local_node(&"b").unwrap();
-    //         let (_, ast) = parser.parse_expr(ast).unwrap();
-    //         let ast = quote! {#ast};
-    //         assert_eq!(ast.to_string(), res.to_string());
-    //     }
-
-    //     #[test]
-    //     fn test_expr_assign() {
-    //         let ast = parse_quote! {
-    //             {
-    //                 c = a - b;
-    //             }
-    //         };
-    //         let res = quote! {
-    //             {
-    //                 c = {
-    //                     mady_6 = c.one();
-    //                     {
-    //                         let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_sub(b);
-    //                         mady_4 = mady_tmp1;
-    //                         mady_5 = mady_tmp2;
-    //                         mady_tmp0
-    //                     }
-    //                 };
-    //             }
-    //         };
-    //         let mut parser = InnerParser::new::<_, Ident>([]);
-    //         parser.enter_block();
-    //         parser.new_local_node(&"a").unwrap();
-    //         parser.new_local_node(&"b").unwrap();
-    //         parser.new_local_node(&"c").unwrap();
-    //         let ast = parser.fold_expr(ast);
-    //         let ast = quote! {#ast};
-    //         assert_eq!(ast.to_string(), res.to_string());
-    //     }
-
-    //     #[test]
-    //     fn test_expr_local_declare() {
-    //         let ast = parse_quote! {
-    //             {
-    //                 let (a, b)=(1, 2);
-    //                 let c;
-    //                 c = a * b;
-    //             }
-    //         };
-    //         let res = quote! {
-    //             {
-    //                 let (a, b)=(1, 2);
-    //                 let c;
-    //                 c = {
-    //                     mady_6 = c.one();
-    //                     {
-    //                         let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_mul(b);
-    //                         mady_4 = mady_tmp1;
-    //                         mady_5 = mady_tmp2;
-    //                         mady_tmp0
-    //                     }
-    //                 };
-    //             }
-    //         };
-    //         let mut parser = InnerParser::new::<_, Ident>([]);
-    //         let ast = parser.fold_expr(ast);
-    //         let ast = quote! {#ast};
-    //         assert_eq!(ast.to_string(), res.to_string());
-    //     }
-
-    //     #[test]
-    //     fn test_expr_local_assign() {
-    //         let ast = parse_quote! {
-    //             {
-    //                 let (a, b)=(1, 2);
-    //                 let c = a / b;
-    //             }
-    //         };
-    //         let res = quote! {
-    //             {
-    //                 let (a, b)=(1, 2);
-    //                 let c = {
-    //                     mady_6 = c.one();
-    //                     {
-    //                         let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_div(b);
-    //                         mady_4 = mady_tmp1;
-    //                         mady_5 = mady_tmp2;
-    //                         mady_tmp0
-    //                     }
-    //                 };
-    //             }
-    //         };
-    //         let mut parser = InnerParser::new::<_, Ident>([]);
-    //         let ast = parser.fold_expr(ast);
-    //         let ast = quote! {#ast};
-    //         assert_eq!(ast.to_string(), res.to_string());
-    //     }
-
-    // #[test]
-    // fn test_gen_var() {
-    //     let mut parser = InnerParser::new::<_, Ident>([]);
-    //     parser.enter_block();
-    //     parser.new_tmp();
-    //     let grad = parser.new_grad_node("", parse_quote! {usize});
-    //     let root = parser.new_tmp_node();
-    //     root.link(&mut parser.graph, 0, &grad);
-
-    //     let ast = parser.gen_vars();
-
-    //     let ast = quote! {
-    //         #(#ast)*
-    //     };
-
-    //     let res = quote! {
-    //         let mut mady_0 = Zero::zero();
-    //         let mut mady_1 = Zero::zero();
-    //         let mady_2: usize = One::one();
-    //     };
-    //     assert_eq!(ast.to_string(), res.to_string());
-    // }
-
-    //     #[test]
-    //     fn test_gen_backward() {
-    //         let ast = parse_quote! {
-    //             {
-    //                 let c;
-    //                 c = a * b;
-    //             }
-    //         };
-    //         let res = quote! {
-    //             mady_3 += mady_2.clone() * mady_6;
-    //             mady_0 += mady_3.clone() * mady_4;
-    //             mady_1 += mady_3.clone() * mady_5;
-    //         };
-    //         let mut parser = InnerParser::new::<_, &str>(["a", "b"]);
-    //         parser.fold_expr(ast);
-    //         let ast = parser.gen_backward();
-    //         let ast = quote! {
-    //             #(#ast)*
-    //         };
-    //         assert_eq!(ast.to_string(), res.to_string());
-    // }
-
     #[test]
-    fn test_gen_macro() {
+    fn test_expr_binary() {
         let ast = parse_quote! {
-            fn a_plus_b(a: usize, b: usize) -> usize {
-                a.mul(b)
+            a + b
+        };
+        let res = quote! {
+            {
+                let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_add(b);
+                mady_3 = mady_tmp1;
+                mady_4 = mady_tmp2;
+                mady_tmp0
             }
         };
-        // let res = quote! {
-        //     mady_3 += mady_2.clone() * mady_6;
-        //     mady_0 += mady_3.clone() * mady_4;
-        //     mady_1 += mady_3.clone() * mady_5;
-        // };
-
-        let ast = Parser::new().gen(ast);
-        // assert_eq!(ast.to_string(), res.to_string());
-        dbg!(ast.to_string());
+        let mut parser =
+            InnerParser::new([("a", parse_quote! {usize}), ("b", parse_quote! {usize})]);
+        let (_, ast) = parser.parse_expr(ast).unwrap();
+        let ast = quote! {#ast};
+        assert_eq!(ast.to_string(), res.to_string());
     }
+
+    #[test]
+    fn test_expr_assign() {
+        let ast = parse_quote! {
+            {
+                c = a - b;
+            }
+        };
+        let res = quote! {
+            {
+                c = {
+                    mady_6 = <usize as GradSub<usize> >::O0::one();
+                    {
+                        let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_sub(b);
+                        mady_4 = mady_tmp1;
+                        mady_5 = mady_tmp2;
+                        mady_tmp0
+                    }
+                };
+            }
+        };
+        let mut parser =
+            InnerParser::new([("a", parse_quote! {usize}), ("b", parse_quote! {usize})]);
+        parser.enter_block();
+        parser.new_local_node(&"c").unwrap();
+        let ast = parser.fold_expr(ast);
+        let ast = quote! {#ast};
+        assert_eq!(ast.to_string(), res.to_string());
+    }
+
+    #[test]
+    fn test_expr_local_declare() {
+        let ast = parse_quote! {
+            {
+                let c;
+                c = a * b;
+            }
+        };
+        let res = quote! {
+            {
+                let c;
+                c = {
+                    mady_6 = <usize as GradMul<usize> >::O0::one();
+                    {
+                        let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_mul(b);
+                        mady_4 = mady_tmp1;
+                        mady_5 = mady_tmp2;
+                        mady_tmp0
+                    }
+                };
+            }
+        };
+
+        let mut parser =
+            InnerParser::new([("a", parse_quote! {usize}), ("b", parse_quote! {usize})]);
+        let ast = parser.fold_expr(ast);
+        let ast = quote! {#ast};
+        assert_eq!(ast.to_string(), res.to_string());
+    }
+
+    #[test]
+    fn test_expr_local_assign() {
+        let ast = parse_quote! {
+            {
+                let c = a / b;
+            }
+        };
+        let res = quote! {
+            {
+                let c = {
+                    mady_6 = <usize as GradDiv<usize> >::O0::one();
+                    {
+                        let (mady_tmp0, (mady_tmp1, mady_tmp2)) = a.grad_div(b);
+                        mady_4 = mady_tmp1;
+                        mady_5 = mady_tmp2;
+                        mady_tmp0
+                    }
+                };
+            }
+        };
+        let mut parser =
+            InnerParser::new([("a", parse_quote! {usize}), ("b", parse_quote! {usize})]);
+        let ast = parser.fold_expr(ast);
+        let ast = quote! {#ast};
+        assert_eq!(ast.to_string(), res.to_string());
+    }
+
+    #[test]
+    fn test_gen_var() {
+        let mut parser =
+            InnerParser::new([("a", parse_quote! {usize}), ("b", parse_quote! {usize})]);
+        let code = parse_quote! {
+            {
+                a * b
+            }
+        };
+
+        parser.fold_expr(code);
+
+        let ast = parser.gen_vars();
+
+        let ast = quote! {
+            #(#ast)*
+        };
+
+        let res = quote! {
+            let mut mady_0 = usize::zero();
+            let mut mady_1 = usize::zero();
+            let mut mady_2 = <usize as GradMul<usize> >::O0::zero();
+            let mut mady_3 = <usize as GradMul<usize> >::G0::zero();
+            let mut mady_4 = <usize as GradMul<usize> >::G1::zero();
+        };
+        assert_eq!(ast.to_string(), res.to_string());
+    }
+
+    #[test]
+    fn test_gen_backward() {
+        let ast = parse_quote! {
+            {
+                let c;
+                c = a * b;
+            }
+        };
+        let res = quote! {
+            mady_3 += mady_2.clone() * mady_6;
+            mady_0 += mady_3.clone() * mady_4;
+            mady_1 += mady_3.clone() * mady_5;
+        };
+        let mut parser =
+            InnerParser::new([("a", parse_quote! {usize}), ("b", parse_quote! {usize})]);
+        parser.fold_expr(ast);
+        let ast = parser.gen_backward();
+        let ast = quote! {
+            #(#ast)*
+        };
+        assert_eq!(ast.to_string(), res.to_string());
+    }
+
+    // #[test]
+    // fn test_gen_macro() {
+    //     let ast = parse_quote! {
+    //         fn a_plus_b(a: usize, b: usize) -> usize {
+    //             a.mul(b)
+    //         }
+    //     };
+    //     // let res = quote! {
+    //     //     mady_3 += mady_2.clone() * mady_6;
+    //     //     mady_0 += mady_3.clone() * mady_4;
+    //     //     mady_1 += mady_3.clone() * mady_5;
+    //     // };
+
+    //     let ast = Parser::new().gen(ast);
+    //     // assert_eq!(ast.to_string(), res.to_string());
+    //     dbg!(ast.to_string());
+    // }
 }
