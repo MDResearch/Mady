@@ -11,6 +11,7 @@ path = "./mady_math"
 path = "./mady_macro"
 
 [dev-dependencies]
+rand_distr = "0.4.3"
 rand = "0.8.5"
 
 [workspace]

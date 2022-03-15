@@ -936,16 +936,15 @@ mod tests {
         assert_eq!(ast.to_string(), res.to_string());
     }
 
-    // #[test]
-    // fn test_gen_macro() {
-    //     let ast = parse_quote! {
-    //         fn layer(prev: Array1<f64>, weight: Array1<f64>, b: Array0<f64>) -> Array0<f64> {
-    //             prev.dot(weight) + b
-    //         }            
-    //     };
-
-    //     let ast = Parser::new().gen(ast);
-    //     // assert_eq!(ast.to_string(), res.to_string());
-    //     dbg!(ast.to_string());
-    // }
+    #[test]
+    fn test_gen_macro() {
+        let ast = parse_quote! {
+            fn layer(prev: Array1<f64>, weight: Array1<f64>) -> Array0<f64> {
+                prev.dot(weight).relu()
+            }
+        };
+        let ast = Parser::new().gen(ast);
+        // assert_eq!(ast.to_string(), res.to_string());
+        dbg!(ast.to_string());
+    }
 }

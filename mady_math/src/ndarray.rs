@@ -1,7 +1,7 @@
 use super::grad::{GradAdd, GradMul, One, Zero};
 
 use std::marker::PhantomData;
-use std::ops::{Add, AddAssign, Deref, DerefMut, Div, Index, IndexMut, Mul};
+use std::ops::{Add, AddAssign, Deref, DerefMut, Div, Index, IndexMut, Mul, Sub};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NDArray<D, T> {
@@ -51,7 +51,7 @@ where
 
 impl<T> Array1<T>
 where
-    T: Mul<Output = T> + Add<Output = T> + Div<Output = T> + Zero<O0 = T> + Copy,
+    T: Copy,
 {
     pub fn new(data: Vec<T>) -> Self {
         Self {
@@ -60,7 +60,12 @@ where
             data,
         }
     }
+}
 
+impl<T> Array1<T>
+where
+    T: Mul<Output = T> + Add<Output = T> + Div<Output = T> + Zero<O0 = T> + Copy,
+{
     pub fn dot(self, i: Self) -> Array0<T> {
         if cfg!(debug_assertions) {
             assert_eq!(self.size, i.size);
@@ -79,7 +84,7 @@ where
         if cfg!(debug_assertions) {
             assert_eq!(self.size, i.size);
         }
-        let mut result = self
+        let result = self
             .data
             .into_iter()
             .zip(i.data.into_iter())
@@ -87,6 +92,10 @@ where
             .collect();
 
         Self::new(result)
+    }
+
+    pub fn sum(self) -> Array0<T> {
+        Array0::new(self.data.into_iter().fold(T::zero(), |a, x| a + x))
     }
 
     // wrong one
@@ -205,7 +214,11 @@ where
     type O0 = Array0<T>;
 
     fn zero() -> Self::O0 {
-        Self::O0::new(T::zero())
+        Self {
+            phantom: PhantomData,
+            data: vec![],
+            size: vec![],
+        }
     }
 }
 
@@ -227,7 +240,11 @@ where
     type O0 = Array1<T>;
 
     fn zero() -> Self::O0 {
-        Self::O0::new(vec![T::zero()])
+        Self {
+            phantom: PhantomData,
+            data: vec![],
+            size: vec![],
+        }
     }
 }
 
@@ -238,7 +255,11 @@ where
     type O0 = Array1<T>;
 
     fn one() -> Self::O0 {
-        Self::O0::new(vec![T::one()])
+        Self {
+            phantom: PhantomData,
+            data: vec![],
+            size: vec![],
+        }
     }
 }
 
@@ -295,7 +316,7 @@ where
         if self.data[0] < T::zero() {
             (Self::new(T::zero()), (Self::new(T::zero()),))
         } else {
-            (Self::new(T::one()), (Self::new(T::one()),))
+            (self, (Self::new(T::one()),))
         }
     }
 }
@@ -355,10 +376,34 @@ where
     T: Zero<O0 = T> + Copy + Add<Output = T> + Div<Output = T> + Mul<Output = T> + AddAssign,
 {
     fn add_assign(&mut self, rhs: Self) {
-        self.data
-            .iter_mut()
-            .zip(rhs.data.into_iter())
-            .for_each(|(a, b)| *a += b)
+        if self.data.is_empty() {
+            *self = rhs;
+        } else {
+            if cfg!(debug_assertions) {
+                assert_eq!(self.size, rhs.size);
+            }
+            self.data
+                .iter_mut()
+                .zip(rhs.data.into_iter())
+                .for_each(|(a, b)| *a += b)
+        }
+    }
+}
+
+impl<T> Sub for Array1<T>
+where
+    T: Zero<O0 = T> + Copy + Add<Output = T> + Div<Output = T> + Mul<Output = T> + Sub<Output = T>,
+{
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self::new(
+            self.data
+                .into_iter()
+                .zip(rhs.into_iter())
+                .map(|(a, b)| a - b)
+                .collect(),
+        )
     }
 }
 
@@ -387,6 +432,25 @@ impl<T> Deref for Array0<T> {
 impl<T> DerefMut for Array0<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.data[0]
+    }
+}
+
+impl<T> From<Vec<T>> for Array1<T>
+where
+    T: Copy,
+{
+    fn from(d: Vec<T>) -> Self {
+        Self::new(d)
+    }
+}
+
+impl<D, T> IntoIterator for NDArray<D, T> {
+    type Item = T;
+
+    type IntoIter = std::vec::IntoIter<T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data.into_iter()
     }
 }
 
