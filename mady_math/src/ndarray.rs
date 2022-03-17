@@ -339,13 +339,7 @@ where
     type Output = Self;
 
     fn mul(self, rhs: Array0<T>) -> Self::Output {
-        Self::new(
-            self.clone()
-                .data
-                .into_iter()
-                .map(|x| x * rhs.data[0])
-                .collect(),
-        )
+        Self::new(self.clone().data.into_iter().map(|x| x * *rhs).collect())
     }
 }
 
@@ -356,7 +350,11 @@ where
     type Output = Array1<T>;
 
     fn mul(self, rhs: Array1<T>) -> Self::Output {
-        Self::Output::new(rhs.data.into_iter().map(|x| x * self.data[0]).collect())
+        if self.data.is_empty(){
+            Array1::<T>::zero()
+        }else {
+            Self::Output::new(rhs.data.into_iter().map(|x| x * *self).collect())
+        }
     }
 }
 
@@ -368,6 +366,23 @@ where
 
     fn add(self, rhs: Array0<T>) -> Self::Output {
         Self::Output::new(rhs.data[0] + self.data[0])
+    }
+}
+
+impl<T> Add for Array1<T>
+where
+    T: Zero<O0 = T> + Copy + Add<Output = T> + Div<Output = T> + Mul<Output = T>,
+{
+    type Output = Array1<T>;
+
+    fn add(self, rhs: Array1<T>) -> Self::Output {
+        Self::Output::new(
+            rhs.data
+                .into_iter()
+                .zip(self.data.into_iter())
+                .map(|(a, b)| a + b)
+                .collect(),
+        )
     }
 }
 
