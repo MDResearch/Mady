@@ -4,6 +4,7 @@ use syn::{parse_macro_input, ItemFn};
 
 mod graph;
 mod parser;
+mod rewrite;
 mod gen;
 
 #[proc_macro_attribute]
