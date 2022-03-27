@@ -4,6 +4,7 @@ use syn::{parse_macro_input, ItemFn};
 
 mod graph;
 mod parser;
+mod gen;
 
 #[proc_macro_attribute]
 pub fn grad(_attr: TokenStream, input: TokenStream) -> TokenStream {
