@@ -88,7 +88,7 @@ where
             .data
             .into_iter()
             .zip(i.data.into_iter())
-            .map(|(a, b)| a + b)
+            .map(|(a, b)| a * b)
             .collect();
 
         Self::new(result)
