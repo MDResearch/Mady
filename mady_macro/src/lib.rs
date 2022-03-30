@@ -2,10 +2,10 @@ extern crate proc_macro;
 use proc_macro::TokenStream;
 use syn::{parse_macro_input, ItemFn};
 
+mod gen;
 mod graph;
 mod parser;
 mod rewrite;
-mod gen;
 
 #[proc_macro_attribute]
 pub fn grad(_attr: TokenStream, input: TokenStream) -> TokenStream {

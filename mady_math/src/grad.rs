@@ -1,9 +1,5 @@
 //! about the std ops trait
 
-use std::ops::{Add, Div, Mul};
-
-use super::ndarray;
-
 /// return one in a type
 ///
 /// one must can

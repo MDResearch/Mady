@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::prelude::*;
 
 use proc_macro2::TokenStream;
-use quote::quote;
+
 use serde_json::from_str;
 use syn::parse2;
 use syn_codegen::Definitions;

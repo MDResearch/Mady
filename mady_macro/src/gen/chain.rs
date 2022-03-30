@@ -1,8 +1,6 @@
 // codegen file by version 0.1.0
 // don't edit this
 
-
-
 /// chain of responsibility trait
 /// it is a call & return trait
 #[allow(unused)]
@@ -28,109 +26,49 @@ trait Chain {
     ) -> syn::AttrStyle {
         syn::AttrStyle::Inner(t)
     }
-    fn chain_attribute(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Attribute,
-    ) -> syn::Attribute {
+    fn chain_attribute(&mut self, c: &mut Self::Input, t: syn::Attribute) -> syn::Attribute {
         t
     }
-    fn chain_barefnarg(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::BareFnArg,
-    ) -> syn::BareFnArg {
+    fn chain_barefnarg(&mut self, c: &mut Self::Input, t: syn::BareFnArg) -> syn::BareFnArg {
         t
     }
-    fn chain_binop_add(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::Add,
-    ) -> syn::BinOp {
+    fn chain_binop_add(&mut self, c: &mut Self::Input, t: syn::token::Add) -> syn::BinOp {
         syn::BinOp::Add(t)
     }
-    fn chain_binop_sub(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::Sub,
-    ) -> syn::BinOp {
+    fn chain_binop_sub(&mut self, c: &mut Self::Input, t: syn::token::Sub) -> syn::BinOp {
         syn::BinOp::Sub(t)
     }
-    fn chain_binop_mul(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::Star,
-    ) -> syn::BinOp {
+    fn chain_binop_mul(&mut self, c: &mut Self::Input, t: syn::token::Star) -> syn::BinOp {
         syn::BinOp::Mul(t)
     }
-    fn chain_binop_div(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::Div,
-    ) -> syn::BinOp {
+    fn chain_binop_div(&mut self, c: &mut Self::Input, t: syn::token::Div) -> syn::BinOp {
         syn::BinOp::Div(t)
     }
-    fn chain_binop_rem(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::Rem,
-    ) -> syn::BinOp {
+    fn chain_binop_rem(&mut self, c: &mut Self::Input, t: syn::token::Rem) -> syn::BinOp {
         syn::BinOp::Rem(t)
     }
-    fn chain_binop_and(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::AndAnd,
-    ) -> syn::BinOp {
+    fn chain_binop_and(&mut self, c: &mut Self::Input, t: syn::token::AndAnd) -> syn::BinOp {
         syn::BinOp::And(t)
     }
-    fn chain_binop_or(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::OrOr,
-    ) -> syn::BinOp {
+    fn chain_binop_or(&mut self, c: &mut Self::Input, t: syn::token::OrOr) -> syn::BinOp {
         syn::BinOp::Or(t)
     }
-    fn chain_binop_bitxor(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::Caret,
-    ) -> syn::BinOp {
+    fn chain_binop_bitxor(&mut self, c: &mut Self::Input, t: syn::token::Caret) -> syn::BinOp {
         syn::BinOp::BitXor(t)
     }
-    fn chain_binop_bitand(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::And,
-    ) -> syn::BinOp {
+    fn chain_binop_bitand(&mut self, c: &mut Self::Input, t: syn::token::And) -> syn::BinOp {
         syn::BinOp::BitAnd(t)
     }
-    fn chain_binop_bitor(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::Or,
-    ) -> syn::BinOp {
+    fn chain_binop_bitor(&mut self, c: &mut Self::Input, t: syn::token::Or) -> syn::BinOp {
         syn::BinOp::BitOr(t)
     }
-    fn chain_binop_shl(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::Shl,
-    ) -> syn::BinOp {
+    fn chain_binop_shl(&mut self, c: &mut Self::Input, t: syn::token::Shl) -> syn::BinOp {
         syn::BinOp::Shl(t)
     }
-    fn chain_binop_shr(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::Shr,
-    ) -> syn::BinOp {
+    fn chain_binop_shr(&mut self, c: &mut Self::Input, t: syn::token::Shr) -> syn::BinOp {
         syn::BinOp::Shr(t)
     }
-    fn chain_binop_eq(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::EqEq,
-    ) -> syn::BinOp {
+    fn chain_binop_eq(&mut self, c: &mut Self::Input, t: syn::token::EqEq) -> syn::BinOp {
         syn::BinOp::Eq(t)
     }
     fn chain_binop_lt(&mut self, c: &mut Self::Input, t: syn::token::Lt) -> syn::BinOp {
@@ -148,74 +86,34 @@ trait Chain {
     fn chain_binop_gt(&mut self, c: &mut Self::Input, t: syn::token::Gt) -> syn::BinOp {
         syn::BinOp::Gt(t)
     }
-    fn chain_binop_addeq(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::AddEq,
-    ) -> syn::BinOp {
+    fn chain_binop_addeq(&mut self, c: &mut Self::Input, t: syn::token::AddEq) -> syn::BinOp {
         syn::BinOp::AddEq(t)
     }
-    fn chain_binop_subeq(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::SubEq,
-    ) -> syn::BinOp {
+    fn chain_binop_subeq(&mut self, c: &mut Self::Input, t: syn::token::SubEq) -> syn::BinOp {
         syn::BinOp::SubEq(t)
     }
-    fn chain_binop_muleq(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::MulEq,
-    ) -> syn::BinOp {
+    fn chain_binop_muleq(&mut self, c: &mut Self::Input, t: syn::token::MulEq) -> syn::BinOp {
         syn::BinOp::MulEq(t)
     }
-    fn chain_binop_diveq(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::DivEq,
-    ) -> syn::BinOp {
+    fn chain_binop_diveq(&mut self, c: &mut Self::Input, t: syn::token::DivEq) -> syn::BinOp {
         syn::BinOp::DivEq(t)
     }
-    fn chain_binop_remeq(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::RemEq,
-    ) -> syn::BinOp {
+    fn chain_binop_remeq(&mut self, c: &mut Self::Input, t: syn::token::RemEq) -> syn::BinOp {
         syn::BinOp::RemEq(t)
     }
-    fn chain_binop_bitxoreq(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::CaretEq,
-    ) -> syn::BinOp {
+    fn chain_binop_bitxoreq(&mut self, c: &mut Self::Input, t: syn::token::CaretEq) -> syn::BinOp {
         syn::BinOp::BitXorEq(t)
     }
-    fn chain_binop_bitandeq(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::AndEq,
-    ) -> syn::BinOp {
+    fn chain_binop_bitandeq(&mut self, c: &mut Self::Input, t: syn::token::AndEq) -> syn::BinOp {
         syn::BinOp::BitAndEq(t)
     }
-    fn chain_binop_bitoreq(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::OrEq,
-    ) -> syn::BinOp {
+    fn chain_binop_bitoreq(&mut self, c: &mut Self::Input, t: syn::token::OrEq) -> syn::BinOp {
         syn::BinOp::BitOrEq(t)
     }
-    fn chain_binop_shleq(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::ShlEq,
-    ) -> syn::BinOp {
+    fn chain_binop_shleq(&mut self, c: &mut Self::Input, t: syn::token::ShlEq) -> syn::BinOp {
         syn::BinOp::ShlEq(t)
     }
-    fn chain_binop_shreq(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::ShrEq,
-    ) -> syn::BinOp {
+    fn chain_binop_shreq(&mut self, c: &mut Self::Input, t: syn::token::ShrEq) -> syn::BinOp {
         syn::BinOp::ShrEq(t)
     }
     fn chain_binding(&mut self, c: &mut Self::Input, t: syn::Binding) -> syn::Binding {
@@ -231,25 +129,13 @@ trait Chain {
     ) -> syn::BoundLifetimes {
         t
     }
-    fn chain_constparam(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ConstParam,
-    ) -> syn::ConstParam {
+    fn chain_constparam(&mut self, c: &mut Self::Input, t: syn::ConstParam) -> syn::ConstParam {
         t
     }
-    fn chain_constraint(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Constraint,
-    ) -> syn::Constraint {
+    fn chain_constraint(&mut self, c: &mut Self::Input, t: syn::Constraint) -> syn::Constraint {
         t
     }
-    fn chain_data_struct(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::DataStruct,
-    ) -> syn::Data {
+    fn chain_data_struct(&mut self, c: &mut Self::Input, t: syn::DataStruct) -> syn::Data {
         syn::Data::Struct(t)
     }
     fn chain_data_enum(&mut self, c: &mut Self::Input, t: syn::DataEnum) -> syn::Data {
@@ -258,49 +144,25 @@ trait Chain {
     fn chain_data_union(&mut self, c: &mut Self::Input, t: syn::DataUnion) -> syn::Data {
         syn::Data::Union(t)
     }
-    fn chain_dataenum(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::DataEnum,
-    ) -> syn::DataEnum {
+    fn chain_dataenum(&mut self, c: &mut Self::Input, t: syn::DataEnum) -> syn::DataEnum {
         t
     }
-    fn chain_datastruct(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::DataStruct,
-    ) -> syn::DataStruct {
+    fn chain_datastruct(&mut self, c: &mut Self::Input, t: syn::DataStruct) -> syn::DataStruct {
         t
     }
-    fn chain_dataunion(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::DataUnion,
-    ) -> syn::DataUnion {
+    fn chain_dataunion(&mut self, c: &mut Self::Input, t: syn::DataUnion) -> syn::DataUnion {
         t
     }
-    fn chain_deriveinput(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::DeriveInput,
-    ) -> syn::DeriveInput {
+    fn chain_deriveinput(&mut self, c: &mut Self::Input, t: syn::DeriveInput) -> syn::DeriveInput {
         t
     }
     fn chain_expr_array(&mut self, c: &mut Self::Input, t: syn::ExprArray) -> syn::Expr {
         syn::Expr::Array(t)
     }
-    fn chain_expr_assign(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprAssign,
-    ) -> syn::Expr {
+    fn chain_expr_assign(&mut self, c: &mut Self::Input, t: syn::ExprAssign) -> syn::Expr {
         syn::Expr::Assign(t)
     }
-    fn chain_expr_assignop(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprAssignOp,
-    ) -> syn::Expr {
+    fn chain_expr_assignop(&mut self, c: &mut Self::Input, t: syn::ExprAssignOp) -> syn::Expr {
         syn::Expr::AssignOp(t)
     }
     fn chain_expr_async(&mut self, c: &mut Self::Input, t: syn::ExprAsync) -> syn::Expr {
@@ -309,11 +171,7 @@ trait Chain {
     fn chain_expr_await(&mut self, c: &mut Self::Input, t: syn::ExprAwait) -> syn::Expr {
         syn::Expr::Await(t)
     }
-    fn chain_expr_binary(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprBinary,
-    ) -> syn::Expr {
+    fn chain_expr_binary(&mut self, c: &mut Self::Input, t: syn::ExprBinary) -> syn::Expr {
         syn::Expr::Binary(t)
     }
     fn chain_expr_block(&mut self, c: &mut Self::Input, t: syn::ExprBlock) -> syn::Expr {
@@ -331,28 +189,16 @@ trait Chain {
     fn chain_expr_cast(&mut self, c: &mut Self::Input, t: syn::ExprCast) -> syn::Expr {
         syn::Expr::Cast(t)
     }
-    fn chain_expr_closure(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprClosure,
-    ) -> syn::Expr {
+    fn chain_expr_closure(&mut self, c: &mut Self::Input, t: syn::ExprClosure) -> syn::Expr {
         syn::Expr::Closure(t)
     }
-    fn chain_expr_continue(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprContinue,
-    ) -> syn::Expr {
+    fn chain_expr_continue(&mut self, c: &mut Self::Input, t: syn::ExprContinue) -> syn::Expr {
         syn::Expr::Continue(t)
     }
     fn chain_expr_field(&mut self, c: &mut Self::Input, t: syn::ExprField) -> syn::Expr {
         syn::Expr::Field(t)
     }
-    fn chain_expr_forloop(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprForLoop,
-    ) -> syn::Expr {
+    fn chain_expr_forloop(&mut self, c: &mut Self::Input, t: syn::ExprForLoop) -> syn::Expr {
         syn::Expr::ForLoop(t)
     }
     fn chain_expr_group(&mut self, c: &mut Self::Input, t: syn::ExprGroup) -> syn::Expr {
@@ -379,11 +225,7 @@ trait Chain {
     fn chain_expr_match(&mut self, c: &mut Self::Input, t: syn::ExprMatch) -> syn::Expr {
         syn::Expr::Match(t)
     }
-    fn chain_expr_methodcall(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprMethodCall,
-    ) -> syn::Expr {
+    fn chain_expr_methodcall(&mut self, c: &mut Self::Input, t: syn::ExprMethodCall) -> syn::Expr {
         syn::Expr::MethodCall(t)
     }
     fn chain_expr_paren(&mut self, c: &mut Self::Input, t: syn::ExprParen) -> syn::Expr {
@@ -395,42 +237,22 @@ trait Chain {
     fn chain_expr_range(&mut self, c: &mut Self::Input, t: syn::ExprRange) -> syn::Expr {
         syn::Expr::Range(t)
     }
-    fn chain_expr_reference(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprReference,
-    ) -> syn::Expr {
+    fn chain_expr_reference(&mut self, c: &mut Self::Input, t: syn::ExprReference) -> syn::Expr {
         syn::Expr::Reference(t)
     }
-    fn chain_expr_repeat(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprRepeat,
-    ) -> syn::Expr {
+    fn chain_expr_repeat(&mut self, c: &mut Self::Input, t: syn::ExprRepeat) -> syn::Expr {
         syn::Expr::Repeat(t)
     }
-    fn chain_expr_return(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprReturn,
-    ) -> syn::Expr {
+    fn chain_expr_return(&mut self, c: &mut Self::Input, t: syn::ExprReturn) -> syn::Expr {
         syn::Expr::Return(t)
     }
-    fn chain_expr_struct(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprStruct,
-    ) -> syn::Expr {
+    fn chain_expr_struct(&mut self, c: &mut Self::Input, t: syn::ExprStruct) -> syn::Expr {
         syn::Expr::Struct(t)
     }
     fn chain_expr_try(&mut self, c: &mut Self::Input, t: syn::ExprTry) -> syn::Expr {
         syn::Expr::Try(t)
     }
-    fn chain_expr_tryblock(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprTryBlock,
-    ) -> syn::Expr {
+    fn chain_expr_tryblock(&mut self, c: &mut Self::Input, t: syn::ExprTryBlock) -> syn::Expr {
         syn::Expr::TryBlock(t)
     }
     fn chain_expr_tuple(&mut self, c: &mut Self::Input, t: syn::ExprTuple) -> syn::Expr {
@@ -442,11 +264,7 @@ trait Chain {
     fn chain_expr_unary(&mut self, c: &mut Self::Input, t: syn::ExprUnary) -> syn::Expr {
         syn::Expr::Unary(t)
     }
-    fn chain_expr_unsafe(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprUnsafe,
-    ) -> syn::Expr {
+    fn chain_expr_unsafe(&mut self, c: &mut Self::Input, t: syn::ExprUnsafe) -> syn::Expr {
         syn::Expr::Unsafe(t)
     }
     fn chain_expr_verbatim(
@@ -462,18 +280,10 @@ trait Chain {
     fn chain_expr_yield(&mut self, c: &mut Self::Input, t: syn::ExprYield) -> syn::Expr {
         syn::Expr::Yield(t)
     }
-    fn chain_exprarray(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprArray,
-    ) -> syn::ExprArray {
+    fn chain_exprarray(&mut self, c: &mut Self::Input, t: syn::ExprArray) -> syn::ExprArray {
         t
     }
-    fn chain_exprassign(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprAssign,
-    ) -> syn::ExprAssign {
+    fn chain_exprassign(&mut self, c: &mut Self::Input, t: syn::ExprAssign) -> syn::ExprAssign {
         t
     }
     fn chain_exprassignop(
@@ -483,63 +293,31 @@ trait Chain {
     ) -> syn::ExprAssignOp {
         t
     }
-    fn chain_exprasync(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprAsync,
-    ) -> syn::ExprAsync {
+    fn chain_exprasync(&mut self, c: &mut Self::Input, t: syn::ExprAsync) -> syn::ExprAsync {
         t
     }
-    fn chain_exprawait(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprAwait,
-    ) -> syn::ExprAwait {
+    fn chain_exprawait(&mut self, c: &mut Self::Input, t: syn::ExprAwait) -> syn::ExprAwait {
         t
     }
-    fn chain_exprbinary(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprBinary,
-    ) -> syn::ExprBinary {
+    fn chain_exprbinary(&mut self, c: &mut Self::Input, t: syn::ExprBinary) -> syn::ExprBinary {
         t
     }
-    fn chain_exprblock(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprBlock,
-    ) -> syn::ExprBlock {
+    fn chain_exprblock(&mut self, c: &mut Self::Input, t: syn::ExprBlock) -> syn::ExprBlock {
         t
     }
     fn chain_exprbox(&mut self, c: &mut Self::Input, t: syn::ExprBox) -> syn::ExprBox {
         t
     }
-    fn chain_exprbreak(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprBreak,
-    ) -> syn::ExprBreak {
+    fn chain_exprbreak(&mut self, c: &mut Self::Input, t: syn::ExprBreak) -> syn::ExprBreak {
         t
     }
-    fn chain_exprcall(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprCall,
-    ) -> syn::ExprCall {
+    fn chain_exprcall(&mut self, c: &mut Self::Input, t: syn::ExprCall) -> syn::ExprCall {
         t
     }
-    fn chain_exprcast(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprCast,
-    ) -> syn::ExprCast {
+    fn chain_exprcast(&mut self, c: &mut Self::Input, t: syn::ExprCast) -> syn::ExprCast {
         t
     }
-    fn chain_exprclosure(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprClosure,
-    ) -> syn::ExprClosure {
+    fn chain_exprclosure(&mut self, c: &mut Self::Input, t: syn::ExprClosure) -> syn::ExprClosure {
         t
     }
     fn chain_exprcontinue(
@@ -549,35 +327,19 @@ trait Chain {
     ) -> syn::ExprContinue {
         t
     }
-    fn chain_exprfield(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprField,
-    ) -> syn::ExprField {
+    fn chain_exprfield(&mut self, c: &mut Self::Input, t: syn::ExprField) -> syn::ExprField {
         t
     }
-    fn chain_exprforloop(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprForLoop,
-    ) -> syn::ExprForLoop {
+    fn chain_exprforloop(&mut self, c: &mut Self::Input, t: syn::ExprForLoop) -> syn::ExprForLoop {
         t
     }
-    fn chain_exprgroup(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprGroup,
-    ) -> syn::ExprGroup {
+    fn chain_exprgroup(&mut self, c: &mut Self::Input, t: syn::ExprGroup) -> syn::ExprGroup {
         t
     }
     fn chain_exprif(&mut self, c: &mut Self::Input, t: syn::ExprIf) -> syn::ExprIf {
         t
     }
-    fn chain_exprindex(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprIndex,
-    ) -> syn::ExprIndex {
+    fn chain_exprindex(&mut self, c: &mut Self::Input, t: syn::ExprIndex) -> syn::ExprIndex {
         t
     }
     fn chain_exprlet(&mut self, c: &mut Self::Input, t: syn::ExprLet) -> syn::ExprLet {
@@ -586,25 +348,13 @@ trait Chain {
     fn chain_exprlit(&mut self, c: &mut Self::Input, t: syn::ExprLit) -> syn::ExprLit {
         t
     }
-    fn chain_exprloop(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprLoop,
-    ) -> syn::ExprLoop {
+    fn chain_exprloop(&mut self, c: &mut Self::Input, t: syn::ExprLoop) -> syn::ExprLoop {
         t
     }
-    fn chain_exprmacro(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprMacro,
-    ) -> syn::ExprMacro {
+    fn chain_exprmacro(&mut self, c: &mut Self::Input, t: syn::ExprMacro) -> syn::ExprMacro {
         t
     }
-    fn chain_exprmatch(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprMatch,
-    ) -> syn::ExprMatch {
+    fn chain_exprmatch(&mut self, c: &mut Self::Input, t: syn::ExprMatch) -> syn::ExprMatch {
         t
     }
     fn chain_exprmethodcall(
@@ -614,25 +364,13 @@ trait Chain {
     ) -> syn::ExprMethodCall {
         t
     }
-    fn chain_exprparen(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprParen,
-    ) -> syn::ExprParen {
+    fn chain_exprparen(&mut self, c: &mut Self::Input, t: syn::ExprParen) -> syn::ExprParen {
         t
     }
-    fn chain_exprpath(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprPath,
-    ) -> syn::ExprPath {
+    fn chain_exprpath(&mut self, c: &mut Self::Input, t: syn::ExprPath) -> syn::ExprPath {
         t
     }
-    fn chain_exprrange(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprRange,
-    ) -> syn::ExprRange {
+    fn chain_exprrange(&mut self, c: &mut Self::Input, t: syn::ExprRange) -> syn::ExprRange {
         t
     }
     fn chain_exprreference(
@@ -642,25 +380,13 @@ trait Chain {
     ) -> syn::ExprReference {
         t
     }
-    fn chain_exprrepeat(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprRepeat,
-    ) -> syn::ExprRepeat {
+    fn chain_exprrepeat(&mut self, c: &mut Self::Input, t: syn::ExprRepeat) -> syn::ExprRepeat {
         t
     }
-    fn chain_exprreturn(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprReturn,
-    ) -> syn::ExprReturn {
+    fn chain_exprreturn(&mut self, c: &mut Self::Input, t: syn::ExprReturn) -> syn::ExprReturn {
         t
     }
-    fn chain_exprstruct(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprStruct,
-    ) -> syn::ExprStruct {
+    fn chain_exprstruct(&mut self, c: &mut Self::Input, t: syn::ExprStruct) -> syn::ExprStruct {
         t
     }
     fn chain_exprtry(&mut self, c: &mut Self::Input, t: syn::ExprTry) -> syn::ExprTry {
@@ -673,84 +399,40 @@ trait Chain {
     ) -> syn::ExprTryBlock {
         t
     }
-    fn chain_exprtuple(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprTuple,
-    ) -> syn::ExprTuple {
+    fn chain_exprtuple(&mut self, c: &mut Self::Input, t: syn::ExprTuple) -> syn::ExprTuple {
         t
     }
-    fn chain_exprtype(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprType,
-    ) -> syn::ExprType {
+    fn chain_exprtype(&mut self, c: &mut Self::Input, t: syn::ExprType) -> syn::ExprType {
         t
     }
-    fn chain_exprunary(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprUnary,
-    ) -> syn::ExprUnary {
+    fn chain_exprunary(&mut self, c: &mut Self::Input, t: syn::ExprUnary) -> syn::ExprUnary {
         t
     }
-    fn chain_exprunsafe(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprUnsafe,
-    ) -> syn::ExprUnsafe {
+    fn chain_exprunsafe(&mut self, c: &mut Self::Input, t: syn::ExprUnsafe) -> syn::ExprUnsafe {
         t
     }
-    fn chain_exprwhile(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprWhile,
-    ) -> syn::ExprWhile {
+    fn chain_exprwhile(&mut self, c: &mut Self::Input, t: syn::ExprWhile) -> syn::ExprWhile {
         t
     }
-    fn chain_expryield(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ExprYield,
-    ) -> syn::ExprYield {
+    fn chain_expryield(&mut self, c: &mut Self::Input, t: syn::ExprYield) -> syn::ExprYield {
         t
     }
     fn chain_field(&mut self, c: &mut Self::Input, t: syn::Field) -> syn::Field {
         t
     }
-    fn chain_fieldpat(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::FieldPat,
-    ) -> syn::FieldPat {
+    fn chain_fieldpat(&mut self, c: &mut Self::Input, t: syn::FieldPat) -> syn::FieldPat {
         t
     }
-    fn chain_fieldvalue(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::FieldValue,
-    ) -> syn::FieldValue {
+    fn chain_fieldvalue(&mut self, c: &mut Self::Input, t: syn::FieldValue) -> syn::FieldValue {
         t
     }
-    fn chain_fields_named(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::FieldsNamed,
-    ) -> syn::Fields {
+    fn chain_fields_named(&mut self, c: &mut Self::Input, t: syn::FieldsNamed) -> syn::Fields {
         syn::Fields::Named(t)
     }
-    fn chain_fields_unnamed(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::FieldsUnnamed,
-    ) -> syn::Fields {
+    fn chain_fields_unnamed(&mut self, c: &mut Self::Input, t: syn::FieldsUnnamed) -> syn::Fields {
         syn::Fields::Unnamed(t)
     }
-    fn chain_fieldsnamed(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::FieldsNamed,
-    ) -> syn::FieldsNamed {
+    fn chain_fieldsnamed(&mut self, c: &mut Self::Input, t: syn::FieldsNamed) -> syn::FieldsNamed {
         t
     }
     fn chain_fieldsunnamed(
@@ -763,11 +445,7 @@ trait Chain {
     fn chain_file(&mut self, c: &mut Self::Input, t: syn::File) -> syn::File {
         t
     }
-    fn chain_fnarg_receiver(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Receiver,
-    ) -> syn::FnArg {
+    fn chain_fnarg_receiver(&mut self, c: &mut Self::Input, t: syn::Receiver) -> syn::FnArg {
         syn::FnArg::Receiver(t)
     }
     fn chain_fnarg_typed(&mut self, c: &mut Self::Input, t: syn::PatType) -> syn::FnArg {
@@ -906,11 +584,7 @@ trait Chain {
     ) -> syn::GenericParam {
         syn::GenericParam::Const(t)
     }
-    fn chain_generics(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Generics,
-    ) -> syn::Generics {
+    fn chain_generics(&mut self, c: &mut Self::Input, t: syn::Generics) -> syn::Generics {
         t
     }
     fn chain_implitem_const(
@@ -927,11 +601,7 @@ trait Chain {
     ) -> syn::ImplItem {
         syn::ImplItem::Method(t)
     }
-    fn chain_implitem_type(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ImplItemType,
-    ) -> syn::ImplItem {
+    fn chain_implitem_type(&mut self, c: &mut Self::Input, t: syn::ImplItemType) -> syn::ImplItem {
         syn::ImplItem::Type(t)
     }
     fn chain_implitem_macro(
@@ -995,11 +665,7 @@ trait Chain {
     fn chain_item_fn(&mut self, c: &mut Self::Input, t: syn::ItemFn) -> syn::Item {
         syn::Item::Fn(t)
     }
-    fn chain_item_foreignmod(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ItemForeignMod,
-    ) -> syn::Item {
+    fn chain_item_foreignmod(&mut self, c: &mut Self::Input, t: syn::ItemForeignMod) -> syn::Item {
         syn::Item::ForeignMod(t)
     }
     fn chain_item_impl(&mut self, c: &mut Self::Input, t: syn::ItemImpl) -> syn::Item {
@@ -1008,38 +674,22 @@ trait Chain {
     fn chain_item_macro(&mut self, c: &mut Self::Input, t: syn::ItemMacro) -> syn::Item {
         syn::Item::Macro(t)
     }
-    fn chain_item_macro2(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ItemMacro2,
-    ) -> syn::Item {
+    fn chain_item_macro2(&mut self, c: &mut Self::Input, t: syn::ItemMacro2) -> syn::Item {
         syn::Item::Macro2(t)
     }
     fn chain_item_mod(&mut self, c: &mut Self::Input, t: syn::ItemMod) -> syn::Item {
         syn::Item::Mod(t)
     }
-    fn chain_item_static(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ItemStatic,
-    ) -> syn::Item {
+    fn chain_item_static(&mut self, c: &mut Self::Input, t: syn::ItemStatic) -> syn::Item {
         syn::Item::Static(t)
     }
-    fn chain_item_struct(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ItemStruct,
-    ) -> syn::Item {
+    fn chain_item_struct(&mut self, c: &mut Self::Input, t: syn::ItemStruct) -> syn::Item {
         syn::Item::Struct(t)
     }
     fn chain_item_trait(&mut self, c: &mut Self::Input, t: syn::ItemTrait) -> syn::Item {
         syn::Item::Trait(t)
     }
-    fn chain_item_traitalias(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ItemTraitAlias,
-    ) -> syn::Item {
+    fn chain_item_traitalias(&mut self, c: &mut Self::Input, t: syn::ItemTraitAlias) -> syn::Item {
         syn::Item::TraitAlias(t)
     }
     fn chain_item_type(&mut self, c: &mut Self::Input, t: syn::ItemType) -> syn::Item {
@@ -1058,18 +708,10 @@ trait Chain {
     ) -> syn::Item {
         syn::Item::Verbatim(t)
     }
-    fn chain_itemconst(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ItemConst,
-    ) -> syn::ItemConst {
+    fn chain_itemconst(&mut self, c: &mut Self::Input, t: syn::ItemConst) -> syn::ItemConst {
         t
     }
-    fn chain_itemenum(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ItemEnum,
-    ) -> syn::ItemEnum {
+    fn chain_itemenum(&mut self, c: &mut Self::Input, t: syn::ItemEnum) -> syn::ItemEnum {
         t
     }
     fn chain_itemexterncrate(
@@ -1089,49 +731,25 @@ trait Chain {
     ) -> syn::ItemForeignMod {
         t
     }
-    fn chain_itemimpl(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ItemImpl,
-    ) -> syn::ItemImpl {
+    fn chain_itemimpl(&mut self, c: &mut Self::Input, t: syn::ItemImpl) -> syn::ItemImpl {
         t
     }
-    fn chain_itemmacro(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ItemMacro,
-    ) -> syn::ItemMacro {
+    fn chain_itemmacro(&mut self, c: &mut Self::Input, t: syn::ItemMacro) -> syn::ItemMacro {
         t
     }
-    fn chain_itemmacro2(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ItemMacro2,
-    ) -> syn::ItemMacro2 {
+    fn chain_itemmacro2(&mut self, c: &mut Self::Input, t: syn::ItemMacro2) -> syn::ItemMacro2 {
         t
     }
     fn chain_itemmod(&mut self, c: &mut Self::Input, t: syn::ItemMod) -> syn::ItemMod {
         t
     }
-    fn chain_itemstatic(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ItemStatic,
-    ) -> syn::ItemStatic {
+    fn chain_itemstatic(&mut self, c: &mut Self::Input, t: syn::ItemStatic) -> syn::ItemStatic {
         t
     }
-    fn chain_itemstruct(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ItemStruct,
-    ) -> syn::ItemStruct {
+    fn chain_itemstruct(&mut self, c: &mut Self::Input, t: syn::ItemStruct) -> syn::ItemStruct {
         t
     }
-    fn chain_itemtrait(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ItemTrait,
-    ) -> syn::ItemTrait {
+    fn chain_itemtrait(&mut self, c: &mut Self::Input, t: syn::ItemTrait) -> syn::ItemTrait {
         t
     }
     fn chain_itemtraitalias(
@@ -1141,18 +759,10 @@ trait Chain {
     ) -> syn::ItemTraitAlias {
         t
     }
-    fn chain_itemtype(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ItemType,
-    ) -> syn::ItemType {
+    fn chain_itemtype(&mut self, c: &mut Self::Input, t: syn::ItemType) -> syn::ItemType {
         t
     }
-    fn chain_itemunion(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::ItemUnion,
-    ) -> syn::ItemUnion {
+    fn chain_itemunion(&mut self, c: &mut Self::Input, t: syn::ItemUnion) -> syn::ItemUnion {
         t
     }
     fn chain_itemuse(&mut self, c: &mut Self::Input, t: syn::ItemUse) -> syn::ItemUse {
@@ -1161,28 +771,16 @@ trait Chain {
     fn chain_label(&mut self, c: &mut Self::Input, t: syn::Label) -> syn::Label {
         t
     }
-    fn chain_lifetime(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Lifetime,
-    ) -> syn::Lifetime {
+    fn chain_lifetime(&mut self, c: &mut Self::Input, t: syn::Lifetime) -> syn::Lifetime {
         t
     }
-    fn chain_lifetimedef(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::LifetimeDef,
-    ) -> syn::LifetimeDef {
+    fn chain_lifetimedef(&mut self, c: &mut Self::Input, t: syn::LifetimeDef) -> syn::LifetimeDef {
         t
     }
     fn chain_lit_str(&mut self, c: &mut Self::Input, t: syn::LitStr) -> syn::Lit {
         syn::Lit::Str(t)
     }
-    fn chain_lit_bytestr(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::LitByteStr,
-    ) -> syn::Lit {
+    fn chain_lit_bytestr(&mut self, c: &mut Self::Input, t: syn::LitByteStr) -> syn::Lit {
         syn::Lit::ByteStr(t)
     }
     fn chain_lit_byte(&mut self, c: &mut Self::Input, t: syn::LitByte) -> syn::Lit {
@@ -1200,11 +798,7 @@ trait Chain {
     fn chain_lit_bool(&mut self, c: &mut Self::Input, t: syn::LitBool) -> syn::Lit {
         syn::Lit::Bool(t)
     }
-    fn chain_lit_verbatim(
-        &mut self,
-        c: &mut Self::Input,
-        t: proc_macro2::Literal,
-    ) -> syn::Lit {
+    fn chain_lit_verbatim(&mut self, c: &mut Self::Input, t: proc_macro2::Literal) -> syn::Lit {
         syn::Lit::Verbatim(t)
     }
     fn chain_litbool(&mut self, c: &mut Self::Input, t: syn::LitBool) -> syn::LitBool {
@@ -1213,21 +807,13 @@ trait Chain {
     fn chain_litbyte(&mut self, c: &mut Self::Input, t: syn::LitByte) -> syn::LitByte {
         t
     }
-    fn chain_litbytestr(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::LitByteStr,
-    ) -> syn::LitByteStr {
+    fn chain_litbytestr(&mut self, c: &mut Self::Input, t: syn::LitByteStr) -> syn::LitByteStr {
         t
     }
     fn chain_litchar(&mut self, c: &mut Self::Input, t: syn::LitChar) -> syn::LitChar {
         t
     }
-    fn chain_litfloat(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::LitFloat,
-    ) -> syn::LitFloat {
+    fn chain_litfloat(&mut self, c: &mut Self::Input, t: syn::LitFloat) -> syn::LitFloat {
         t
     }
     fn chain_litint(&mut self, c: &mut Self::Input, t: syn::LitInt) -> syn::LitInt {
@@ -1263,18 +849,10 @@ trait Chain {
     ) -> syn::MacroDelimiter {
         syn::MacroDelimiter::Bracket(t)
     }
-    fn chain_member_named(
-        &mut self,
-        c: &mut Self::Input,
-        t: proc_macro2::Ident,
-    ) -> syn::Member {
+    fn chain_member_named(&mut self, c: &mut Self::Input, t: proc_macro2::Ident) -> syn::Member {
         syn::Member::Named(t)
     }
-    fn chain_member_unnamed(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Index,
-    ) -> syn::Member {
+    fn chain_member_unnamed(&mut self, c: &mut Self::Input, t: syn::Index) -> syn::Member {
         syn::Member::Unnamed(t)
     }
     fn chain_meta_path(&mut self, c: &mut Self::Input, t: syn::Path) -> syn::Meta {
@@ -1283,18 +861,10 @@ trait Chain {
     fn chain_meta_list(&mut self, c: &mut Self::Input, t: syn::MetaList) -> syn::Meta {
         syn::Meta::List(t)
     }
-    fn chain_meta_namevalue(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::MetaNameValue,
-    ) -> syn::Meta {
+    fn chain_meta_namevalue(&mut self, c: &mut Self::Input, t: syn::MetaNameValue) -> syn::Meta {
         syn::Meta::NameValue(t)
     }
-    fn chain_metalist(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::MetaList,
-    ) -> syn::MetaList {
+    fn chain_metalist(&mut self, c: &mut Self::Input, t: syn::MetaList) -> syn::MetaList {
         t
     }
     fn chain_metanamevalue(
@@ -1311,18 +881,10 @@ trait Chain {
     ) -> syn::MethodTurbofish {
         t
     }
-    fn chain_nestedmeta_meta(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Meta,
-    ) -> syn::NestedMeta {
+    fn chain_nestedmeta_meta(&mut self, c: &mut Self::Input, t: syn::Meta) -> syn::NestedMeta {
         syn::NestedMeta::Meta(t)
     }
-    fn chain_nestedmeta_lit(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Lit,
-    ) -> syn::NestedMeta {
+    fn chain_nestedmeta_lit(&mut self, c: &mut Self::Input, t: syn::Lit) -> syn::NestedMeta {
         syn::NestedMeta::Lit(t)
     }
     fn chain_parenthesizedgenericarguments(
@@ -1353,11 +915,7 @@ trait Chain {
     fn chain_pat_range(&mut self, c: &mut Self::Input, t: syn::PatRange) -> syn::Pat {
         syn::Pat::Range(t)
     }
-    fn chain_pat_reference(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::PatReference,
-    ) -> syn::Pat {
+    fn chain_pat_reference(&mut self, c: &mut Self::Input, t: syn::PatReference) -> syn::Pat {
         syn::Pat::Reference(t)
     }
     fn chain_pat_rest(&mut self, c: &mut Self::Input, t: syn::PatRest) -> syn::Pat {
@@ -1372,21 +930,13 @@ trait Chain {
     fn chain_pat_tuple(&mut self, c: &mut Self::Input, t: syn::PatTuple) -> syn::Pat {
         syn::Pat::Tuple(t)
     }
-    fn chain_pat_tuplestruct(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::PatTupleStruct,
-    ) -> syn::Pat {
+    fn chain_pat_tuplestruct(&mut self, c: &mut Self::Input, t: syn::PatTupleStruct) -> syn::Pat {
         syn::Pat::TupleStruct(t)
     }
     fn chain_pat_type(&mut self, c: &mut Self::Input, t: syn::PatType) -> syn::Pat {
         syn::Pat::Type(t)
     }
-    fn chain_pat_verbatim(
-        &mut self,
-        c: &mut Self::Input,
-        t: proc_macro2::TokenStream,
-    ) -> syn::Pat {
+    fn chain_pat_verbatim(&mut self, c: &mut Self::Input, t: proc_macro2::TokenStream) -> syn::Pat {
         syn::Pat::Verbatim(t)
     }
     fn chain_pat_wild(&mut self, c: &mut Self::Input, t: syn::PatWild) -> syn::Pat {
@@ -1395,21 +945,13 @@ trait Chain {
     fn chain_patbox(&mut self, c: &mut Self::Input, t: syn::PatBox) -> syn::PatBox {
         t
     }
-    fn chain_patident(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::PatIdent,
-    ) -> syn::PatIdent {
+    fn chain_patident(&mut self, c: &mut Self::Input, t: syn::PatIdent) -> syn::PatIdent {
         t
     }
     fn chain_patlit(&mut self, c: &mut Self::Input, t: syn::PatLit) -> syn::PatLit {
         t
     }
-    fn chain_patmacro(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::PatMacro,
-    ) -> syn::PatMacro {
+    fn chain_patmacro(&mut self, c: &mut Self::Input, t: syn::PatMacro) -> syn::PatMacro {
         t
     }
     fn chain_pator(&mut self, c: &mut Self::Input, t: syn::PatOr) -> syn::PatOr {
@@ -1418,11 +960,7 @@ trait Chain {
     fn chain_patpath(&mut self, c: &mut Self::Input, t: syn::PatPath) -> syn::PatPath {
         t
     }
-    fn chain_patrange(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::PatRange,
-    ) -> syn::PatRange {
+    fn chain_patrange(&mut self, c: &mut Self::Input, t: syn::PatRange) -> syn::PatRange {
         t
     }
     fn chain_patreference(
@@ -1435,25 +973,13 @@ trait Chain {
     fn chain_patrest(&mut self, c: &mut Self::Input, t: syn::PatRest) -> syn::PatRest {
         t
     }
-    fn chain_patslice(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::PatSlice,
-    ) -> syn::PatSlice {
+    fn chain_patslice(&mut self, c: &mut Self::Input, t: syn::PatSlice) -> syn::PatSlice {
         t
     }
-    fn chain_patstruct(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::PatStruct,
-    ) -> syn::PatStruct {
+    fn chain_patstruct(&mut self, c: &mut Self::Input, t: syn::PatStruct) -> syn::PatStruct {
         t
     }
-    fn chain_pattuple(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::PatTuple,
-    ) -> syn::PatTuple {
+    fn chain_pattuple(&mut self, c: &mut Self::Input, t: syn::PatTuple) -> syn::PatTuple {
         t
     }
     fn chain_pattuplestruct(
@@ -1486,18 +1012,10 @@ trait Chain {
     ) -> syn::PathArguments {
         syn::PathArguments::Parenthesized(t)
     }
-    fn chain_pathsegment(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::PathSegment,
-    ) -> syn::PathSegment {
+    fn chain_pathsegment(&mut self, c: &mut Self::Input, t: syn::PathSegment) -> syn::PathSegment {
         t
     }
-    fn chain_predicateeq(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::PredicateEq,
-    ) -> syn::PredicateEq {
+    fn chain_predicateeq(&mut self, c: &mut Self::Input, t: syn::PredicateEq) -> syn::PredicateEq {
         t
     }
     fn chain_predicatelifetime(
@@ -1531,11 +1049,7 @@ trait Chain {
     ) -> syn::RangeLimits {
         syn::RangeLimits::Closed(t)
     }
-    fn chain_receiver(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Receiver,
-    ) -> syn::Receiver {
+    fn chain_receiver(&mut self, c: &mut Self::Input, t: syn::Receiver) -> syn::Receiver {
         t
     }
     fn chain_returntype_type(
@@ -1545,11 +1059,7 @@ trait Chain {
     ) -> syn::ReturnType {
         syn::ReturnType::Type(t.0, t.1)
     }
-    fn chain_signature(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Signature,
-    ) -> syn::Signature {
+    fn chain_signature(&mut self, c: &mut Self::Input, t: syn::Signature) -> syn::Signature {
         t
     }
     fn chain_stmt_local(&mut self, c: &mut Self::Input, t: syn::Local) -> syn::Stmt {
@@ -1568,11 +1078,7 @@ trait Chain {
     ) -> syn::Stmt {
         syn::Stmt::Semi(t.0, t.1)
     }
-    fn chain_traitbound(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::TraitBound,
-    ) -> syn::TraitBound {
+    fn chain_traitbound(&mut self, c: &mut Self::Input, t: syn::TraitBound) -> syn::TraitBound {
         t
     }
     fn chain_traitboundmodifier_maybe(
@@ -1648,21 +1154,13 @@ trait Chain {
     fn chain_type_array(&mut self, c: &mut Self::Input, t: syn::TypeArray) -> syn::Type {
         syn::Type::Array(t)
     }
-    fn chain_type_barefn(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::TypeBareFn,
-    ) -> syn::Type {
+    fn chain_type_barefn(&mut self, c: &mut Self::Input, t: syn::TypeBareFn) -> syn::Type {
         syn::Type::BareFn(t)
     }
     fn chain_type_group(&mut self, c: &mut Self::Input, t: syn::TypeGroup) -> syn::Type {
         syn::Type::Group(t)
     }
-    fn chain_type_impltrait(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::TypeImplTrait,
-    ) -> syn::Type {
+    fn chain_type_impltrait(&mut self, c: &mut Self::Input, t: syn::TypeImplTrait) -> syn::Type {
         syn::Type::ImplTrait(t)
     }
     fn chain_type_infer(&mut self, c: &mut Self::Input, t: syn::TypeInfer) -> syn::Type {
@@ -1683,11 +1181,7 @@ trait Chain {
     fn chain_type_ptr(&mut self, c: &mut Self::Input, t: syn::TypePtr) -> syn::Type {
         syn::Type::Ptr(t)
     }
-    fn chain_type_reference(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::TypeReference,
-    ) -> syn::Type {
+    fn chain_type_reference(&mut self, c: &mut Self::Input, t: syn::TypeReference) -> syn::Type {
         syn::Type::Reference(t)
     }
     fn chain_type_slice(&mut self, c: &mut Self::Input, t: syn::TypeSlice) -> syn::Type {
@@ -1710,25 +1204,13 @@ trait Chain {
     ) -> syn::Type {
         syn::Type::Verbatim(t)
     }
-    fn chain_typearray(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::TypeArray,
-    ) -> syn::TypeArray {
+    fn chain_typearray(&mut self, c: &mut Self::Input, t: syn::TypeArray) -> syn::TypeArray {
         t
     }
-    fn chain_typebarefn(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::TypeBareFn,
-    ) -> syn::TypeBareFn {
+    fn chain_typebarefn(&mut self, c: &mut Self::Input, t: syn::TypeBareFn) -> syn::TypeBareFn {
         t
     }
-    fn chain_typegroup(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::TypeGroup,
-    ) -> syn::TypeGroup {
+    fn chain_typegroup(&mut self, c: &mut Self::Input, t: syn::TypeGroup) -> syn::TypeGroup {
         t
     }
     fn chain_typeimpltrait(
@@ -1738,32 +1220,16 @@ trait Chain {
     ) -> syn::TypeImplTrait {
         t
     }
-    fn chain_typeinfer(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::TypeInfer,
-    ) -> syn::TypeInfer {
+    fn chain_typeinfer(&mut self, c: &mut Self::Input, t: syn::TypeInfer) -> syn::TypeInfer {
         t
     }
-    fn chain_typemacro(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::TypeMacro,
-    ) -> syn::TypeMacro {
+    fn chain_typemacro(&mut self, c: &mut Self::Input, t: syn::TypeMacro) -> syn::TypeMacro {
         t
     }
-    fn chain_typenever(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::TypeNever,
-    ) -> syn::TypeNever {
+    fn chain_typenever(&mut self, c: &mut Self::Input, t: syn::TypeNever) -> syn::TypeNever {
         t
     }
-    fn chain_typeparam(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::TypeParam,
-    ) -> syn::TypeParam {
+    fn chain_typeparam(&mut self, c: &mut Self::Input, t: syn::TypeParam) -> syn::TypeParam {
         t
     }
     fn chain_typeparambound_trait(
@@ -1780,18 +1246,10 @@ trait Chain {
     ) -> syn::TypeParamBound {
         syn::TypeParamBound::Lifetime(t)
     }
-    fn chain_typeparen(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::TypeParen,
-    ) -> syn::TypeParen {
+    fn chain_typeparen(&mut self, c: &mut Self::Input, t: syn::TypeParen) -> syn::TypeParen {
         t
     }
-    fn chain_typepath(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::TypePath,
-    ) -> syn::TypePath {
+    fn chain_typepath(&mut self, c: &mut Self::Input, t: syn::TypePath) -> syn::TypePath {
         t
     }
     fn chain_typeptr(&mut self, c: &mut Self::Input, t: syn::TypePtr) -> syn::TypePtr {
@@ -1804,11 +1262,7 @@ trait Chain {
     ) -> syn::TypeReference {
         t
     }
-    fn chain_typeslice(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::TypeSlice,
-    ) -> syn::TypeSlice {
+    fn chain_typeslice(&mut self, c: &mut Self::Input, t: syn::TypeSlice) -> syn::TypeSlice {
         t
     }
     fn chain_typetraitobject(
@@ -1818,18 +1272,10 @@ trait Chain {
     ) -> syn::TypeTraitObject {
         t
     }
-    fn chain_typetuple(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::TypeTuple,
-    ) -> syn::TypeTuple {
+    fn chain_typetuple(&mut self, c: &mut Self::Input, t: syn::TypeTuple) -> syn::TypeTuple {
         t
     }
-    fn chain_unop_deref(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::token::Star,
-    ) -> syn::UnOp {
+    fn chain_unop_deref(&mut self, c: &mut Self::Input, t: syn::token::Star) -> syn::UnOp {
         syn::UnOp::Deref(t)
     }
     fn chain_unop_not(&mut self, c: &mut Self::Input, t: syn::token::Bang) -> syn::UnOp {
@@ -1841,11 +1287,7 @@ trait Chain {
     fn chain_useglob(&mut self, c: &mut Self::Input, t: syn::UseGlob) -> syn::UseGlob {
         t
     }
-    fn chain_usegroup(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::UseGroup,
-    ) -> syn::UseGroup {
+    fn chain_usegroup(&mut self, c: &mut Self::Input, t: syn::UseGroup) -> syn::UseGroup {
         t
     }
     fn chain_usename(&mut self, c: &mut Self::Input, t: syn::UseName) -> syn::UseName {
@@ -1854,70 +1296,34 @@ trait Chain {
     fn chain_usepath(&mut self, c: &mut Self::Input, t: syn::UsePath) -> syn::UsePath {
         t
     }
-    fn chain_userename(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::UseRename,
-    ) -> syn::UseRename {
+    fn chain_userename(&mut self, c: &mut Self::Input, t: syn::UseRename) -> syn::UseRename {
         t
     }
-    fn chain_usetree_path(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::UsePath,
-    ) -> syn::UseTree {
+    fn chain_usetree_path(&mut self, c: &mut Self::Input, t: syn::UsePath) -> syn::UseTree {
         syn::UseTree::Path(t)
     }
-    fn chain_usetree_name(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::UseName,
-    ) -> syn::UseTree {
+    fn chain_usetree_name(&mut self, c: &mut Self::Input, t: syn::UseName) -> syn::UseTree {
         syn::UseTree::Name(t)
     }
-    fn chain_usetree_rename(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::UseRename,
-    ) -> syn::UseTree {
+    fn chain_usetree_rename(&mut self, c: &mut Self::Input, t: syn::UseRename) -> syn::UseTree {
         syn::UseTree::Rename(t)
     }
-    fn chain_usetree_glob(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::UseGlob,
-    ) -> syn::UseTree {
+    fn chain_usetree_glob(&mut self, c: &mut Self::Input, t: syn::UseGlob) -> syn::UseTree {
         syn::UseTree::Glob(t)
     }
-    fn chain_usetree_group(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::UseGroup,
-    ) -> syn::UseTree {
+    fn chain_usetree_group(&mut self, c: &mut Self::Input, t: syn::UseGroup) -> syn::UseTree {
         syn::UseTree::Group(t)
     }
-    fn chain_variadic(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Variadic,
-    ) -> syn::Variadic {
+    fn chain_variadic(&mut self, c: &mut Self::Input, t: syn::Variadic) -> syn::Variadic {
         t
     }
     fn chain_variant(&mut self, c: &mut Self::Input, t: syn::Variant) -> syn::Variant {
         t
     }
-    fn chain_viscrate(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::VisCrate,
-    ) -> syn::VisCrate {
+    fn chain_viscrate(&mut self, c: &mut Self::Input, t: syn::VisCrate) -> syn::VisCrate {
         t
     }
-    fn chain_vispublic(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::VisPublic,
-    ) -> syn::VisPublic {
+    fn chain_vispublic(&mut self, c: &mut Self::Input, t: syn::VisPublic) -> syn::VisPublic {
         t
     }
     fn chain_visrestricted(
@@ -1934,11 +1340,7 @@ trait Chain {
     ) -> syn::Visibility {
         syn::Visibility::Public(t)
     }
-    fn chain_visibility_crate(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::VisCrate,
-    ) -> syn::Visibility {
+    fn chain_visibility_crate(&mut self, c: &mut Self::Input, t: syn::VisCrate) -> syn::Visibility {
         syn::Visibility::Crate(t)
     }
     fn chain_visibility_restricted(
@@ -1948,11 +1350,7 @@ trait Chain {
     ) -> syn::Visibility {
         syn::Visibility::Restricted(t)
     }
-    fn chain_whereclause(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::WhereClause,
-    ) -> syn::WhereClause {
+    fn chain_whereclause(&mut self, c: &mut Self::Input, t: syn::WhereClause) -> syn::WhereClause {
         t
     }
     fn chain_wherepredicate_type(

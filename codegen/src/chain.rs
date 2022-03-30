@@ -1,7 +1,7 @@
-use proc_macro2::{Ident, Span, TokenStream};
+use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use std::str::FromStr;
-use syn_codegen::{Data, Definitions, Fields, Node, Type, Variants};
+use syn_codegen::{Data, Definitions, Node, Type, Variants};
 
 pub fn gen(defs: &Definitions) -> TokenStream {
     let mut ts = TokenStream::new();
@@ -23,7 +23,7 @@ fn visit_node(node: &Node) -> TokenStream {
     match &node.data {
         Data::Private => visit_private_and_struct(&node.ident),
         Data::Struct(_map) => visit_private_and_struct(&node.ident),
-        Data::Enum(map) => visit_enum(&node.ident, &map),
+        Data::Enum(map) => visit_enum(&node.ident, map),
     }
 }
 
