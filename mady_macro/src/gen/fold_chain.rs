@@ -1,8 +1,6 @@
 // codegen file by version 0.1.0
 // don't edit this
 
-
-
 use super::ChainIter;
 /// fold chain of responsibility trait
 /// it is a before chain -> fold -> after chain trait
@@ -21,8 +19,7 @@ where
             t = i.chain_abi(c, t)?;
         }
         t.extern_token = t.extern_token;
-        t
-            .name = match t.name {
+        t.name = match t.name {
             Some(o) => Some(self.fold_chain_litstr(c, o)?),
             None => None,
         };
@@ -40,11 +37,7 @@ where
         for mut i in self.before() {
             t = i.chain_anglebracketedgenericarguments(c, t)?;
         }
-        t
-            .colon2_token = match t.colon2_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.colon2_token = t.colon2_token;
         t.lt_token = t.lt_token;
         t.args = t.args;
         t.gt_token = t.gt_token;
@@ -62,8 +55,7 @@ where
         for mut i in self.before() {
             t = i.chain_arm(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -71,18 +63,13 @@ where
             tmp
         };
         t.pat = self.fold_chain_pat(c, t.pat)?;
-        t
-            .guard = match t.guard {
+        t.guard = match t.guard {
             Some(o) => Some((o.0, Box::new(self.fold_chain_expr(c, *o.1)?))),
             None => None,
         };
         t.fat_arrow_token = t.fat_arrow_token;
         t.body = Box::new(self.fold_chain_expr(c, *t.body)?);
-        t
-            .comma = match t.comma {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.comma = t.comma;
         for mut i in self.after() {
             t = i.chain_arm(c, t)?;
         }
@@ -115,14 +102,14 @@ where
         for mut i in self.before() {
             t = match i.chain_attrstyle_inner(c, t)? {
                 syn::AttrStyle::Inner(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_attrstyle_inner(c, t)? {
                 syn::AttrStyle::Inner(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::AttrStyle::Inner(t))
@@ -155,16 +142,14 @@ where
         for mut i in self.before() {
             t = i.chain_barefnarg(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t
-            .name = match t.name {
+        t.name = match t.name {
             Some(o) => Some((o.0, o.1)),
             None => None,
         };
@@ -228,14 +213,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_add(c, t)? {
                 syn::BinOp::Add(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_add(c, t)? {
                 syn::BinOp::Add(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::Add(t))
@@ -249,14 +234,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_sub(c, t)? {
                 syn::BinOp::Sub(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_sub(c, t)? {
                 syn::BinOp::Sub(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::Sub(t))
@@ -270,14 +255,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_mul(c, t)? {
                 syn::BinOp::Mul(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_mul(c, t)? {
                 syn::BinOp::Mul(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::Mul(t))
@@ -291,14 +276,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_div(c, t)? {
                 syn::BinOp::Div(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_div(c, t)? {
                 syn::BinOp::Div(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::Div(t))
@@ -312,14 +297,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_rem(c, t)? {
                 syn::BinOp::Rem(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_rem(c, t)? {
                 syn::BinOp::Rem(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::Rem(t))
@@ -333,14 +318,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_and(c, t)? {
                 syn::BinOp::And(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_and(c, t)? {
                 syn::BinOp::And(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::And(t))
@@ -354,14 +339,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_or(c, t)? {
                 syn::BinOp::Or(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_or(c, t)? {
                 syn::BinOp::Or(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::Or(t))
@@ -375,14 +360,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_bitxor(c, t)? {
                 syn::BinOp::BitXor(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_bitxor(c, t)? {
                 syn::BinOp::BitXor(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::BitXor(t))
@@ -396,14 +381,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_bitand(c, t)? {
                 syn::BinOp::BitAnd(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_bitand(c, t)? {
                 syn::BinOp::BitAnd(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::BitAnd(t))
@@ -417,14 +402,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_bitor(c, t)? {
                 syn::BinOp::BitOr(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_bitor(c, t)? {
                 syn::BinOp::BitOr(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::BitOr(t))
@@ -438,14 +423,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_shl(c, t)? {
                 syn::BinOp::Shl(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_shl(c, t)? {
                 syn::BinOp::Shl(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::Shl(t))
@@ -459,14 +444,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_shr(c, t)? {
                 syn::BinOp::Shr(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_shr(c, t)? {
                 syn::BinOp::Shr(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::Shr(t))
@@ -480,14 +465,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_eq(c, t)? {
                 syn::BinOp::Eq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_eq(c, t)? {
                 syn::BinOp::Eq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::Eq(t))
@@ -501,14 +486,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_lt(c, t)? {
                 syn::BinOp::Lt(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_lt(c, t)? {
                 syn::BinOp::Lt(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::Lt(t))
@@ -522,14 +507,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_le(c, t)? {
                 syn::BinOp::Le(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_le(c, t)? {
                 syn::BinOp::Le(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::Le(t))
@@ -543,14 +528,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_ne(c, t)? {
                 syn::BinOp::Ne(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_ne(c, t)? {
                 syn::BinOp::Ne(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::Ne(t))
@@ -564,14 +549,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_ge(c, t)? {
                 syn::BinOp::Ge(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_ge(c, t)? {
                 syn::BinOp::Ge(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::Ge(t))
@@ -585,14 +570,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_gt(c, t)? {
                 syn::BinOp::Gt(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_gt(c, t)? {
                 syn::BinOp::Gt(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::Gt(t))
@@ -606,14 +591,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_addeq(c, t)? {
                 syn::BinOp::AddEq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_addeq(c, t)? {
                 syn::BinOp::AddEq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::AddEq(t))
@@ -627,14 +612,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_subeq(c, t)? {
                 syn::BinOp::SubEq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_subeq(c, t)? {
                 syn::BinOp::SubEq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::SubEq(t))
@@ -648,14 +633,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_muleq(c, t)? {
                 syn::BinOp::MulEq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_muleq(c, t)? {
                 syn::BinOp::MulEq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::MulEq(t))
@@ -669,14 +654,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_diveq(c, t)? {
                 syn::BinOp::DivEq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_diveq(c, t)? {
                 syn::BinOp::DivEq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::DivEq(t))
@@ -690,14 +675,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_remeq(c, t)? {
                 syn::BinOp::RemEq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_remeq(c, t)? {
                 syn::BinOp::RemEq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::RemEq(t))
@@ -711,14 +696,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_bitxoreq(c, t)? {
                 syn::BinOp::BitXorEq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_bitxoreq(c, t)? {
                 syn::BinOp::BitXorEq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::BitXorEq(t))
@@ -732,14 +717,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_bitandeq(c, t)? {
                 syn::BinOp::BitAndEq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_bitandeq(c, t)? {
                 syn::BinOp::BitAndEq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::BitAndEq(t))
@@ -753,14 +738,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_bitoreq(c, t)? {
                 syn::BinOp::BitOrEq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_bitoreq(c, t)? {
                 syn::BinOp::BitOrEq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::BitOrEq(t))
@@ -774,14 +759,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_shleq(c, t)? {
                 syn::BinOp::ShlEq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_shleq(c, t)? {
                 syn::BinOp::ShlEq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::ShlEq(t))
@@ -795,14 +780,14 @@ where
         for mut i in self.before() {
             t = match i.chain_binop_shreq(c, t)? {
                 syn::BinOp::ShrEq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_binop_shreq(c, t)? {
                 syn::BinOp::ShrEq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::BinOp::ShrEq(t))
@@ -834,8 +819,7 @@ where
             t = i.chain_block(c, t)?;
         }
         t.brace_token = t.brace_token;
-        t
-            .stmts = {
+        t.stmts = {
             let mut tmp = vec![];
             for v in t.stmts {
                 tmp.push(self.fold_chain_stmt(c, v)?);
@@ -874,8 +858,7 @@ where
         for mut i in self.before() {
             t = i.chain_constparam(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -886,13 +869,8 @@ where
         t.ident = t.ident;
         t.colon_token = t.colon_token;
         t.ty = self.fold_chain_type(c, t.ty)?;
-        t
-            .eq_token = match t.eq_token {
-            Some(o) => Some(o),
-            None => None,
-        };
-        t
-            .default = match t.default {
+        t.eq_token = t.eq_token;
+        t.default = match t.default {
             Some(o) => Some(self.fold_chain_expr(c, o)?),
             None => None,
         };
@@ -947,14 +925,14 @@ where
         for mut i in self.before() {
             t = match i.chain_data_struct(c, t)? {
                 syn::Data::Struct(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_datastruct(c, t)?;
         for mut i in self.after() {
             t = match i.chain_data_struct(c, t)? {
                 syn::Data::Struct(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Data::Struct(t))
@@ -968,14 +946,14 @@ where
         for mut i in self.before() {
             t = match i.chain_data_enum(c, t)? {
                 syn::Data::Enum(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_dataenum(c, t)?;
         for mut i in self.after() {
             t = match i.chain_data_enum(c, t)? {
                 syn::Data::Enum(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Data::Enum(t))
@@ -989,14 +967,14 @@ where
         for mut i in self.before() {
             t = match i.chain_data_union(c, t)? {
                 syn::Data::Union(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_dataunion(c, t)?;
         for mut i in self.after() {
             t = match i.chain_data_union(c, t)? {
                 syn::Data::Union(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Data::Union(t))
@@ -1029,11 +1007,7 @@ where
         }
         t.struct_token = t.struct_token;
         t.fields = self.fold_chain_fields(c, t.fields)?;
-        t
-            .semi_token = match t.semi_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.semi_token = t.semi_token;
         for mut i in self.after() {
             t = i.chain_datastruct(c, t)?;
         }
@@ -1064,8 +1038,7 @@ where
         for mut i in self.before() {
             t = i.chain_deriveinput(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -1147,14 +1120,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_array(c, t)? {
                 syn::Expr::Array(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprarray(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_array(c, t)? {
                 syn::Expr::Array(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Array(t))
@@ -1168,14 +1141,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_assign(c, t)? {
                 syn::Expr::Assign(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprassign(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_assign(c, t)? {
                 syn::Expr::Assign(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Assign(t))
@@ -1189,14 +1162,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_assignop(c, t)? {
                 syn::Expr::AssignOp(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprassignop(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_assignop(c, t)? {
                 syn::Expr::AssignOp(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::AssignOp(t))
@@ -1210,14 +1183,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_async(c, t)? {
                 syn::Expr::Async(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprasync(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_async(c, t)? {
                 syn::Expr::Async(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Async(t))
@@ -1231,14 +1204,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_await(c, t)? {
                 syn::Expr::Await(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprawait(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_await(c, t)? {
                 syn::Expr::Await(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Await(t))
@@ -1252,14 +1225,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_binary(c, t)? {
                 syn::Expr::Binary(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprbinary(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_binary(c, t)? {
                 syn::Expr::Binary(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Binary(t))
@@ -1273,14 +1246,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_block(c, t)? {
                 syn::Expr::Block(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprblock(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_block(c, t)? {
                 syn::Expr::Block(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Block(t))
@@ -1294,14 +1267,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_box(c, t)? {
                 syn::Expr::Box(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprbox(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_box(c, t)? {
                 syn::Expr::Box(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Box(t))
@@ -1315,14 +1288,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_break(c, t)? {
                 syn::Expr::Break(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprbreak(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_break(c, t)? {
                 syn::Expr::Break(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Break(t))
@@ -1336,14 +1309,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_call(c, t)? {
                 syn::Expr::Call(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprcall(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_call(c, t)? {
                 syn::Expr::Call(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Call(t))
@@ -1357,14 +1330,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_cast(c, t)? {
                 syn::Expr::Cast(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprcast(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_cast(c, t)? {
                 syn::Expr::Cast(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Cast(t))
@@ -1378,14 +1351,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_closure(c, t)? {
                 syn::Expr::Closure(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprclosure(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_closure(c, t)? {
                 syn::Expr::Closure(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Closure(t))
@@ -1399,14 +1372,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_continue(c, t)? {
                 syn::Expr::Continue(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprcontinue(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_continue(c, t)? {
                 syn::Expr::Continue(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Continue(t))
@@ -1420,14 +1393,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_field(c, t)? {
                 syn::Expr::Field(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprfield(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_field(c, t)? {
                 syn::Expr::Field(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Field(t))
@@ -1441,14 +1414,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_forloop(c, t)? {
                 syn::Expr::ForLoop(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprforloop(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_forloop(c, t)? {
                 syn::Expr::ForLoop(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::ForLoop(t))
@@ -1462,14 +1435,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_group(c, t)? {
                 syn::Expr::Group(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprgroup(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_group(c, t)? {
                 syn::Expr::Group(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Group(t))
@@ -1483,14 +1456,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_if(c, t)? {
                 syn::Expr::If(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprif(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_if(c, t)? {
                 syn::Expr::If(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::If(t))
@@ -1504,14 +1477,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_index(c, t)? {
                 syn::Expr::Index(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprindex(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_index(c, t)? {
                 syn::Expr::Index(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Index(t))
@@ -1525,14 +1498,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_let(c, t)? {
                 syn::Expr::Let(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprlet(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_let(c, t)? {
                 syn::Expr::Let(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Let(t))
@@ -1546,14 +1519,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_lit(c, t)? {
                 syn::Expr::Lit(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprlit(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_lit(c, t)? {
                 syn::Expr::Lit(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Lit(t))
@@ -1567,14 +1540,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_loop(c, t)? {
                 syn::Expr::Loop(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprloop(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_loop(c, t)? {
                 syn::Expr::Loop(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Loop(t))
@@ -1588,14 +1561,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_macro(c, t)? {
                 syn::Expr::Macro(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprmacro(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_macro(c, t)? {
                 syn::Expr::Macro(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Macro(t))
@@ -1609,14 +1582,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_match(c, t)? {
                 syn::Expr::Match(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprmatch(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_match(c, t)? {
                 syn::Expr::Match(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Match(t))
@@ -1630,14 +1603,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_methodcall(c, t)? {
                 syn::Expr::MethodCall(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprmethodcall(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_methodcall(c, t)? {
                 syn::Expr::MethodCall(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::MethodCall(t))
@@ -1651,14 +1624,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_paren(c, t)? {
                 syn::Expr::Paren(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprparen(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_paren(c, t)? {
                 syn::Expr::Paren(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Paren(t))
@@ -1672,14 +1645,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_path(c, t)? {
                 syn::Expr::Path(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprpath(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_path(c, t)? {
                 syn::Expr::Path(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Path(t))
@@ -1693,14 +1666,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_range(c, t)? {
                 syn::Expr::Range(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprrange(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_range(c, t)? {
                 syn::Expr::Range(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Range(t))
@@ -1714,14 +1687,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_reference(c, t)? {
                 syn::Expr::Reference(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprreference(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_reference(c, t)? {
                 syn::Expr::Reference(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Reference(t))
@@ -1735,14 +1708,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_repeat(c, t)? {
                 syn::Expr::Repeat(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprrepeat(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_repeat(c, t)? {
                 syn::Expr::Repeat(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Repeat(t))
@@ -1756,14 +1729,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_return(c, t)? {
                 syn::Expr::Return(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprreturn(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_return(c, t)? {
                 syn::Expr::Return(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Return(t))
@@ -1777,14 +1750,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_struct(c, t)? {
                 syn::Expr::Struct(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprstruct(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_struct(c, t)? {
                 syn::Expr::Struct(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Struct(t))
@@ -1798,14 +1771,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_try(c, t)? {
                 syn::Expr::Try(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprtry(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_try(c, t)? {
                 syn::Expr::Try(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Try(t))
@@ -1819,14 +1792,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_tryblock(c, t)? {
                 syn::Expr::TryBlock(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprtryblock(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_tryblock(c, t)? {
                 syn::Expr::TryBlock(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::TryBlock(t))
@@ -1840,14 +1813,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_tuple(c, t)? {
                 syn::Expr::Tuple(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprtuple(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_tuple(c, t)? {
                 syn::Expr::Tuple(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Tuple(t))
@@ -1861,14 +1834,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_type(c, t)? {
                 syn::Expr::Type(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprtype(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_type(c, t)? {
                 syn::Expr::Type(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Type(t))
@@ -1882,14 +1855,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_unary(c, t)? {
                 syn::Expr::Unary(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprunary(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_unary(c, t)? {
                 syn::Expr::Unary(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Unary(t))
@@ -1903,14 +1876,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_unsafe(c, t)? {
                 syn::Expr::Unsafe(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprunsafe(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_unsafe(c, t)? {
                 syn::Expr::Unsafe(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Unsafe(t))
@@ -1924,14 +1897,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_verbatim(c, t)? {
                 syn::Expr::Verbatim(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_expr_verbatim(c, t)? {
                 syn::Expr::Verbatim(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Verbatim(t))
@@ -1945,14 +1918,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_while(c, t)? {
                 syn::Expr::While(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_exprwhile(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_while(c, t)? {
                 syn::Expr::While(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::While(t))
@@ -1966,14 +1939,14 @@ where
         for mut i in self.before() {
             t = match i.chain_expr_yield(c, t)? {
                 syn::Expr::Yield(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_expryield(c, t)?;
         for mut i in self.after() {
             t = match i.chain_expr_yield(c, t)? {
                 syn::Expr::Yield(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Expr::Yield(t))
@@ -1987,8 +1960,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprarray(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2011,8 +1983,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprassign(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2036,8 +2007,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprassignop(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2061,8 +2031,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprasync(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2070,11 +2039,7 @@ where
             tmp
         };
         t.async_token = t.async_token;
-        t
-            .capture = match t.capture {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.capture = t.capture;
         t.block = self.fold_chain_block(c, t.block)?;
         for mut i in self.after() {
             t = i.chain_exprasync(c, t)?;
@@ -2090,8 +2055,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprawait(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2115,8 +2079,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprbinary(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2140,16 +2103,14 @@ where
         for mut i in self.before() {
             t = i.chain_exprblock(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t
-            .label = match t.label {
+        t.label = match t.label {
             Some(o) => Some(self.fold_chain_label(c, o)?),
             None => None,
         };
@@ -2168,8 +2129,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprbox(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2192,8 +2152,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprbreak(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2201,13 +2160,11 @@ where
             tmp
         };
         t.break_token = t.break_token;
-        t
-            .label = match t.label {
+        t.label = match t.label {
             Some(o) => Some(self.fold_chain_lifetime(c, o)?),
             None => None,
         };
-        t
-            .expr = match t.expr {
+        t.expr = match t.expr {
             Some(o) => Some(Box::new(self.fold_chain_expr(c, *o)?)),
             None => None,
         };
@@ -2225,8 +2182,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprcall(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2250,8 +2206,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprcast(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2275,29 +2230,16 @@ where
         for mut i in self.before() {
             t = i.chain_exprclosure(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t
-            .movability = match t.movability {
-            Some(o) => Some(o),
-            None => None,
-        };
-        t
-            .asyncness = match t.asyncness {
-            Some(o) => Some(o),
-            None => None,
-        };
-        t
-            .capture = match t.capture {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.movability = t.movability;
+        t.asyncness = t.asyncness;
+        t.capture = t.capture;
         t.or1_token = t.or1_token;
         t.inputs = t.inputs;
         t.or2_token = t.or2_token;
@@ -2317,8 +2259,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprcontinue(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2326,8 +2267,7 @@ where
             tmp
         };
         t.continue_token = t.continue_token;
-        t
-            .label = match t.label {
+        t.label = match t.label {
             Some(o) => Some(self.fold_chain_lifetime(c, o)?),
             None => None,
         };
@@ -2345,8 +2285,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprfield(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2370,16 +2309,14 @@ where
         for mut i in self.before() {
             t = i.chain_exprforloop(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t
-            .label = match t.label {
+        t.label = match t.label {
             Some(o) => Some(self.fold_chain_label(c, o)?),
             None => None,
         };
@@ -2402,8 +2339,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprgroup(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2426,8 +2362,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprif(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2437,8 +2372,7 @@ where
         t.if_token = t.if_token;
         t.cond = Box::new(self.fold_chain_expr(c, *t.cond)?);
         t.then_branch = self.fold_chain_block(c, t.then_branch)?;
-        t
-            .else_branch = match t.else_branch {
+        t.else_branch = match t.else_branch {
             Some(o) => Some((o.0, Box::new(self.fold_chain_expr(c, *o.1)?))),
             None => None,
         };
@@ -2456,8 +2390,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprindex(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2481,8 +2414,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprlet(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2507,8 +2439,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprlit(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2530,16 +2461,14 @@ where
         for mut i in self.before() {
             t = i.chain_exprloop(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t
-            .label = match t.label {
+        t.label = match t.label {
             Some(o) => Some(self.fold_chain_label(c, o)?),
             None => None,
         };
@@ -2559,8 +2488,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprmacro(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2582,8 +2510,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprmatch(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2593,8 +2520,7 @@ where
         t.match_token = t.match_token;
         t.expr = Box::new(self.fold_chain_expr(c, *t.expr)?);
         t.brace_token = t.brace_token;
-        t
-            .arms = {
+        t.arms = {
             let mut tmp = vec![];
             for v in t.arms {
                 tmp.push(self.fold_chain_arm(c, v)?);
@@ -2615,8 +2541,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprmethodcall(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2626,8 +2551,7 @@ where
         t.receiver = Box::new(self.fold_chain_expr(c, *t.receiver)?);
         t.dot_token = t.dot_token;
         t.method = t.method;
-        t
-            .turbofish = match t.turbofish {
+        t.turbofish = match t.turbofish {
             Some(o) => Some(self.fold_chain_methodturbofish(c, o)?),
             None => None,
         };
@@ -2647,8 +2571,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprparen(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2671,16 +2594,14 @@ where
         for mut i in self.before() {
             t = i.chain_exprpath(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t
-            .qself = match t.qself {
+        t.qself = match t.qself {
             Some(o) => Some(self.fold_chain_qself(c, o)?),
             None => None,
         };
@@ -2699,22 +2620,19 @@ where
         for mut i in self.before() {
             t = i.chain_exprrange(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t
-            .from = match t.from {
+        t.from = match t.from {
             Some(o) => Some(Box::new(self.fold_chain_expr(c, *o)?)),
             None => None,
         };
         t.limits = self.fold_chain_rangelimits(c, t.limits)?;
-        t
-            .to = match t.to {
+        t.to = match t.to {
             Some(o) => Some(Box::new(self.fold_chain_expr(c, *o)?)),
             None => None,
         };
@@ -2732,8 +2650,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprreference(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2742,11 +2659,7 @@ where
         };
         t.and_token = t.and_token;
         t.raw = t.raw;
-        t
-            .mutability = match t.mutability {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.mutability = t.mutability;
         t.expr = Box::new(self.fold_chain_expr(c, *t.expr)?);
         for mut i in self.after() {
             t = i.chain_exprreference(c, t)?;
@@ -2762,8 +2675,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprrepeat(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2788,8 +2700,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprreturn(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2797,8 +2708,7 @@ where
             tmp
         };
         t.return_token = t.return_token;
-        t
-            .expr = match t.expr {
+        t.expr = match t.expr {
             Some(o) => Some(Box::new(self.fold_chain_expr(c, *o)?)),
             None => None,
         };
@@ -2816,8 +2726,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprstruct(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2827,13 +2736,8 @@ where
         t.path = self.fold_chain_path(c, t.path)?;
         t.brace_token = t.brace_token;
         t.fields = t.fields;
-        t
-            .dot2_token = match t.dot2_token {
-            Some(o) => Some(o),
-            None => None,
-        };
-        t
-            .rest = match t.rest {
+        t.dot2_token = t.dot2_token;
+        t.rest = match t.rest {
             Some(o) => Some(Box::new(self.fold_chain_expr(c, *o)?)),
             None => None,
         };
@@ -2851,8 +2755,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprtry(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2875,8 +2778,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprtryblock(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2899,8 +2801,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprtuple(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2923,8 +2824,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprtype(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2948,8 +2848,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprunary(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2972,8 +2871,7 @@ where
         for mut i in self.before() {
             t = i.chain_exprunsafe(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2996,16 +2894,14 @@ where
         for mut i in self.before() {
             t = i.chain_exprwhile(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t
-            .label = match t.label {
+        t.label = match t.label {
             Some(o) => Some(self.fold_chain_label(c, o)?),
             None => None,
         };
@@ -3026,8 +2922,7 @@ where
         for mut i in self.before() {
             t = i.chain_expryield(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -3035,8 +2930,7 @@ where
             tmp
         };
         t.yield_token = t.yield_token;
-        t
-            .expr = match t.expr {
+        t.expr = match t.expr {
             Some(o) => Some(Box::new(self.fold_chain_expr(c, *o)?)),
             None => None,
         };
@@ -3054,8 +2948,7 @@ where
         for mut i in self.before() {
             t = i.chain_field(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -3063,16 +2956,8 @@ where
             tmp
         };
         t.vis = self.fold_chain_visibility(c, t.vis)?;
-        t
-            .ident = match t.ident {
-            Some(o) => Some(o),
-            None => None,
-        };
-        t
-            .colon_token = match t.colon_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.ident = t.ident;
+        t.colon_token = t.colon_token;
         t.ty = self.fold_chain_type(c, t.ty)?;
         for mut i in self.after() {
             t = i.chain_field(c, t)?;
@@ -3088,8 +2973,7 @@ where
         for mut i in self.before() {
             t = i.chain_fieldpat(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -3097,11 +2981,7 @@ where
             tmp
         };
         t.member = self.fold_chain_member(c, t.member)?;
-        t
-            .colon_token = match t.colon_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.colon_token = t.colon_token;
         t.pat = Box::new(self.fold_chain_pat(c, *t.pat)?);
         for mut i in self.after() {
             t = i.chain_fieldpat(c, t)?;
@@ -3117,8 +2997,7 @@ where
         for mut i in self.before() {
             t = i.chain_fieldvalue(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -3126,11 +3005,7 @@ where
             tmp
         };
         t.member = self.fold_chain_member(c, t.member)?;
-        t
-            .colon_token = match t.colon_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.colon_token = t.colon_token;
         t.expr = self.fold_chain_expr(c, t.expr)?;
         for mut i in self.after() {
             t = i.chain_fieldvalue(c, t)?;
@@ -3165,14 +3040,14 @@ where
         for mut i in self.before() {
             t = match i.chain_fields_named(c, t)? {
                 syn::Fields::Named(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_fieldsnamed(c, t)?;
         for mut i in self.after() {
             t = match i.chain_fields_named(c, t)? {
                 syn::Fields::Named(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Fields::Named(t))
@@ -3186,14 +3061,14 @@ where
         for mut i in self.before() {
             t = match i.chain_fields_unnamed(c, t)? {
                 syn::Fields::Unnamed(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_fieldsunnamed(c, t)?;
         for mut i in self.after() {
             t = match i.chain_fields_unnamed(c, t)? {
                 syn::Fields::Unnamed(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Fields::Unnamed(t))
@@ -3239,21 +3114,15 @@ where
         for mut i in self.before() {
             t = i.chain_file(c, t)?;
         }
-        t
-            .shebang = match t.shebang {
-            Some(o) => Some(o),
-            None => None,
-        };
-        t
-            .attrs = {
+        t.shebang = t.shebang;
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t
-            .items = {
+        t.items = {
             let mut tmp = vec![];
             for v in t.items {
                 tmp.push(self.fold_chain_item(c, v)?);
@@ -3293,14 +3162,14 @@ where
         for mut i in self.before() {
             t = match i.chain_fnarg_receiver(c, t)? {
                 syn::FnArg::Receiver(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_receiver(c, t)?;
         for mut i in self.after() {
             t = match i.chain_fnarg_receiver(c, t)? {
                 syn::FnArg::Receiver(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::FnArg::Receiver(t))
@@ -3314,14 +3183,14 @@ where
         for mut i in self.before() {
             t = match i.chain_fnarg_typed(c, t)? {
                 syn::FnArg::Typed(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_pattype(c, t)?;
         for mut i in self.after() {
             t = match i.chain_fnarg_typed(c, t)? {
                 syn::FnArg::Typed(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::FnArg::Typed(t))
@@ -3337,14 +3206,10 @@ where
         }
         t = match t {
             syn::ForeignItem::Fn(tmp) => self.fold_chain_foreignitem_fn(c, (tmp))?,
-            syn::ForeignItem::Static(tmp) => {
-                self.fold_chain_foreignitem_static(c, (tmp))?
-            }
+            syn::ForeignItem::Static(tmp) => self.fold_chain_foreignitem_static(c, (tmp))?,
             syn::ForeignItem::Type(tmp) => self.fold_chain_foreignitem_type(c, (tmp))?,
             syn::ForeignItem::Macro(tmp) => self.fold_chain_foreignitem_macro(c, (tmp))?,
-            syn::ForeignItem::Verbatim(tmp) => {
-                self.fold_chain_foreignitem_verbatim(c, (tmp))?
-            }
+            syn::ForeignItem::Verbatim(tmp) => self.fold_chain_foreignitem_verbatim(c, (tmp))?,
             _ => t,
         };
         for mut i in self.after() {
@@ -3361,14 +3226,14 @@ where
         for mut i in self.before() {
             t = match i.chain_foreignitem_fn(c, t)? {
                 syn::ForeignItem::Fn(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_foreignitemfn(c, t)?;
         for mut i in self.after() {
             t = match i.chain_foreignitem_fn(c, t)? {
                 syn::ForeignItem::Fn(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::ForeignItem::Fn(t))
@@ -3382,14 +3247,14 @@ where
         for mut i in self.before() {
             t = match i.chain_foreignitem_static(c, t)? {
                 syn::ForeignItem::Static(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_foreignitemstatic(c, t)?;
         for mut i in self.after() {
             t = match i.chain_foreignitem_static(c, t)? {
                 syn::ForeignItem::Static(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::ForeignItem::Static(t))
@@ -3403,14 +3268,14 @@ where
         for mut i in self.before() {
             t = match i.chain_foreignitem_type(c, t)? {
                 syn::ForeignItem::Type(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_foreignitemtype(c, t)?;
         for mut i in self.after() {
             t = match i.chain_foreignitem_type(c, t)? {
                 syn::ForeignItem::Type(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::ForeignItem::Type(t))
@@ -3424,14 +3289,14 @@ where
         for mut i in self.before() {
             t = match i.chain_foreignitem_macro(c, t)? {
                 syn::ForeignItem::Macro(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_foreignitemmacro(c, t)?;
         for mut i in self.after() {
             t = match i.chain_foreignitem_macro(c, t)? {
                 syn::ForeignItem::Macro(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::ForeignItem::Macro(t))
@@ -3445,14 +3310,14 @@ where
         for mut i in self.before() {
             t = match i.chain_foreignitem_verbatim(c, t)? {
                 syn::ForeignItem::Verbatim(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_foreignitem_verbatim(c, t)? {
                 syn::ForeignItem::Verbatim(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::ForeignItem::Verbatim(t))
@@ -3466,8 +3331,7 @@ where
         for mut i in self.before() {
             t = i.chain_foreignitemfn(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -3491,8 +3355,7 @@ where
         for mut i in self.before() {
             t = i.chain_foreignitemmacro(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -3500,11 +3363,7 @@ where
             tmp
         };
         t.mac = self.fold_chain_macro(c, t.mac)?;
-        t
-            .semi_token = match t.semi_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.semi_token = t.semi_token;
         for mut i in self.after() {
             t = i.chain_foreignitemmacro(c, t)?;
         }
@@ -3519,8 +3378,7 @@ where
         for mut i in self.before() {
             t = i.chain_foreignitemstatic(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -3529,11 +3387,7 @@ where
         };
         t.vis = self.fold_chain_visibility(c, t.vis)?;
         t.static_token = t.static_token;
-        t
-            .mutability = match t.mutability {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.mutability = t.mutability;
         t.ident = t.ident;
         t.colon_token = t.colon_token;
         t.ty = Box::new(self.fold_chain_type(c, *t.ty)?);
@@ -3552,8 +3406,7 @@ where
         for mut i in self.before() {
             t = i.chain_foreignitemtype(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -3582,18 +3435,14 @@ where
             syn::GenericArgument::Lifetime(tmp) => {
                 self.fold_chain_genericargument_lifetime(c, (tmp))?
             }
-            syn::GenericArgument::Type(tmp) => {
-                self.fold_chain_genericargument_type(c, (tmp))?
-            }
+            syn::GenericArgument::Type(tmp) => self.fold_chain_genericargument_type(c, (tmp))?,
             syn::GenericArgument::Binding(tmp) => {
                 self.fold_chain_genericargument_binding(c, (tmp))?
             }
             syn::GenericArgument::Constraint(tmp) => {
                 self.fold_chain_genericargument_constraint(c, (tmp))?
             }
-            syn::GenericArgument::Const(tmp) => {
-                self.fold_chain_genericargument_const(c, (tmp))?
-            }
+            syn::GenericArgument::Const(tmp) => self.fold_chain_genericargument_const(c, (tmp))?,
             _ => t,
         };
         for mut i in self.after() {
@@ -3610,14 +3459,14 @@ where
         for mut i in self.before() {
             t = match i.chain_genericargument_lifetime(c, t)? {
                 syn::GenericArgument::Lifetime(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_lifetime(c, t)?;
         for mut i in self.after() {
             t = match i.chain_genericargument_lifetime(c, t)? {
                 syn::GenericArgument::Lifetime(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::GenericArgument::Lifetime(t))
@@ -3631,14 +3480,14 @@ where
         for mut i in self.before() {
             t = match i.chain_genericargument_type(c, t)? {
                 syn::GenericArgument::Type(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_type(c, t)?;
         for mut i in self.after() {
             t = match i.chain_genericargument_type(c, t)? {
                 syn::GenericArgument::Type(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::GenericArgument::Type(t))
@@ -3652,14 +3501,14 @@ where
         for mut i in self.before() {
             t = match i.chain_genericargument_binding(c, t)? {
                 syn::GenericArgument::Binding(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_binding(c, t)?;
         for mut i in self.after() {
             t = match i.chain_genericargument_binding(c, t)? {
                 syn::GenericArgument::Binding(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::GenericArgument::Binding(t))
@@ -3673,14 +3522,14 @@ where
         for mut i in self.before() {
             t = match i.chain_genericargument_constraint(c, t)? {
                 syn::GenericArgument::Constraint(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_constraint(c, t)?;
         for mut i in self.after() {
             t = match i.chain_genericargument_constraint(c, t)? {
                 syn::GenericArgument::Constraint(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::GenericArgument::Constraint(t))
@@ -3694,14 +3543,14 @@ where
         for mut i in self.before() {
             t = match i.chain_genericargument_const(c, t)? {
                 syn::GenericArgument::Const(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_expr(c, t)?;
         for mut i in self.after() {
             t = match i.chain_genericargument_const(c, t)? {
                 syn::GenericArgument::Const(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::GenericArgument::Const(t))
@@ -3738,14 +3587,14 @@ where
         for mut i in self.before() {
             t = match i.chain_genericmethodargument_type(c, t)? {
                 syn::GenericMethodArgument::Type(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_type(c, t)?;
         for mut i in self.after() {
             t = match i.chain_genericmethodargument_type(c, t)? {
                 syn::GenericMethodArgument::Type(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::GenericMethodArgument::Type(t))
@@ -3759,14 +3608,14 @@ where
         for mut i in self.before() {
             t = match i.chain_genericmethodargument_const(c, t)? {
                 syn::GenericMethodArgument::Const(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_expr(c, t)?;
         for mut i in self.after() {
             t = match i.chain_genericmethodargument_const(c, t)? {
                 syn::GenericMethodArgument::Const(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::GenericMethodArgument::Const(t))
@@ -3782,12 +3631,8 @@ where
         }
         t = match t {
             syn::GenericParam::Type(tmp) => self.fold_chain_genericparam_type(c, (tmp))?,
-            syn::GenericParam::Lifetime(tmp) => {
-                self.fold_chain_genericparam_lifetime(c, (tmp))?
-            }
-            syn::GenericParam::Const(tmp) => {
-                self.fold_chain_genericparam_const(c, (tmp))?
-            }
+            syn::GenericParam::Lifetime(tmp) => self.fold_chain_genericparam_lifetime(c, (tmp))?,
+            syn::GenericParam::Const(tmp) => self.fold_chain_genericparam_const(c, (tmp))?,
             _ => t,
         };
         for mut i in self.after() {
@@ -3804,14 +3649,14 @@ where
         for mut i in self.before() {
             t = match i.chain_genericparam_type(c, t)? {
                 syn::GenericParam::Type(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_typeparam(c, t)?;
         for mut i in self.after() {
             t = match i.chain_genericparam_type(c, t)? {
                 syn::GenericParam::Type(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::GenericParam::Type(t))
@@ -3825,14 +3670,14 @@ where
         for mut i in self.before() {
             t = match i.chain_genericparam_lifetime(c, t)? {
                 syn::GenericParam::Lifetime(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_lifetimedef(c, t)?;
         for mut i in self.after() {
             t = match i.chain_genericparam_lifetime(c, t)? {
                 syn::GenericParam::Lifetime(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::GenericParam::Lifetime(t))
@@ -3846,14 +3691,14 @@ where
         for mut i in self.before() {
             t = match i.chain_genericparam_const(c, t)? {
                 syn::GenericParam::Const(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_constparam(c, t)?;
         for mut i in self.after() {
             t = match i.chain_genericparam_const(c, t)? {
                 syn::GenericParam::Const(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::GenericParam::Const(t))
@@ -3867,19 +3712,10 @@ where
         for mut i in self.before() {
             t = i.chain_generics(c, t)?;
         }
-        t
-            .lt_token = match t.lt_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.lt_token = t.lt_token;
         t.params = t.params;
-        t
-            .gt_token = match t.gt_token {
-            Some(o) => Some(o),
-            None => None,
-        };
-        t
-            .where_clause = match t.where_clause {
+        t.gt_token = t.gt_token;
+        t.where_clause = match t.where_clause {
             Some(o) => Some(self.fold_chain_whereclause(c, o)?),
             None => None,
         };
@@ -3919,14 +3755,14 @@ where
         for mut i in self.before() {
             t = match i.chain_implitem_const(c, t)? {
                 syn::ImplItem::Const(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_implitemconst(c, t)?;
         for mut i in self.after() {
             t = match i.chain_implitem_const(c, t)? {
                 syn::ImplItem::Const(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::ImplItem::Const(t))
@@ -3940,14 +3776,14 @@ where
         for mut i in self.before() {
             t = match i.chain_implitem_method(c, t)? {
                 syn::ImplItem::Method(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_implitemmethod(c, t)?;
         for mut i in self.after() {
             t = match i.chain_implitem_method(c, t)? {
                 syn::ImplItem::Method(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::ImplItem::Method(t))
@@ -3961,14 +3797,14 @@ where
         for mut i in self.before() {
             t = match i.chain_implitem_type(c, t)? {
                 syn::ImplItem::Type(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_implitemtype(c, t)?;
         for mut i in self.after() {
             t = match i.chain_implitem_type(c, t)? {
                 syn::ImplItem::Type(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::ImplItem::Type(t))
@@ -3982,14 +3818,14 @@ where
         for mut i in self.before() {
             t = match i.chain_implitem_macro(c, t)? {
                 syn::ImplItem::Macro(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_implitemmacro(c, t)?;
         for mut i in self.after() {
             t = match i.chain_implitem_macro(c, t)? {
                 syn::ImplItem::Macro(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::ImplItem::Macro(t))
@@ -4003,14 +3839,14 @@ where
         for mut i in self.before() {
             t = match i.chain_implitem_verbatim(c, t)? {
                 syn::ImplItem::Verbatim(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_implitem_verbatim(c, t)? {
                 syn::ImplItem::Verbatim(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::ImplItem::Verbatim(t))
@@ -4024,8 +3860,7 @@ where
         for mut i in self.before() {
             t = i.chain_implitemconst(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4033,11 +3868,7 @@ where
             tmp
         };
         t.vis = self.fold_chain_visibility(c, t.vis)?;
-        t
-            .defaultness = match t.defaultness {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.defaultness = t.defaultness;
         t.const_token = t.const_token;
         t.ident = t.ident;
         t.colon_token = t.colon_token;
@@ -4059,8 +3890,7 @@ where
         for mut i in self.before() {
             t = i.chain_implitemmacro(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4068,11 +3898,7 @@ where
             tmp
         };
         t.mac = self.fold_chain_macro(c, t.mac)?;
-        t
-            .semi_token = match t.semi_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.semi_token = t.semi_token;
         for mut i in self.after() {
             t = i.chain_implitemmacro(c, t)?;
         }
@@ -4087,8 +3913,7 @@ where
         for mut i in self.before() {
             t = i.chain_implitemmethod(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4096,11 +3921,7 @@ where
             tmp
         };
         t.vis = self.fold_chain_visibility(c, t.vis)?;
-        t
-            .defaultness = match t.defaultness {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.defaultness = t.defaultness;
         t.sig = self.fold_chain_signature(c, t.sig)?;
         t.block = self.fold_chain_block(c, t.block)?;
         for mut i in self.after() {
@@ -4117,8 +3938,7 @@ where
         for mut i in self.before() {
             t = i.chain_implitemtype(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4126,11 +3946,7 @@ where
             tmp
         };
         t.vis = self.fold_chain_visibility(c, t.vis)?;
-        t
-            .defaultness = match t.defaultness {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.defaultness = t.defaultness;
         t.type_token = t.type_token;
         t.ident = t.ident;
         t.generics = self.fold_chain_generics(c, t.generics)?;
@@ -4201,14 +4017,14 @@ where
         for mut i in self.before() {
             t = match i.chain_item_const(c, t)? {
                 syn::Item::Const(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_itemconst(c, t)?;
         for mut i in self.after() {
             t = match i.chain_item_const(c, t)? {
                 syn::Item::Const(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Item::Const(t))
@@ -4222,14 +4038,14 @@ where
         for mut i in self.before() {
             t = match i.chain_item_enum(c, t)? {
                 syn::Item::Enum(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_itemenum(c, t)?;
         for mut i in self.after() {
             t = match i.chain_item_enum(c, t)? {
                 syn::Item::Enum(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Item::Enum(t))
@@ -4243,14 +4059,14 @@ where
         for mut i in self.before() {
             t = match i.chain_item_externcrate(c, t)? {
                 syn::Item::ExternCrate(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_itemexterncrate(c, t)?;
         for mut i in self.after() {
             t = match i.chain_item_externcrate(c, t)? {
                 syn::Item::ExternCrate(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Item::ExternCrate(t))
@@ -4264,14 +4080,14 @@ where
         for mut i in self.before() {
             t = match i.chain_item_fn(c, t)? {
                 syn::Item::Fn(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_itemfn(c, t)?;
         for mut i in self.after() {
             t = match i.chain_item_fn(c, t)? {
                 syn::Item::Fn(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Item::Fn(t))
@@ -4285,14 +4101,14 @@ where
         for mut i in self.before() {
             t = match i.chain_item_foreignmod(c, t)? {
                 syn::Item::ForeignMod(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_itemforeignmod(c, t)?;
         for mut i in self.after() {
             t = match i.chain_item_foreignmod(c, t)? {
                 syn::Item::ForeignMod(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Item::ForeignMod(t))
@@ -4306,14 +4122,14 @@ where
         for mut i in self.before() {
             t = match i.chain_item_impl(c, t)? {
                 syn::Item::Impl(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_itemimpl(c, t)?;
         for mut i in self.after() {
             t = match i.chain_item_impl(c, t)? {
                 syn::Item::Impl(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Item::Impl(t))
@@ -4327,14 +4143,14 @@ where
         for mut i in self.before() {
             t = match i.chain_item_macro(c, t)? {
                 syn::Item::Macro(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_itemmacro(c, t)?;
         for mut i in self.after() {
             t = match i.chain_item_macro(c, t)? {
                 syn::Item::Macro(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Item::Macro(t))
@@ -4348,14 +4164,14 @@ where
         for mut i in self.before() {
             t = match i.chain_item_macro2(c, t)? {
                 syn::Item::Macro2(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_itemmacro2(c, t)?;
         for mut i in self.after() {
             t = match i.chain_item_macro2(c, t)? {
                 syn::Item::Macro2(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Item::Macro2(t))
@@ -4369,14 +4185,14 @@ where
         for mut i in self.before() {
             t = match i.chain_item_mod(c, t)? {
                 syn::Item::Mod(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_itemmod(c, t)?;
         for mut i in self.after() {
             t = match i.chain_item_mod(c, t)? {
                 syn::Item::Mod(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Item::Mod(t))
@@ -4390,14 +4206,14 @@ where
         for mut i in self.before() {
             t = match i.chain_item_static(c, t)? {
                 syn::Item::Static(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_itemstatic(c, t)?;
         for mut i in self.after() {
             t = match i.chain_item_static(c, t)? {
                 syn::Item::Static(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Item::Static(t))
@@ -4411,14 +4227,14 @@ where
         for mut i in self.before() {
             t = match i.chain_item_struct(c, t)? {
                 syn::Item::Struct(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_itemstruct(c, t)?;
         for mut i in self.after() {
             t = match i.chain_item_struct(c, t)? {
                 syn::Item::Struct(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Item::Struct(t))
@@ -4432,14 +4248,14 @@ where
         for mut i in self.before() {
             t = match i.chain_item_trait(c, t)? {
                 syn::Item::Trait(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_itemtrait(c, t)?;
         for mut i in self.after() {
             t = match i.chain_item_trait(c, t)? {
                 syn::Item::Trait(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Item::Trait(t))
@@ -4453,14 +4269,14 @@ where
         for mut i in self.before() {
             t = match i.chain_item_traitalias(c, t)? {
                 syn::Item::TraitAlias(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_itemtraitalias(c, t)?;
         for mut i in self.after() {
             t = match i.chain_item_traitalias(c, t)? {
                 syn::Item::TraitAlias(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Item::TraitAlias(t))
@@ -4474,14 +4290,14 @@ where
         for mut i in self.before() {
             t = match i.chain_item_type(c, t)? {
                 syn::Item::Type(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_itemtype(c, t)?;
         for mut i in self.after() {
             t = match i.chain_item_type(c, t)? {
                 syn::Item::Type(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Item::Type(t))
@@ -4495,14 +4311,14 @@ where
         for mut i in self.before() {
             t = match i.chain_item_union(c, t)? {
                 syn::Item::Union(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_itemunion(c, t)?;
         for mut i in self.after() {
             t = match i.chain_item_union(c, t)? {
                 syn::Item::Union(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Item::Union(t))
@@ -4516,14 +4332,14 @@ where
         for mut i in self.before() {
             t = match i.chain_item_use(c, t)? {
                 syn::Item::Use(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_itemuse(c, t)?;
         for mut i in self.after() {
             t = match i.chain_item_use(c, t)? {
                 syn::Item::Use(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Item::Use(t))
@@ -4537,14 +4353,14 @@ where
         for mut i in self.before() {
             t = match i.chain_item_verbatim(c, t)? {
                 syn::Item::Verbatim(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_item_verbatim(c, t)? {
                 syn::Item::Verbatim(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Item::Verbatim(t))
@@ -4558,8 +4374,7 @@ where
         for mut i in self.before() {
             t = i.chain_itemconst(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4588,8 +4403,7 @@ where
         for mut i in self.before() {
             t = i.chain_itemenum(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4616,8 +4430,7 @@ where
         for mut i in self.before() {
             t = i.chain_itemexterncrate(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4628,8 +4441,7 @@ where
         t.extern_token = t.extern_token;
         t.crate_token = t.crate_token;
         t.ident = t.ident;
-        t
-            .rename = match t.rename {
+        t.rename = match t.rename {
             Some(o) => Some((o.0, o.1)),
             None => None,
         };
@@ -4648,8 +4460,7 @@ where
         for mut i in self.before() {
             t = i.chain_itemfn(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4673,8 +4484,7 @@ where
         for mut i in self.before() {
             t = i.chain_itemforeignmod(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4683,8 +4493,7 @@ where
         };
         t.abi = self.fold_chain_abi(c, t.abi)?;
         t.brace_token = t.brace_token;
-        t
-            .items = {
+        t.items = {
             let mut tmp = vec![];
             for v in t.items {
                 tmp.push(self.fold_chain_foreignitem(c, v)?);
@@ -4705,44 +4514,24 @@ where
         for mut i in self.before() {
             t = i.chain_itemimpl(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t
-            .defaultness = match t.defaultness {
-            Some(o) => Some(o),
-            None => None,
-        };
-        t
-            .unsafety = match t.unsafety {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.defaultness = t.defaultness;
+        t.unsafety = t.unsafety;
         t.impl_token = t.impl_token;
         t.generics = self.fold_chain_generics(c, t.generics)?;
-        t
-            .trait_ = match t.trait_ {
-            Some(o) => {
-                Some((
-                    match o.0 {
-                        Some(o) => Some(o),
-                        None => None,
-                    },
-                    self.fold_chain_path(c, o.1)?,
-                    o.2,
-                ))
-            }
+        t.trait_ = match t.trait_ {
+            Some(o) => Some((o.0, self.fold_chain_path(c, o.1)?, o.2)),
             None => None,
         };
         t.self_ty = Box::new(self.fold_chain_type(c, *t.self_ty)?);
         t.brace_token = t.brace_token;
-        t
-            .items = {
+        t.items = {
             let mut tmp = vec![];
             for v in t.items {
                 tmp.push(self.fold_chain_implitem(c, v)?);
@@ -4763,25 +4552,16 @@ where
         for mut i in self.before() {
             t = i.chain_itemmacro(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t
-            .ident = match t.ident {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.ident = t.ident;
         t.mac = self.fold_chain_macro(c, t.mac)?;
-        t
-            .semi_token = match t.semi_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.semi_token = t.semi_token;
         for mut i in self.after() {
             t = i.chain_itemmacro(c, t)?;
         }
@@ -4796,8 +4576,7 @@ where
         for mut i in self.before() {
             t = i.chain_itemmacro2(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4822,8 +4601,7 @@ where
         for mut i in self.before() {
             t = i.chain_itemmod(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4833,27 +4611,17 @@ where
         t.vis = self.fold_chain_visibility(c, t.vis)?;
         t.mod_token = t.mod_token;
         t.ident = t.ident;
-        t
-            .content = match t.content {
-            Some(o) => {
-                Some((
-                    o.0,
-                    {
-                        let mut tmp = vec![];
-                        for v in o.1 {
-                            tmp.push(self.fold_chain_item(c, v)?);
-                        }
-                        tmp
-                    },
-                ))
-            }
+        t.content = match t.content {
+            Some(o) => Some((o.0, {
+                let mut tmp = vec![];
+                for v in o.1 {
+                    tmp.push(self.fold_chain_item(c, v)?);
+                }
+                tmp
+            })),
             None => None,
         };
-        t
-            .semi = match t.semi {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.semi = t.semi;
         for mut i in self.after() {
             t = i.chain_itemmod(c, t)?;
         }
@@ -4868,8 +4636,7 @@ where
         for mut i in self.before() {
             t = i.chain_itemstatic(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4878,11 +4645,7 @@ where
         };
         t.vis = self.fold_chain_visibility(c, t.vis)?;
         t.static_token = t.static_token;
-        t
-            .mutability = match t.mutability {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.mutability = t.mutability;
         t.ident = t.ident;
         t.colon_token = t.colon_token;
         t.ty = Box::new(self.fold_chain_type(c, *t.ty)?);
@@ -4903,8 +4666,7 @@ where
         for mut i in self.before() {
             t = i.chain_itemstruct(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4916,11 +4678,7 @@ where
         t.ident = t.ident;
         t.generics = self.fold_chain_generics(c, t.generics)?;
         t.fields = self.fold_chain_fields(c, t.fields)?;
-        t
-            .semi_token = match t.semi_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.semi_token = t.semi_token;
         for mut i in self.after() {
             t = i.chain_itemstruct(c, t)?;
         }
@@ -4935,8 +4693,7 @@ where
         for mut i in self.before() {
             t = i.chain_itemtrait(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4944,28 +4701,15 @@ where
             tmp
         };
         t.vis = self.fold_chain_visibility(c, t.vis)?;
-        t
-            .unsafety = match t.unsafety {
-            Some(o) => Some(o),
-            None => None,
-        };
-        t
-            .auto_token = match t.auto_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.unsafety = t.unsafety;
+        t.auto_token = t.auto_token;
         t.trait_token = t.trait_token;
         t.ident = t.ident;
         t.generics = self.fold_chain_generics(c, t.generics)?;
-        t
-            .colon_token = match t.colon_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.colon_token = t.colon_token;
         t.supertraits = t.supertraits;
         t.brace_token = t.brace_token;
-        t
-            .items = {
+        t.items = {
             let mut tmp = vec![];
             for v in t.items {
                 tmp.push(self.fold_chain_traititem(c, v)?);
@@ -4986,8 +4730,7 @@ where
         for mut i in self.before() {
             t = i.chain_itemtraitalias(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -5015,8 +4758,7 @@ where
         for mut i in self.before() {
             t = i.chain_itemtype(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -5044,8 +4786,7 @@ where
         for mut i in self.before() {
             t = i.chain_itemunion(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -5071,8 +4812,7 @@ where
         for mut i in self.before() {
             t = i.chain_itemuse(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -5081,11 +4821,7 @@ where
         };
         t.vis = self.fold_chain_visibility(c, t.vis)?;
         t.use_token = t.use_token;
-        t
-            .leading_colon = match t.leading_colon {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.leading_colon = t.leading_colon;
         t.tree = self.fold_chain_usetree(c, t.tree)?;
         t.semi_token = t.semi_token;
         for mut i in self.after() {
@@ -5134,8 +4870,7 @@ where
         for mut i in self.before() {
             t = i.chain_lifetimedef(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -5143,11 +4878,7 @@ where
             tmp
         };
         t.lifetime = self.fold_chain_lifetime(c, t.lifetime)?;
-        t
-            .colon_token = match t.colon_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.colon_token = t.colon_token;
         t.bounds = t.bounds;
         for mut i in self.after() {
             t = i.chain_lifetimedef(c, t)?;
@@ -5188,14 +4919,14 @@ where
         for mut i in self.before() {
             t = match i.chain_lit_str(c, t)? {
                 syn::Lit::Str(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_litstr(c, t)?;
         for mut i in self.after() {
             t = match i.chain_lit_str(c, t)? {
                 syn::Lit::Str(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Lit::Str(t))
@@ -5209,14 +4940,14 @@ where
         for mut i in self.before() {
             t = match i.chain_lit_bytestr(c, t)? {
                 syn::Lit::ByteStr(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_litbytestr(c, t)?;
         for mut i in self.after() {
             t = match i.chain_lit_bytestr(c, t)? {
                 syn::Lit::ByteStr(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Lit::ByteStr(t))
@@ -5230,14 +4961,14 @@ where
         for mut i in self.before() {
             t = match i.chain_lit_byte(c, t)? {
                 syn::Lit::Byte(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_litbyte(c, t)?;
         for mut i in self.after() {
             t = match i.chain_lit_byte(c, t)? {
                 syn::Lit::Byte(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Lit::Byte(t))
@@ -5251,14 +4982,14 @@ where
         for mut i in self.before() {
             t = match i.chain_lit_char(c, t)? {
                 syn::Lit::Char(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_litchar(c, t)?;
         for mut i in self.after() {
             t = match i.chain_lit_char(c, t)? {
                 syn::Lit::Char(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Lit::Char(t))
@@ -5272,14 +5003,14 @@ where
         for mut i in self.before() {
             t = match i.chain_lit_int(c, t)? {
                 syn::Lit::Int(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_litint(c, t)?;
         for mut i in self.after() {
             t = match i.chain_lit_int(c, t)? {
                 syn::Lit::Int(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Lit::Int(t))
@@ -5293,14 +5024,14 @@ where
         for mut i in self.before() {
             t = match i.chain_lit_float(c, t)? {
                 syn::Lit::Float(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_litfloat(c, t)?;
         for mut i in self.after() {
             t = match i.chain_lit_float(c, t)? {
                 syn::Lit::Float(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Lit::Float(t))
@@ -5314,14 +5045,14 @@ where
         for mut i in self.before() {
             t = match i.chain_lit_bool(c, t)? {
                 syn::Lit::Bool(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_litbool(c, t)?;
         for mut i in self.after() {
             t = match i.chain_lit_bool(c, t)? {
                 syn::Lit::Bool(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Lit::Bool(t))
@@ -5335,14 +5066,14 @@ where
         for mut i in self.before() {
             t = match i.chain_lit_verbatim(c, t)? {
                 syn::Lit::Verbatim(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_lit_verbatim(c, t)? {
                 syn::Lit::Verbatim(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Lit::Verbatim(t))
@@ -5456,8 +5187,7 @@ where
         for mut i in self.before() {
             t = i.chain_local(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -5466,8 +5196,7 @@ where
         };
         t.let_token = t.let_token;
         t.pat = self.fold_chain_pat(c, t.pat)?;
-        t
-            .init = match t.init {
+        t.init = match t.init {
             Some(o) => Some((o.0, Box::new(self.fold_chain_expr(c, *o.1)?))),
             None => None,
         };
@@ -5505,12 +5234,8 @@ where
             t = i.chain_macrodelimiter(c, t)?;
         }
         t = match t {
-            syn::MacroDelimiter::Paren(tmp) => {
-                self.fold_chain_macrodelimiter_paren(c, (tmp))?
-            }
-            syn::MacroDelimiter::Brace(tmp) => {
-                self.fold_chain_macrodelimiter_brace(c, (tmp))?
-            }
+            syn::MacroDelimiter::Paren(tmp) => self.fold_chain_macrodelimiter_paren(c, (tmp))?,
+            syn::MacroDelimiter::Brace(tmp) => self.fold_chain_macrodelimiter_brace(c, (tmp))?,
             syn::MacroDelimiter::Bracket(tmp) => {
                 self.fold_chain_macrodelimiter_bracket(c, (tmp))?
             }
@@ -5530,14 +5255,14 @@ where
         for mut i in self.before() {
             t = match i.chain_macrodelimiter_paren(c, t)? {
                 syn::MacroDelimiter::Paren(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_macrodelimiter_paren(c, t)? {
                 syn::MacroDelimiter::Paren(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::MacroDelimiter::Paren(t))
@@ -5551,14 +5276,14 @@ where
         for mut i in self.before() {
             t = match i.chain_macrodelimiter_brace(c, t)? {
                 syn::MacroDelimiter::Brace(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_macrodelimiter_brace(c, t)? {
                 syn::MacroDelimiter::Brace(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::MacroDelimiter::Brace(t))
@@ -5572,14 +5297,14 @@ where
         for mut i in self.before() {
             t = match i.chain_macrodelimiter_bracket(c, t)? {
                 syn::MacroDelimiter::Bracket(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_macrodelimiter_bracket(c, t)? {
                 syn::MacroDelimiter::Bracket(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::MacroDelimiter::Bracket(t))
@@ -5612,14 +5337,14 @@ where
         for mut i in self.before() {
             t = match i.chain_member_named(c, t)? {
                 syn::Member::Named(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_member_named(c, t)? {
                 syn::Member::Named(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Member::Named(t))
@@ -5633,14 +5358,14 @@ where
         for mut i in self.before() {
             t = match i.chain_member_unnamed(c, t)? {
                 syn::Member::Unnamed(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_index(c, t)?;
         for mut i in self.after() {
             t = match i.chain_member_unnamed(c, t)? {
                 syn::Member::Unnamed(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Member::Unnamed(t))
@@ -5674,14 +5399,14 @@ where
         for mut i in self.before() {
             t = match i.chain_meta_path(c, t)? {
                 syn::Meta::Path(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_path(c, t)?;
         for mut i in self.after() {
             t = match i.chain_meta_path(c, t)? {
                 syn::Meta::Path(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Meta::Path(t))
@@ -5695,14 +5420,14 @@ where
         for mut i in self.before() {
             t = match i.chain_meta_list(c, t)? {
                 syn::Meta::List(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_metalist(c, t)?;
         for mut i in self.after() {
             t = match i.chain_meta_list(c, t)? {
                 syn::Meta::List(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Meta::List(t))
@@ -5716,14 +5441,14 @@ where
         for mut i in self.before() {
             t = match i.chain_meta_namevalue(c, t)? {
                 syn::Meta::NameValue(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_metanamevalue(c, t)?;
         for mut i in self.after() {
             t = match i.chain_meta_namevalue(c, t)? {
                 syn::Meta::NameValue(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Meta::NameValue(t))
@@ -5808,14 +5533,14 @@ where
         for mut i in self.before() {
             t = match i.chain_nestedmeta_meta(c, t)? {
                 syn::NestedMeta::Meta(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_meta(c, t)?;
         for mut i in self.after() {
             t = match i.chain_nestedmeta_meta(c, t)? {
                 syn::NestedMeta::Meta(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::NestedMeta::Meta(t))
@@ -5829,14 +5554,14 @@ where
         for mut i in self.before() {
             t = match i.chain_nestedmeta_lit(c, t)? {
                 syn::NestedMeta::Lit(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_lit(c, t)?;
         for mut i in self.after() {
             t = match i.chain_nestedmeta_lit(c, t)? {
                 syn::NestedMeta::Lit(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::NestedMeta::Lit(t))
@@ -5900,14 +5625,14 @@ where
         for mut i in self.before() {
             t = match i.chain_pat_box(c, t)? {
                 syn::Pat::Box(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_patbox(c, t)?;
         for mut i in self.after() {
             t = match i.chain_pat_box(c, t)? {
                 syn::Pat::Box(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Pat::Box(t))
@@ -5921,14 +5646,14 @@ where
         for mut i in self.before() {
             t = match i.chain_pat_ident(c, t)? {
                 syn::Pat::Ident(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_patident(c, t)?;
         for mut i in self.after() {
             t = match i.chain_pat_ident(c, t)? {
                 syn::Pat::Ident(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Pat::Ident(t))
@@ -5942,14 +5667,14 @@ where
         for mut i in self.before() {
             t = match i.chain_pat_lit(c, t)? {
                 syn::Pat::Lit(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_patlit(c, t)?;
         for mut i in self.after() {
             t = match i.chain_pat_lit(c, t)? {
                 syn::Pat::Lit(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Pat::Lit(t))
@@ -5963,14 +5688,14 @@ where
         for mut i in self.before() {
             t = match i.chain_pat_macro(c, t)? {
                 syn::Pat::Macro(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_patmacro(c, t)?;
         for mut i in self.after() {
             t = match i.chain_pat_macro(c, t)? {
                 syn::Pat::Macro(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Pat::Macro(t))
@@ -5984,14 +5709,14 @@ where
         for mut i in self.before() {
             t = match i.chain_pat_or(c, t)? {
                 syn::Pat::Or(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_pator(c, t)?;
         for mut i in self.after() {
             t = match i.chain_pat_or(c, t)? {
                 syn::Pat::Or(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Pat::Or(t))
@@ -6005,14 +5730,14 @@ where
         for mut i in self.before() {
             t = match i.chain_pat_path(c, t)? {
                 syn::Pat::Path(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_patpath(c, t)?;
         for mut i in self.after() {
             t = match i.chain_pat_path(c, t)? {
                 syn::Pat::Path(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Pat::Path(t))
@@ -6026,14 +5751,14 @@ where
         for mut i in self.before() {
             t = match i.chain_pat_range(c, t)? {
                 syn::Pat::Range(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_patrange(c, t)?;
         for mut i in self.after() {
             t = match i.chain_pat_range(c, t)? {
                 syn::Pat::Range(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Pat::Range(t))
@@ -6047,14 +5772,14 @@ where
         for mut i in self.before() {
             t = match i.chain_pat_reference(c, t)? {
                 syn::Pat::Reference(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_patreference(c, t)?;
         for mut i in self.after() {
             t = match i.chain_pat_reference(c, t)? {
                 syn::Pat::Reference(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Pat::Reference(t))
@@ -6068,14 +5793,14 @@ where
         for mut i in self.before() {
             t = match i.chain_pat_rest(c, t)? {
                 syn::Pat::Rest(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_patrest(c, t)?;
         for mut i in self.after() {
             t = match i.chain_pat_rest(c, t)? {
                 syn::Pat::Rest(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Pat::Rest(t))
@@ -6089,14 +5814,14 @@ where
         for mut i in self.before() {
             t = match i.chain_pat_slice(c, t)? {
                 syn::Pat::Slice(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_patslice(c, t)?;
         for mut i in self.after() {
             t = match i.chain_pat_slice(c, t)? {
                 syn::Pat::Slice(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Pat::Slice(t))
@@ -6110,14 +5835,14 @@ where
         for mut i in self.before() {
             t = match i.chain_pat_struct(c, t)? {
                 syn::Pat::Struct(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_patstruct(c, t)?;
         for mut i in self.after() {
             t = match i.chain_pat_struct(c, t)? {
                 syn::Pat::Struct(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Pat::Struct(t))
@@ -6131,14 +5856,14 @@ where
         for mut i in self.before() {
             t = match i.chain_pat_tuple(c, t)? {
                 syn::Pat::Tuple(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_pattuple(c, t)?;
         for mut i in self.after() {
             t = match i.chain_pat_tuple(c, t)? {
                 syn::Pat::Tuple(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Pat::Tuple(t))
@@ -6152,14 +5877,14 @@ where
         for mut i in self.before() {
             t = match i.chain_pat_tuplestruct(c, t)? {
                 syn::Pat::TupleStruct(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_pattuplestruct(c, t)?;
         for mut i in self.after() {
             t = match i.chain_pat_tuplestruct(c, t)? {
                 syn::Pat::TupleStruct(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Pat::TupleStruct(t))
@@ -6173,14 +5898,14 @@ where
         for mut i in self.before() {
             t = match i.chain_pat_type(c, t)? {
                 syn::Pat::Type(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_pattype(c, t)?;
         for mut i in self.after() {
             t = match i.chain_pat_type(c, t)? {
                 syn::Pat::Type(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Pat::Type(t))
@@ -6194,14 +5919,14 @@ where
         for mut i in self.before() {
             t = match i.chain_pat_verbatim(c, t)? {
                 syn::Pat::Verbatim(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_pat_verbatim(c, t)? {
                 syn::Pat::Verbatim(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Pat::Verbatim(t))
@@ -6215,14 +5940,14 @@ where
         for mut i in self.before() {
             t = match i.chain_pat_wild(c, t)? {
                 syn::Pat::Wild(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_patwild(c, t)?;
         for mut i in self.after() {
             t = match i.chain_pat_wild(c, t)? {
                 syn::Pat::Wild(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Pat::Wild(t))
@@ -6236,8 +5961,7 @@ where
         for mut i in self.before() {
             t = i.chain_patbox(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6260,27 +5984,17 @@ where
         for mut i in self.before() {
             t = i.chain_patident(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t
-            .by_ref = match t.by_ref {
-            Some(o) => Some(o),
-            None => None,
-        };
-        t
-            .mutability = match t.mutability {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.by_ref = t.by_ref;
+        t.mutability = t.mutability;
         t.ident = t.ident;
-        t
-            .subpat = match t.subpat {
+        t.subpat = match t.subpat {
             Some(o) => Some((o.0, Box::new(self.fold_chain_pat(c, *o.1)?))),
             None => None,
         };
@@ -6298,8 +6012,7 @@ where
         for mut i in self.before() {
             t = i.chain_patlit(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6321,8 +6034,7 @@ where
         for mut i in self.before() {
             t = i.chain_patmacro(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6344,19 +6056,14 @@ where
         for mut i in self.before() {
             t = i.chain_pator(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t
-            .leading_vert = match t.leading_vert {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.leading_vert = t.leading_vert;
         t.cases = t.cases;
         for mut i in self.after() {
             t = i.chain_pator(c, t)?;
@@ -6372,16 +6079,14 @@ where
         for mut i in self.before() {
             t = i.chain_patpath(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t
-            .qself = match t.qself {
+        t.qself = match t.qself {
             Some(o) => Some(self.fold_chain_qself(c, o)?),
             None => None,
         };
@@ -6400,8 +6105,7 @@ where
         for mut i in self.before() {
             t = i.chain_patrange(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6425,8 +6129,7 @@ where
         for mut i in self.before() {
             t = i.chain_patreference(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6434,11 +6137,7 @@ where
             tmp
         };
         t.and_token = t.and_token;
-        t
-            .mutability = match t.mutability {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.mutability = t.mutability;
         t.pat = Box::new(self.fold_chain_pat(c, *t.pat)?);
         for mut i in self.after() {
             t = i.chain_patreference(c, t)?;
@@ -6454,8 +6153,7 @@ where
         for mut i in self.before() {
             t = i.chain_patrest(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6477,8 +6175,7 @@ where
         for mut i in self.before() {
             t = i.chain_patslice(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6501,8 +6198,7 @@ where
         for mut i in self.before() {
             t = i.chain_patstruct(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6512,11 +6208,7 @@ where
         t.path = self.fold_chain_path(c, t.path)?;
         t.brace_token = t.brace_token;
         t.fields = t.fields;
-        t
-            .dot2_token = match t.dot2_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.dot2_token = t.dot2_token;
         for mut i in self.after() {
             t = i.chain_patstruct(c, t)?;
         }
@@ -6531,8 +6223,7 @@ where
         for mut i in self.before() {
             t = i.chain_pattuple(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6555,8 +6246,7 @@ where
         for mut i in self.before() {
             t = i.chain_pattuplestruct(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6579,8 +6269,7 @@ where
         for mut i in self.before() {
             t = i.chain_pattype(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6604,8 +6293,7 @@ where
         for mut i in self.before() {
             t = i.chain_patwild(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6627,11 +6315,7 @@ where
         for mut i in self.before() {
             t = i.chain_path(c, t)?;
         }
-        t
-            .leading_colon = match t.leading_colon {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.leading_colon = t.leading_colon;
         t.segments = t.segments;
         for mut i in self.after() {
             t = i.chain_path(c, t)?;
@@ -6670,14 +6354,14 @@ where
         for mut i in self.before() {
             t = match i.chain_patharguments_anglebracketed(c, t)? {
                 syn::PathArguments::AngleBracketed(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_anglebracketedgenericarguments(c, t)?;
         for mut i in self.after() {
             t = match i.chain_patharguments_anglebracketed(c, t)? {
                 syn::PathArguments::AngleBracketed(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::PathArguments::AngleBracketed(t))
@@ -6691,14 +6375,14 @@ where
         for mut i in self.before() {
             t = match i.chain_patharguments_parenthesized(c, t)? {
                 syn::PathArguments::Parenthesized(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_parenthesizedgenericarguments(c, t)?;
         for mut i in self.after() {
             t = match i.chain_patharguments_parenthesized(c, t)? {
                 syn::PathArguments::Parenthesized(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::PathArguments::Parenthesized(t))
@@ -6762,8 +6446,7 @@ where
         for mut i in self.before() {
             t = i.chain_predicatetype(c, t)?;
         }
-        t
-            .lifetimes = match t.lifetimes {
+        t.lifetimes = match t.lifetimes {
             Some(o) => Some(self.fold_chain_boundlifetimes(c, o)?),
             None => None,
         };
@@ -6787,11 +6470,7 @@ where
         t.lt_token = t.lt_token;
         t.ty = Box::new(self.fold_chain_type(c, *t.ty)?);
         t.position = t.position;
-        t
-            .as_token = match t.as_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.as_token = t.as_token;
         t.gt_token = t.gt_token;
         for mut i in self.after() {
             t = i.chain_qself(c, t)?;
@@ -6808,12 +6487,8 @@ where
             t = i.chain_rangelimits(c, t)?;
         }
         t = match t {
-            syn::RangeLimits::HalfOpen(tmp) => {
-                self.fold_chain_rangelimits_halfopen(c, (tmp))?
-            }
-            syn::RangeLimits::Closed(tmp) => {
-                self.fold_chain_rangelimits_closed(c, (tmp))?
-            }
+            syn::RangeLimits::HalfOpen(tmp) => self.fold_chain_rangelimits_halfopen(c, (tmp))?,
+            syn::RangeLimits::Closed(tmp) => self.fold_chain_rangelimits_closed(c, (tmp))?,
             _ => t,
         };
         for mut i in self.after() {
@@ -6830,14 +6505,14 @@ where
         for mut i in self.before() {
             t = match i.chain_rangelimits_halfopen(c, t)? {
                 syn::RangeLimits::HalfOpen(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_rangelimits_halfopen(c, t)? {
                 syn::RangeLimits::HalfOpen(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::RangeLimits::HalfOpen(t))
@@ -6851,14 +6526,14 @@ where
         for mut i in self.before() {
             t = match i.chain_rangelimits_closed(c, t)? {
                 syn::RangeLimits::Closed(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_rangelimits_closed(c, t)? {
                 syn::RangeLimits::Closed(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::RangeLimits::Closed(t))
@@ -6872,32 +6547,24 @@ where
         for mut i in self.before() {
             t = i.chain_receiver(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t
-            .reference = match t.reference {
-            Some(o) => {
-                Some((
-                    o.0,
-                    match o.1 {
-                        Some(o) => Some(self.fold_chain_lifetime(c, o)?),
-                        None => None,
-                    },
-                ))
-            }
+        t.reference = match t.reference {
+            Some(o) => Some((
+                o.0,
+                match o.1 {
+                    Some(o) => Some(self.fold_chain_lifetime(c, o)?),
+                    None => None,
+                },
+            )),
             None => None,
         };
-        t
-            .mutability = match t.mutability {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.mutability = t.mutability;
         t.self_token = t.self_token;
         for mut i in self.after() {
             t = i.chain_receiver(c, t)?;
@@ -6933,7 +6600,7 @@ where
         for mut i in self.before() {
             t = match i.chain_returntype_type(c, t)? {
                 syn::ReturnType::Type(tmp_0, tmp_1) => (tmp_0, tmp_1),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t.0 = t.0;
@@ -6941,7 +6608,7 @@ where
         for mut i in self.after() {
             t = match i.chain_returntype_type(c, t)? {
                 syn::ReturnType::Type(tmp_0, tmp_1) => (tmp_0, tmp_1),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::ReturnType::Type(t.0, t.1))
@@ -6955,23 +6622,10 @@ where
         for mut i in self.before() {
             t = i.chain_signature(c, t)?;
         }
-        t
-            .constness = match t.constness {
-            Some(o) => Some(o),
-            None => None,
-        };
-        t
-            .asyncness = match t.asyncness {
-            Some(o) => Some(o),
-            None => None,
-        };
-        t
-            .unsafety = match t.unsafety {
-            Some(o) => Some(o),
-            None => None,
-        };
-        t
-            .abi = match t.abi {
+        t.constness = t.constness;
+        t.asyncness = t.asyncness;
+        t.unsafety = t.unsafety;
+        t.abi = match t.abi {
             Some(o) => Some(self.fold_chain_abi(c, o)?),
             None => None,
         };
@@ -6980,8 +6634,7 @@ where
         t.generics = self.fold_chain_generics(c, t.generics)?;
         t.paren_token = t.paren_token;
         t.inputs = t.inputs;
-        t
-            .variadic = match t.variadic {
+        t.variadic = match t.variadic {
             Some(o) => Some(self.fold_chain_variadic(c, o)?),
             None => None,
         };
@@ -7004,9 +6657,7 @@ where
             syn::Stmt::Local(tmp) => self.fold_chain_stmt_local(c, (tmp))?,
             syn::Stmt::Item(tmp) => self.fold_chain_stmt_item(c, (tmp))?,
             syn::Stmt::Expr(tmp) => self.fold_chain_stmt_expr(c, (tmp))?,
-            syn::Stmt::Semi(tmp_0, tmp_1) => {
-                self.fold_chain_stmt_semi(c, (tmp_0, tmp_1))?
-            }
+            syn::Stmt::Semi(tmp_0, tmp_1) => self.fold_chain_stmt_semi(c, (tmp_0, tmp_1))?,
             _ => t,
         };
         for mut i in self.after() {
@@ -7023,14 +6674,14 @@ where
         for mut i in self.before() {
             t = match i.chain_stmt_local(c, t)? {
                 syn::Stmt::Local(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_local(c, t)?;
         for mut i in self.after() {
             t = match i.chain_stmt_local(c, t)? {
                 syn::Stmt::Local(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Stmt::Local(t))
@@ -7044,14 +6695,14 @@ where
         for mut i in self.before() {
             t = match i.chain_stmt_item(c, t)? {
                 syn::Stmt::Item(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_item(c, t)?;
         for mut i in self.after() {
             t = match i.chain_stmt_item(c, t)? {
                 syn::Stmt::Item(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Stmt::Item(t))
@@ -7065,14 +6716,14 @@ where
         for mut i in self.before() {
             t = match i.chain_stmt_expr(c, t)? {
                 syn::Stmt::Expr(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_expr(c, t)?;
         for mut i in self.after() {
             t = match i.chain_stmt_expr(c, t)? {
                 syn::Stmt::Expr(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Stmt::Expr(t))
@@ -7086,7 +6737,7 @@ where
         for mut i in self.before() {
             t = match i.chain_stmt_semi(c, t)? {
                 syn::Stmt::Semi(tmp_0, tmp_1) => (tmp_0, tmp_1),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t.0 = self.fold_chain_expr(c, t.0)?;
@@ -7094,7 +6745,7 @@ where
         for mut i in self.after() {
             t = match i.chain_stmt_semi(c, t)? {
                 syn::Stmt::Semi(tmp_0, tmp_1) => (tmp_0, tmp_1),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Stmt::Semi(t.0, t.1))
@@ -7108,14 +6759,9 @@ where
         for mut i in self.before() {
             t = i.chain_traitbound(c, t)?;
         }
-        t
-            .paren_token = match t.paren_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.paren_token = t.paren_token;
         t.modifier = self.fold_chain_traitboundmodifier(c, t.modifier)?;
-        t
-            .lifetimes = match t.lifetimes {
+        t.lifetimes = match t.lifetimes {
             Some(o) => Some(self.fold_chain_boundlifetimes(c, o)?),
             None => None,
         };
@@ -7154,14 +6800,14 @@ where
         for mut i in self.before() {
             t = match i.chain_traitboundmodifier_maybe(c, t)? {
                 syn::TraitBoundModifier::Maybe(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_traitboundmodifier_maybe(c, t)? {
                 syn::TraitBoundModifier::Maybe(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::TraitBoundModifier::Maybe(t))
@@ -7180,9 +6826,7 @@ where
             syn::TraitItem::Method(tmp) => self.fold_chain_traititem_method(c, (tmp))?,
             syn::TraitItem::Type(tmp) => self.fold_chain_traititem_type(c, (tmp))?,
             syn::TraitItem::Macro(tmp) => self.fold_chain_traititem_macro(c, (tmp))?,
-            syn::TraitItem::Verbatim(tmp) => {
-                self.fold_chain_traititem_verbatim(c, (tmp))?
-            }
+            syn::TraitItem::Verbatim(tmp) => self.fold_chain_traititem_verbatim(c, (tmp))?,
             _ => t,
         };
         for mut i in self.after() {
@@ -7199,14 +6843,14 @@ where
         for mut i in self.before() {
             t = match i.chain_traititem_const(c, t)? {
                 syn::TraitItem::Const(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_traititemconst(c, t)?;
         for mut i in self.after() {
             t = match i.chain_traititem_const(c, t)? {
                 syn::TraitItem::Const(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::TraitItem::Const(t))
@@ -7220,14 +6864,14 @@ where
         for mut i in self.before() {
             t = match i.chain_traititem_method(c, t)? {
                 syn::TraitItem::Method(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_traititemmethod(c, t)?;
         for mut i in self.after() {
             t = match i.chain_traititem_method(c, t)? {
                 syn::TraitItem::Method(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::TraitItem::Method(t))
@@ -7241,14 +6885,14 @@ where
         for mut i in self.before() {
             t = match i.chain_traititem_type(c, t)? {
                 syn::TraitItem::Type(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_traititemtype(c, t)?;
         for mut i in self.after() {
             t = match i.chain_traititem_type(c, t)? {
                 syn::TraitItem::Type(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::TraitItem::Type(t))
@@ -7262,14 +6906,14 @@ where
         for mut i in self.before() {
             t = match i.chain_traititem_macro(c, t)? {
                 syn::TraitItem::Macro(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_traititemmacro(c, t)?;
         for mut i in self.after() {
             t = match i.chain_traititem_macro(c, t)? {
                 syn::TraitItem::Macro(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::TraitItem::Macro(t))
@@ -7283,14 +6927,14 @@ where
         for mut i in self.before() {
             t = match i.chain_traititem_verbatim(c, t)? {
                 syn::TraitItem::Verbatim(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_traititem_verbatim(c, t)? {
                 syn::TraitItem::Verbatim(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::TraitItem::Verbatim(t))
@@ -7304,8 +6948,7 @@ where
         for mut i in self.before() {
             t = i.chain_traititemconst(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -7316,8 +6959,7 @@ where
         t.ident = t.ident;
         t.colon_token = t.colon_token;
         t.ty = self.fold_chain_type(c, t.ty)?;
-        t
-            .default = match t.default {
+        t.default = match t.default {
             Some(o) => Some((o.0, self.fold_chain_expr(c, o.1)?)),
             None => None,
         };
@@ -7336,8 +6978,7 @@ where
         for mut i in self.before() {
             t = i.chain_traititemmacro(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -7345,11 +6986,7 @@ where
             tmp
         };
         t.mac = self.fold_chain_macro(c, t.mac)?;
-        t
-            .semi_token = match t.semi_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.semi_token = t.semi_token;
         for mut i in self.after() {
             t = i.chain_traititemmacro(c, t)?;
         }
@@ -7364,8 +7001,7 @@ where
         for mut i in self.before() {
             t = i.chain_traititemmethod(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -7373,16 +7009,11 @@ where
             tmp
         };
         t.sig = self.fold_chain_signature(c, t.sig)?;
-        t
-            .default = match t.default {
+        t.default = match t.default {
             Some(o) => Some(self.fold_chain_block(c, o)?),
             None => None,
         };
-        t
-            .semi_token = match t.semi_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.semi_token = t.semi_token;
         for mut i in self.after() {
             t = i.chain_traititemmethod(c, t)?;
         }
@@ -7397,8 +7028,7 @@ where
         for mut i in self.before() {
             t = i.chain_traititemtype(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -7408,14 +7038,9 @@ where
         t.type_token = t.type_token;
         t.ident = t.ident;
         t.generics = self.fold_chain_generics(c, t.generics)?;
-        t
-            .colon_token = match t.colon_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.colon_token = t.colon_token;
         t.bounds = t.bounds;
-        t
-            .default = match t.default {
+        t.default = match t.default {
             Some(o) => Some((o.0, self.fold_chain_type(c, o.1)?)),
             None => None,
         };
@@ -7466,14 +7091,14 @@ where
         for mut i in self.before() {
             t = match i.chain_type_array(c, t)? {
                 syn::Type::Array(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_typearray(c, t)?;
         for mut i in self.after() {
             t = match i.chain_type_array(c, t)? {
                 syn::Type::Array(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Type::Array(t))
@@ -7487,14 +7112,14 @@ where
         for mut i in self.before() {
             t = match i.chain_type_barefn(c, t)? {
                 syn::Type::BareFn(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_typebarefn(c, t)?;
         for mut i in self.after() {
             t = match i.chain_type_barefn(c, t)? {
                 syn::Type::BareFn(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Type::BareFn(t))
@@ -7508,14 +7133,14 @@ where
         for mut i in self.before() {
             t = match i.chain_type_group(c, t)? {
                 syn::Type::Group(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_typegroup(c, t)?;
         for mut i in self.after() {
             t = match i.chain_type_group(c, t)? {
                 syn::Type::Group(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Type::Group(t))
@@ -7529,14 +7154,14 @@ where
         for mut i in self.before() {
             t = match i.chain_type_impltrait(c, t)? {
                 syn::Type::ImplTrait(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_typeimpltrait(c, t)?;
         for mut i in self.after() {
             t = match i.chain_type_impltrait(c, t)? {
                 syn::Type::ImplTrait(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Type::ImplTrait(t))
@@ -7550,14 +7175,14 @@ where
         for mut i in self.before() {
             t = match i.chain_type_infer(c, t)? {
                 syn::Type::Infer(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_typeinfer(c, t)?;
         for mut i in self.after() {
             t = match i.chain_type_infer(c, t)? {
                 syn::Type::Infer(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Type::Infer(t))
@@ -7571,14 +7196,14 @@ where
         for mut i in self.before() {
             t = match i.chain_type_macro(c, t)? {
                 syn::Type::Macro(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_typemacro(c, t)?;
         for mut i in self.after() {
             t = match i.chain_type_macro(c, t)? {
                 syn::Type::Macro(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Type::Macro(t))
@@ -7592,14 +7217,14 @@ where
         for mut i in self.before() {
             t = match i.chain_type_never(c, t)? {
                 syn::Type::Never(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_typenever(c, t)?;
         for mut i in self.after() {
             t = match i.chain_type_never(c, t)? {
                 syn::Type::Never(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Type::Never(t))
@@ -7613,14 +7238,14 @@ where
         for mut i in self.before() {
             t = match i.chain_type_paren(c, t)? {
                 syn::Type::Paren(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_typeparen(c, t)?;
         for mut i in self.after() {
             t = match i.chain_type_paren(c, t)? {
                 syn::Type::Paren(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Type::Paren(t))
@@ -7634,14 +7259,14 @@ where
         for mut i in self.before() {
             t = match i.chain_type_path(c, t)? {
                 syn::Type::Path(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_typepath(c, t)?;
         for mut i in self.after() {
             t = match i.chain_type_path(c, t)? {
                 syn::Type::Path(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Type::Path(t))
@@ -7655,14 +7280,14 @@ where
         for mut i in self.before() {
             t = match i.chain_type_ptr(c, t)? {
                 syn::Type::Ptr(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_typeptr(c, t)?;
         for mut i in self.after() {
             t = match i.chain_type_ptr(c, t)? {
                 syn::Type::Ptr(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Type::Ptr(t))
@@ -7676,14 +7301,14 @@ where
         for mut i in self.before() {
             t = match i.chain_type_reference(c, t)? {
                 syn::Type::Reference(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_typereference(c, t)?;
         for mut i in self.after() {
             t = match i.chain_type_reference(c, t)? {
                 syn::Type::Reference(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Type::Reference(t))
@@ -7697,14 +7322,14 @@ where
         for mut i in self.before() {
             t = match i.chain_type_slice(c, t)? {
                 syn::Type::Slice(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_typeslice(c, t)?;
         for mut i in self.after() {
             t = match i.chain_type_slice(c, t)? {
                 syn::Type::Slice(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Type::Slice(t))
@@ -7718,14 +7343,14 @@ where
         for mut i in self.before() {
             t = match i.chain_type_traitobject(c, t)? {
                 syn::Type::TraitObject(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_typetraitobject(c, t)?;
         for mut i in self.after() {
             t = match i.chain_type_traitobject(c, t)? {
                 syn::Type::TraitObject(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Type::TraitObject(t))
@@ -7739,14 +7364,14 @@ where
         for mut i in self.before() {
             t = match i.chain_type_tuple(c, t)? {
                 syn::Type::Tuple(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_typetuple(c, t)?;
         for mut i in self.after() {
             t = match i.chain_type_tuple(c, t)? {
                 syn::Type::Tuple(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Type::Tuple(t))
@@ -7760,14 +7385,14 @@ where
         for mut i in self.before() {
             t = match i.chain_type_verbatim(c, t)? {
                 syn::Type::Verbatim(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_type_verbatim(c, t)? {
                 syn::Type::Verbatim(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Type::Verbatim(t))
@@ -7799,26 +7424,19 @@ where
         for mut i in self.before() {
             t = i.chain_typebarefn(c, t)?;
         }
-        t
-            .lifetimes = match t.lifetimes {
+        t.lifetimes = match t.lifetimes {
             Some(o) => Some(self.fold_chain_boundlifetimes(c, o)?),
             None => None,
         };
-        t
-            .unsafety = match t.unsafety {
-            Some(o) => Some(o),
-            None => None,
-        };
-        t
-            .abi = match t.abi {
+        t.unsafety = t.unsafety;
+        t.abi = match t.abi {
             Some(o) => Some(self.fold_chain_abi(c, o)?),
             None => None,
         };
         t.fn_token = t.fn_token;
         t.paren_token = t.paren_token;
         t.inputs = t.inputs;
-        t
-            .variadic = match t.variadic {
+        t.variadic = match t.variadic {
             Some(o) => Some(self.fold_chain_variadic(c, o)?),
             None => None,
         };
@@ -7914,8 +7532,7 @@ where
         for mut i in self.before() {
             t = i.chain_typeparam(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -7923,19 +7540,10 @@ where
             tmp
         };
         t.ident = t.ident;
-        t
-            .colon_token = match t.colon_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.colon_token = t.colon_token;
         t.bounds = t.bounds;
-        t
-            .eq_token = match t.eq_token {
-            Some(o) => Some(o),
-            None => None,
-        };
-        t
-            .default = match t.default {
+        t.eq_token = t.eq_token;
+        t.default = match t.default {
             Some(o) => Some(self.fold_chain_type(c, o)?),
             None => None,
         };
@@ -7954,9 +7562,7 @@ where
             t = i.chain_typeparambound(c, t)?;
         }
         t = match t {
-            syn::TypeParamBound::Trait(tmp) => {
-                self.fold_chain_typeparambound_trait(c, (tmp))?
-            }
+            syn::TypeParamBound::Trait(tmp) => self.fold_chain_typeparambound_trait(c, (tmp))?,
             syn::TypeParamBound::Lifetime(tmp) => {
                 self.fold_chain_typeparambound_lifetime(c, (tmp))?
             }
@@ -7976,14 +7582,14 @@ where
         for mut i in self.before() {
             t = match i.chain_typeparambound_trait(c, t)? {
                 syn::TypeParamBound::Trait(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_traitbound(c, t)?;
         for mut i in self.after() {
             t = match i.chain_typeparambound_trait(c, t)? {
                 syn::TypeParamBound::Trait(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::TypeParamBound::Trait(t))
@@ -7997,14 +7603,14 @@ where
         for mut i in self.before() {
             t = match i.chain_typeparambound_lifetime(c, t)? {
                 syn::TypeParamBound::Lifetime(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_lifetime(c, t)?;
         for mut i in self.after() {
             t = match i.chain_typeparambound_lifetime(c, t)? {
                 syn::TypeParamBound::Lifetime(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::TypeParamBound::Lifetime(t))
@@ -8034,8 +7640,7 @@ where
         for mut i in self.before() {
             t = i.chain_typepath(c, t)?;
         }
-        t
-            .qself = match t.qself {
+        t.qself = match t.qself {
             Some(o) => Some(self.fold_chain_qself(c, o)?),
             None => None,
         };
@@ -8055,16 +7660,8 @@ where
             t = i.chain_typeptr(c, t)?;
         }
         t.star_token = t.star_token;
-        t
-            .const_token = match t.const_token {
-            Some(o) => Some(o),
-            None => None,
-        };
-        t
-            .mutability = match t.mutability {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.const_token = t.const_token;
+        t.mutability = t.mutability;
         t.elem = Box::new(self.fold_chain_type(c, *t.elem)?);
         for mut i in self.after() {
             t = i.chain_typeptr(c, t)?;
@@ -8081,16 +7678,11 @@ where
             t = i.chain_typereference(c, t)?;
         }
         t.and_token = t.and_token;
-        t
-            .lifetime = match t.lifetime {
+        t.lifetime = match t.lifetime {
             Some(o) => Some(self.fold_chain_lifetime(c, o)?),
             None => None,
         };
-        t
-            .mutability = match t.mutability {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.mutability = t.mutability;
         t.elem = Box::new(self.fold_chain_type(c, *t.elem)?);
         for mut i in self.after() {
             t = i.chain_typereference(c, t)?;
@@ -8122,11 +7714,7 @@ where
         for mut i in self.before() {
             t = i.chain_typetraitobject(c, t)?;
         }
-        t
-            .dyn_token = match t.dyn_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.dyn_token = t.dyn_token;
         t.bounds = t.bounds;
         for mut i in self.after() {
             t = i.chain_typetraitobject(c, t)?;
@@ -8178,14 +7766,14 @@ where
         for mut i in self.before() {
             t = match i.chain_unop_deref(c, t)? {
                 syn::UnOp::Deref(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_unop_deref(c, t)? {
                 syn::UnOp::Deref(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::UnOp::Deref(t))
@@ -8199,14 +7787,14 @@ where
         for mut i in self.before() {
             t = match i.chain_unop_not(c, t)? {
                 syn::UnOp::Not(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_unop_not(c, t)? {
                 syn::UnOp::Not(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::UnOp::Not(t))
@@ -8220,14 +7808,14 @@ where
         for mut i in self.before() {
             t = match i.chain_unop_neg(c, t)? {
                 syn::UnOp::Neg(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = t;
         for mut i in self.after() {
             t = match i.chain_unop_neg(c, t)? {
                 syn::UnOp::Neg(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::UnOp::Neg(t))
@@ -8343,14 +7931,14 @@ where
         for mut i in self.before() {
             t = match i.chain_usetree_path(c, t)? {
                 syn::UseTree::Path(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_usepath(c, t)?;
         for mut i in self.after() {
             t = match i.chain_usetree_path(c, t)? {
                 syn::UseTree::Path(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::UseTree::Path(t))
@@ -8364,14 +7952,14 @@ where
         for mut i in self.before() {
             t = match i.chain_usetree_name(c, t)? {
                 syn::UseTree::Name(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_usename(c, t)?;
         for mut i in self.after() {
             t = match i.chain_usetree_name(c, t)? {
                 syn::UseTree::Name(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::UseTree::Name(t))
@@ -8385,14 +7973,14 @@ where
         for mut i in self.before() {
             t = match i.chain_usetree_rename(c, t)? {
                 syn::UseTree::Rename(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_userename(c, t)?;
         for mut i in self.after() {
             t = match i.chain_usetree_rename(c, t)? {
                 syn::UseTree::Rename(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::UseTree::Rename(t))
@@ -8406,14 +7994,14 @@ where
         for mut i in self.before() {
             t = match i.chain_usetree_glob(c, t)? {
                 syn::UseTree::Glob(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_useglob(c, t)?;
         for mut i in self.after() {
             t = match i.chain_usetree_glob(c, t)? {
                 syn::UseTree::Glob(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::UseTree::Glob(t))
@@ -8427,14 +8015,14 @@ where
         for mut i in self.before() {
             t = match i.chain_usetree_group(c, t)? {
                 syn::UseTree::Group(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_usegroup(c, t)?;
         for mut i in self.after() {
             t = match i.chain_usetree_group(c, t)? {
                 syn::UseTree::Group(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::UseTree::Group(t))
@@ -8448,8 +8036,7 @@ where
         for mut i in self.before() {
             t = i.chain_variadic(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -8471,8 +8058,7 @@ where
         for mut i in self.before() {
             t = i.chain_variant(c, t)?;
         }
-        t
-            .attrs = {
+        t.attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -8481,8 +8067,7 @@ where
         };
         t.ident = t.ident;
         t.fields = self.fold_chain_fields(c, t.fields)?;
-        t
-            .discriminant = match t.discriminant {
+        t.discriminant = match t.discriminant {
             Some(o) => Some((o.0, self.fold_chain_expr(c, o.1)?)),
             None => None,
         };
@@ -8532,11 +8117,7 @@ where
         }
         t.pub_token = t.pub_token;
         t.paren_token = t.paren_token;
-        t
-            .in_token = match t.in_token {
-            Some(o) => Some(o),
-            None => None,
-        };
+        t.in_token = t.in_token;
         t.path = Box::new(self.fold_chain_path(c, *t.path)?);
         for mut i in self.after() {
             t = i.chain_visrestricted(c, t)?;
@@ -8555,9 +8136,7 @@ where
         t = match t {
             syn::Visibility::Public(tmp) => self.fold_chain_visibility_public(c, (tmp))?,
             syn::Visibility::Crate(tmp) => self.fold_chain_visibility_crate(c, (tmp))?,
-            syn::Visibility::Restricted(tmp) => {
-                self.fold_chain_visibility_restricted(c, (tmp))?
-            }
+            syn::Visibility::Restricted(tmp) => self.fold_chain_visibility_restricted(c, (tmp))?,
             _ => t,
         };
         for mut i in self.after() {
@@ -8574,14 +8153,14 @@ where
         for mut i in self.before() {
             t = match i.chain_visibility_public(c, t)? {
                 syn::Visibility::Public(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_vispublic(c, t)?;
         for mut i in self.after() {
             t = match i.chain_visibility_public(c, t)? {
                 syn::Visibility::Public(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Visibility::Public(t))
@@ -8595,14 +8174,14 @@ where
         for mut i in self.before() {
             t = match i.chain_visibility_crate(c, t)? {
                 syn::Visibility::Crate(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_viscrate(c, t)?;
         for mut i in self.after() {
             t = match i.chain_visibility_crate(c, t)? {
                 syn::Visibility::Crate(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Visibility::Crate(t))
@@ -8616,14 +8195,14 @@ where
         for mut i in self.before() {
             t = match i.chain_visibility_restricted(c, t)? {
                 syn::Visibility::Restricted(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_visrestricted(c, t)?;
         for mut i in self.after() {
             t = match i.chain_visibility_restricted(c, t)? {
                 syn::Visibility::Restricted(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::Visibility::Restricted(t))
@@ -8654,9 +8233,7 @@ where
             t = i.chain_wherepredicate(c, t)?;
         }
         t = match t {
-            syn::WherePredicate::Type(tmp) => {
-                self.fold_chain_wherepredicate_type(c, (tmp))?
-            }
+            syn::WherePredicate::Type(tmp) => self.fold_chain_wherepredicate_type(c, (tmp))?,
             syn::WherePredicate::Lifetime(tmp) => {
                 self.fold_chain_wherepredicate_lifetime(c, (tmp))?
             }
@@ -8677,14 +8254,14 @@ where
         for mut i in self.before() {
             t = match i.chain_wherepredicate_type(c, t)? {
                 syn::WherePredicate::Type(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_predicatetype(c, t)?;
         for mut i in self.after() {
             t = match i.chain_wherepredicate_type(c, t)? {
                 syn::WherePredicate::Type(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::WherePredicate::Type(t))
@@ -8698,14 +8275,14 @@ where
         for mut i in self.before() {
             t = match i.chain_wherepredicate_lifetime(c, t)? {
                 syn::WherePredicate::Lifetime(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_predicatelifetime(c, t)?;
         for mut i in self.after() {
             t = match i.chain_wherepredicate_lifetime(c, t)? {
                 syn::WherePredicate::Lifetime(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::WherePredicate::Lifetime(t))
@@ -8719,14 +8296,14 @@ where
         for mut i in self.before() {
             t = match i.chain_wherepredicate_eq(c, t)? {
                 syn::WherePredicate::Eq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         t = self.fold_chain_predicateeq(c, t)?;
         for mut i in self.after() {
             t = match i.chain_wherepredicate_eq(c, t)? {
                 syn::WherePredicate::Eq(tmp) => (tmp),
-                tmp @ _ => return Ok(tmp),
+                tmp => return Ok(tmp),
             };
         }
         Ok(syn::WherePredicate::Eq(t))

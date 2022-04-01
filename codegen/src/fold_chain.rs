@@ -1,4 +1,4 @@
-use proc_macro2::{Ident, Span, TokenStream};
+use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use std::str::FromStr;
 use syn_codegen::{Data, Definitions, Fields, Node, Type, Variants};
@@ -143,7 +143,7 @@ fn visit_enum(ident: &str, map: &Variants) -> TokenStream {
         }
         let mut fold_ts = TokenStream::new();
 
-        for (i, field_ty) in tys.into_iter().enumerate() {
+        for (i, field_ty) in tys.iter().enumerate() {
             let field_name = if tys.len() == 1 {
                 format_tokenstream!("t")
             } else {
