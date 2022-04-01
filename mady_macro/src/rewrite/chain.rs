@@ -1,6 +1,6 @@
 use std::ops::{Deref, DerefMut};
 
-use syn::{Expr, ExprBlock, Stmt};
+use syn::{Expr, ExprBlock};
 
 use super::graph::Graph;
 

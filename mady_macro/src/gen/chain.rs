@@ -1,8 +1,6 @@
 // codegen file by version 0.1.0
 // don't edit this
 
-
-
 /// chain of responsibility trait
 /// it is a call & return trait
 #[allow(unused)]

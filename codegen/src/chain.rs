@@ -1,7 +1,7 @@
-use proc_macro2::{Ident, Span, TokenStream};
+use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use std::str::FromStr;
-use syn_codegen::{Data, Definitions, Fields, Node, Type, Variants};
+use syn_codegen::{Data, Definitions, Node, Type, Variants};
 
 pub fn gen(defs: &Definitions) -> TokenStream {
     let mut ts = TokenStream::new();

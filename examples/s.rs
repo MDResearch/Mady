@@ -90,6 +90,4 @@
 //     *w = w.clone() - d * Array0::new(0.0005);
 // }
 
-fn main(){
-    
-}
+fn main() {}

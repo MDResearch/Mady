@@ -339,7 +339,7 @@ where
     type Output = Self;
 
     fn mul(self, rhs: Array0<T>) -> Self::Output {
-        Self::new(self.clone().data.into_iter().map(|x| x * *rhs).collect())
+        Self::new(self.data.into_iter().map(|x| x * *rhs).collect())
     }
 }
 
@@ -350,9 +350,9 @@ where
     type Output = Array1<T>;
 
     fn mul(self, rhs: Array1<T>) -> Self::Output {
-        if self.data.is_empty(){
+        if self.data.is_empty() {
             Array1::<T>::zero()
-        }else {
+        } else {
             Self::Output::new(rhs.data.into_iter().map(|x| x * *self).collect())
         }
     }
