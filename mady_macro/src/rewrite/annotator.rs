@@ -1,6 +1,1 @@
-
-
-
-struct Annotator{
-    
-}
+struct Annotator {}

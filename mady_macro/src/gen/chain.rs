@@ -1,19 +1,13 @@
 // codegen file by version 0.1.0
 // don't edit this
 
-
-
 /// chain of responsibility trait
 /// it is a call & return trait
 #[allow(unused)]
 pub trait Chain {
     type Input;
     type Err;
-    fn chain_abi(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Abi,
-    ) -> Result<syn::Abi, Self::Err> {
+    fn chain_abi(&mut self, c: &mut Self::Input, t: syn::Abi) -> Result<syn::Abi, Self::Err> {
         Ok(t)
     }
     fn chain_anglebracketedgenericarguments(
@@ -23,11 +17,7 @@ pub trait Chain {
     ) -> Result<syn::AngleBracketedGenericArguments, Self::Err> {
         Ok(t)
     }
-    fn chain_arm(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Arm,
-    ) -> Result<syn::Arm, Self::Err> {
+    fn chain_arm(&mut self, c: &mut Self::Input, t: syn::Arm) -> Result<syn::Arm, Self::Err> {
         Ok(t)
     }
     fn chain_attrstyle(
@@ -58,11 +48,7 @@ pub trait Chain {
     ) -> Result<syn::BareFnArg, Self::Err> {
         Ok(t)
     }
-    fn chain_binop(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::BinOp,
-    ) -> Result<syn::BinOp, Self::Err> {
+    fn chain_binop(&mut self, c: &mut Self::Input, t: syn::BinOp) -> Result<syn::BinOp, Self::Err> {
         Ok(t)
     }
     fn chain_binop_add(
@@ -268,11 +254,7 @@ pub trait Chain {
     ) -> Result<syn::Binding, Self::Err> {
         Ok(t)
     }
-    fn chain_block(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Block,
-    ) -> Result<syn::Block, Self::Err> {
+    fn chain_block(&mut self, c: &mut Self::Input, t: syn::Block) -> Result<syn::Block, Self::Err> {
         Ok(t)
     }
     fn chain_boundlifetimes(
@@ -296,11 +278,7 @@ pub trait Chain {
     ) -> Result<syn::Constraint, Self::Err> {
         Ok(t)
     }
-    fn chain_data(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Data,
-    ) -> Result<syn::Data, Self::Err> {
+    fn chain_data(&mut self, c: &mut Self::Input, t: syn::Data) -> Result<syn::Data, Self::Err> {
         Ok(t)
     }
     fn chain_data_struct(
@@ -352,11 +330,7 @@ pub trait Chain {
     ) -> Result<syn::DeriveInput, Self::Err> {
         Ok(t)
     }
-    fn chain_expr(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Expr,
-    ) -> Result<syn::Expr, Self::Err> {
+    fn chain_expr(&mut self, c: &mut Self::Input, t: syn::Expr) -> Result<syn::Expr, Self::Err> {
         Ok(t)
     }
     fn chain_expr_array(
@@ -912,11 +886,7 @@ pub trait Chain {
     ) -> Result<syn::ExprYield, Self::Err> {
         Ok(t)
     }
-    fn chain_field(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Field,
-    ) -> Result<syn::Field, Self::Err> {
+    fn chain_field(&mut self, c: &mut Self::Input, t: syn::Field) -> Result<syn::Field, Self::Err> {
         Ok(t)
     }
     fn chain_fieldpat(
@@ -968,18 +938,10 @@ pub trait Chain {
     ) -> Result<syn::FieldsUnnamed, Self::Err> {
         Ok(t)
     }
-    fn chain_file(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::File,
-    ) -> Result<syn::File, Self::Err> {
+    fn chain_file(&mut self, c: &mut Self::Input, t: syn::File) -> Result<syn::File, Self::Err> {
         Ok(t)
     }
-    fn chain_fnarg(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::FnArg,
-    ) -> Result<syn::FnArg, Self::Err> {
+    fn chain_fnarg(&mut self, c: &mut Self::Input, t: syn::FnArg) -> Result<syn::FnArg, Self::Err> {
         Ok(t)
     }
     fn chain_fnarg_receiver(
@@ -1234,18 +1196,10 @@ pub trait Chain {
     ) -> Result<syn::ImplItemType, Self::Err> {
         Ok(t)
     }
-    fn chain_index(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Index,
-    ) -> Result<syn::Index, Self::Err> {
+    fn chain_index(&mut self, c: &mut Self::Input, t: syn::Index) -> Result<syn::Index, Self::Err> {
         Ok(t)
     }
-    fn chain_item(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Item,
-    ) -> Result<syn::Item, Self::Err> {
+    fn chain_item(&mut self, c: &mut Self::Input, t: syn::Item) -> Result<syn::Item, Self::Err> {
         Ok(t)
     }
     fn chain_item_const(
@@ -1479,11 +1433,7 @@ pub trait Chain {
     ) -> Result<syn::ItemUse, Self::Err> {
         Ok(t)
     }
-    fn chain_label(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Label,
-    ) -> Result<syn::Label, Self::Err> {
+    fn chain_label(&mut self, c: &mut Self::Input, t: syn::Label) -> Result<syn::Label, Self::Err> {
         Ok(t)
     }
     fn chain_lifetime(
@@ -1500,11 +1450,7 @@ pub trait Chain {
     ) -> Result<syn::LifetimeDef, Self::Err> {
         Ok(t)
     }
-    fn chain_lit(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Lit,
-    ) -> Result<syn::Lit, Self::Err> {
+    fn chain_lit(&mut self, c: &mut Self::Input, t: syn::Lit) -> Result<syn::Lit, Self::Err> {
         Ok(t)
     }
     fn chain_lit_str(
@@ -1612,18 +1558,10 @@ pub trait Chain {
     ) -> Result<syn::LitStr, Self::Err> {
         Ok(t)
     }
-    fn chain_local(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Local,
-    ) -> Result<syn::Local, Self::Err> {
+    fn chain_local(&mut self, c: &mut Self::Input, t: syn::Local) -> Result<syn::Local, Self::Err> {
         Ok(t)
     }
-    fn chain_macro(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Macro,
-    ) -> Result<syn::Macro, Self::Err> {
+    fn chain_macro(&mut self, c: &mut Self::Input, t: syn::Macro) -> Result<syn::Macro, Self::Err> {
         Ok(t)
     }
     fn chain_macrodelimiter(
@@ -1675,11 +1613,7 @@ pub trait Chain {
     ) -> Result<syn::Member, Self::Err> {
         Ok(syn::Member::Unnamed(t))
     }
-    fn chain_meta(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Meta,
-    ) -> Result<syn::Meta, Self::Err> {
+    fn chain_meta(&mut self, c: &mut Self::Input, t: syn::Meta) -> Result<syn::Meta, Self::Err> {
         Ok(t)
     }
     fn chain_meta_path(
@@ -1752,11 +1686,7 @@ pub trait Chain {
     ) -> Result<syn::ParenthesizedGenericArguments, Self::Err> {
         Ok(t)
     }
-    fn chain_pat(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Pat,
-    ) -> Result<syn::Pat, Self::Err> {
+    fn chain_pat(&mut self, c: &mut Self::Input, t: syn::Pat) -> Result<syn::Pat, Self::Err> {
         Ok(t)
     }
     fn chain_pat_box(
@@ -1787,11 +1717,7 @@ pub trait Chain {
     ) -> Result<syn::Pat, Self::Err> {
         Ok(syn::Pat::Macro(t))
     }
-    fn chain_pat_or(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::PatOr,
-    ) -> Result<syn::Pat, Self::Err> {
+    fn chain_pat_or(&mut self, c: &mut Self::Input, t: syn::PatOr) -> Result<syn::Pat, Self::Err> {
         Ok(syn::Pat::Or(t))
     }
     fn chain_pat_path(
@@ -1899,11 +1825,7 @@ pub trait Chain {
     ) -> Result<syn::PatMacro, Self::Err> {
         Ok(t)
     }
-    fn chain_pator(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::PatOr,
-    ) -> Result<syn::PatOr, Self::Err> {
+    fn chain_pator(&mut self, c: &mut Self::Input, t: syn::PatOr) -> Result<syn::PatOr, Self::Err> {
         Ok(t)
     }
     fn chain_patpath(
@@ -1976,11 +1898,7 @@ pub trait Chain {
     ) -> Result<syn::PatWild, Self::Err> {
         Ok(t)
     }
-    fn chain_path(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Path,
-    ) -> Result<syn::Path, Self::Err> {
+    fn chain_path(&mut self, c: &mut Self::Input, t: syn::Path) -> Result<syn::Path, Self::Err> {
         Ok(t)
     }
     fn chain_patharguments(
@@ -2032,11 +1950,7 @@ pub trait Chain {
     ) -> Result<syn::PredicateType, Self::Err> {
         Ok(t)
     }
-    fn chain_qself(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::QSelf,
-    ) -> Result<syn::QSelf, Self::Err> {
+    fn chain_qself(&mut self, c: &mut Self::Input, t: syn::QSelf) -> Result<syn::QSelf, Self::Err> {
         Ok(t)
     }
     fn chain_rangelimits(
@@ -2088,11 +2002,7 @@ pub trait Chain {
     ) -> Result<syn::Signature, Self::Err> {
         Ok(t)
     }
-    fn chain_stmt(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Stmt,
-    ) -> Result<syn::Stmt, Self::Err> {
+    fn chain_stmt(&mut self, c: &mut Self::Input, t: syn::Stmt) -> Result<syn::Stmt, Self::Err> {
         Ok(t)
     }
     fn chain_stmt_local(
@@ -2214,11 +2124,7 @@ pub trait Chain {
     ) -> Result<syn::TraitItemType, Self::Err> {
         Ok(t)
     }
-    fn chain_type(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Type,
-    ) -> Result<syn::Type, Self::Err> {
+    fn chain_type(&mut self, c: &mut Self::Input, t: syn::Type) -> Result<syn::Type, Self::Err> {
         Ok(t)
     }
     fn chain_type_array(
@@ -2452,11 +2358,7 @@ pub trait Chain {
     ) -> Result<syn::TypeTuple, Self::Err> {
         Ok(t)
     }
-    fn chain_unop(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::UnOp,
-    ) -> Result<syn::UnOp, Self::Err> {
+    fn chain_unop(&mut self, c: &mut Self::Input, t: syn::UnOp) -> Result<syn::UnOp, Self::Err> {
         Ok(t)
     }
     fn chain_unop_deref(

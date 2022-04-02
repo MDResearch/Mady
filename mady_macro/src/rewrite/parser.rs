@@ -1,8 +1,6 @@
-use std::slice::IterMut;
-
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Error, Expr, ExprBlock, ItemFn, PatType};
+use syn::{Error, ItemFn, PatType};
 
 use super::graph::{Graph, Node};
 use crate::gen::*;
