@@ -5,7 +5,7 @@ use super::ChainIter;
 /// fold chain of responsibility trait
 /// it is a before chain -> fold -> after chain trait
 #[allow(unused)]
-trait FoldChain
+pub trait FoldChain
 where
     Self: ChainIter,
 {

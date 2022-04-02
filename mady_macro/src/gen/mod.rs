@@ -13,3 +13,6 @@ pub trait ChainIter {
         &mut self,
     ) -> Box<dyn Iterator<Item = Box<dyn chain::Chain<Input = Self::Input, Err = Self::Err>>>>;
 }
+
+pub use chain::Chain;
+pub use fold_chain::FoldChain;
