@@ -7,11 +7,15 @@ pub trait ChainIter {
 
     fn before(
         &mut self,
-    ) -> Box<dyn Iterator<Item = Box<dyn chain::Chain<Input = Self::Input, Err = Self::Err>>>>;
+    ) -> Box<
+        dyn Iterator<Item = &mut Box<dyn chain::Chain<Input = Self::Input, Err = Self::Err>>> + '_,
+    >;
 
     fn after(
         &mut self,
-    ) -> Box<dyn Iterator<Item = Box<dyn chain::Chain<Input = Self::Input, Err = Self::Err>>>>;
+    ) -> Box<
+        dyn Iterator<Item = &mut Box<dyn chain::Chain<Input = Self::Input, Err = Self::Err>>> + '_,
+    >;
 }
 
 pub use chain::Chain;

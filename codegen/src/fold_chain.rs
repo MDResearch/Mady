@@ -38,10 +38,10 @@ fn visit_private(ident: &str) -> TokenStream {
     quote! {
         fn #name(&mut self, c: &mut <Self as ChainIter>::Input, t: #ty) -> Result<#ty, <Self as ChainIter>::Err> {
             let mut t = t;
-            for mut i in self.before() {
+            for i in self.before() {
                 t = i.#chain_name(c, t)?;
             }
-            for mut i in self.after() {
+            for i in self.after() {
                 t = i.#chain_name(c, t)?;
             }
             Ok(t)
@@ -66,11 +66,11 @@ fn visit_struct(ident: &str, map: &Fields) -> TokenStream {
     quote! {
         fn #name(&mut self, c: &mut <Self as ChainIter>::Input, t: #ty) -> Result<#ty, <Self as ChainIter>::Err> {
             let mut t = t;
-            for mut i in self.before() {
+            for i in self.before() {
                 t = i.#chain_name(c, t)?;
             }
             #fold_ts
-            for mut i in self.after() {
+            for i in self.after() {
                 t = i.#chain_name(c, t)?;
             }
             Ok(t)
@@ -124,11 +124,11 @@ fn visit_enum(ident: &str, map: &Variants) -> TokenStream {
         ts.extend(quote!{
             fn #name(&mut self, c: &mut <Self as ChainIter>::Input, t: #ty) -> Result<#ty, <Self as ChainIter>::Err> {
                 let mut t = t;
-                for mut i in self.before() {
+                for i in self.before() {
                     t = i.#chain_name(c, t)?;
                 }
                 #fold_ts
-                for mut i in self.after() {
+                for i in self.after() {
                     t = i.#chain_name(c, t)?;
                 }
                 Ok(t)
@@ -186,14 +186,14 @@ fn visit_enum(ident: &str, map: &Variants) -> TokenStream {
         ts.extend(quote! {
             fn #name(&mut self, c: &mut <Self as ChainIter>::Input, t: #input_ty) -> Result<#ty, <Self as ChainIter>::Err> {
                 let mut t = t;
-                for mut i in self.before() {
+                for i in self.before() {
                     t = match i.#chain_name(c, t)? {
                         #field_ty(#destructuring) => (#destructuring),
                         tmp @ _ => return Ok(tmp),
                     };
                 }
                 #fold_ts
-                for mut i in self.after() {
+                for i in self.after() {
                     t = match i.#chain_name(c, t)? {
                         #field_ty(#destructuring) => (#destructuring),
                         tmp @ _ => return Ok(tmp),
@@ -287,9 +287,3 @@ fn gen_fold_type(field: &String, ty: &Type) -> TokenStream {
         _ => format_tokenstream!("{}", field),
     }
 }
-
-// fn gen_fold_types(field: &String, ty: &Vec<Type>) -> TokenStream {
-//     for i in ty {
-
-//     }
-// }
