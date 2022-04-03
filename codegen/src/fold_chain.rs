@@ -189,14 +189,14 @@ fn visit_enum(ident: &str, map: &Variants) -> TokenStream {
                 for i in self.before() {
                     t = match i.#chain_name(c, t)? {
                         #field_ty(#destructuring) => (#destructuring),
-                        tmp @ _ => return Ok(tmp),
+                        tmp => return Ok(tmp),
                     };
                 }
                 #fold_ts
                 for i in self.after() {
                     t = match i.#chain_name(c, t)? {
                         #field_ty(#destructuring) => (#destructuring),
-                        tmp @ _ => return Ok(tmp),
+                        tmp => return Ok(tmp),
                     };
                 }
                 Ok(#field_ty(#structuring))
