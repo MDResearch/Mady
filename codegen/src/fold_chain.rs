@@ -5,7 +5,7 @@ use syn_codegen::{Data, Definitions, Fields, Node, Type, Variants};
 
 pub fn gen(defs: &Definitions) -> TokenStream {
     let mut ts = TokenStream::new();
-    for node in defs.types.iter() {
+    for node in &defs.types {
         ts.extend(visit_node(node));
     }
     quote! {
