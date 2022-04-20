@@ -1,7 +1,6 @@
 use syn::spanned::Spanned;
 use syn::{parse_quote, Error};
 
-use super::utils::Marker;
 use crate::gen::Chain;
 use crate::utils::grad_method;
 
