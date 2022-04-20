@@ -1,6 +1,8 @@
 // codegen file by version 0.1.0
 // don't edit this
 
+
+
 use super::ChainIter;
 /// fold chain of responsibility trait
 /// it is a before chain -> fold -> after chain trait
@@ -19,7 +21,8 @@ where
             t = i.chain_abi(c, t)?;
         }
         t.extern_token = t.extern_token;
-        t.name = match t.name {
+        t
+            .name = match t.name {
             Some(o) => Some(self.fold_chain_litstr(c, o)?),
             None => None,
         };
@@ -37,9 +40,20 @@ where
         for i in self.before() {
             t = i.chain_anglebracketedgenericarguments(c, t)?;
         }
-        t.colon2_token = t.colon2_token;
+        t
+            .colon2_token = match t.colon2_token {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.lt_token = t.lt_token;
-        t.args = t.args;
+        t
+            .args = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.args {
+                tmp.push(self.fold_chain_genericargument(c, p)?);
+            }
+            tmp
+        };
         t.gt_token = t.gt_token;
         for i in self.after() {
             t = i.chain_anglebracketedgenericarguments(c, t)?;
@@ -55,7 +69,8 @@ where
         for i in self.before() {
             t = i.chain_arm(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -63,13 +78,18 @@ where
             tmp
         };
         t.pat = self.fold_chain_pat(c, t.pat)?;
-        t.guard = match t.guard {
+        t
+            .guard = match t.guard {
             Some(o) => Some((o.0, Box::new(self.fold_chain_expr(c, *o.1)?))),
             None => None,
         };
         t.fat_arrow_token = t.fat_arrow_token;
         t.body = Box::new(self.fold_chain_expr(c, *t.body)?);
-        t.comma = t.comma;
+        t
+            .comma = match t.comma {
+            Some(o) => Some(o),
+            None => None,
+        };
         for i in self.after() {
             t = i.chain_arm(c, t)?;
         }
@@ -142,14 +162,16 @@ where
         for i in self.before() {
             t = i.chain_barefnarg(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t.name = match t.name {
+        t
+            .name = match t.name {
             Some(o) => Some((o.0, o.1)),
             None => None,
         };
@@ -819,7 +841,8 @@ where
             t = i.chain_block(c, t)?;
         }
         t.brace_token = t.brace_token;
-        t.stmts = {
+        t
+            .stmts = {
             let mut tmp = vec![];
             for v in t.stmts {
                 tmp.push(self.fold_chain_stmt(c, v)?);
@@ -842,7 +865,14 @@ where
         }
         t.for_token = t.for_token;
         t.lt_token = t.lt_token;
-        t.lifetimes = t.lifetimes;
+        t
+            .lifetimes = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.lifetimes {
+                tmp.push(self.fold_chain_lifetimedef(c, p)?);
+            }
+            tmp
+        };
         t.gt_token = t.gt_token;
         for i in self.after() {
             t = i.chain_boundlifetimes(c, t)?;
@@ -858,7 +888,8 @@ where
         for i in self.before() {
             t = i.chain_constparam(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -869,8 +900,13 @@ where
         t.ident = t.ident;
         t.colon_token = t.colon_token;
         t.ty = self.fold_chain_type(c, t.ty)?;
-        t.eq_token = t.eq_token;
-        t.default = match t.default {
+        t
+            .eq_token = match t.eq_token {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .default = match t.default {
             Some(o) => Some(self.fold_chain_expr(c, o)?),
             None => None,
         };
@@ -890,7 +926,14 @@ where
         }
         t.ident = t.ident;
         t.colon_token = t.colon_token;
-        t.bounds = t.bounds;
+        t
+            .bounds = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.bounds {
+                tmp.push(self.fold_chain_typeparambound(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_constraint(c, t)?;
         }
@@ -990,7 +1033,14 @@ where
         }
         t.enum_token = t.enum_token;
         t.brace_token = t.brace_token;
-        t.variants = t.variants;
+        t
+            .variants = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.variants {
+                tmp.push(self.fold_chain_variant(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_dataenum(c, t)?;
         }
@@ -1007,7 +1057,11 @@ where
         }
         t.struct_token = t.struct_token;
         t.fields = self.fold_chain_fields(c, t.fields)?;
-        t.semi_token = t.semi_token;
+        t
+            .semi_token = match t.semi_token {
+            Some(o) => Some(o),
+            None => None,
+        };
         for i in self.after() {
             t = i.chain_datastruct(c, t)?;
         }
@@ -1038,7 +1092,8 @@ where
         for i in self.before() {
             t = i.chain_deriveinput(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -1960,7 +2015,8 @@ where
         for i in self.before() {
             t = i.chain_exprarray(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -1968,7 +2024,14 @@ where
             tmp
         };
         t.bracket_token = t.bracket_token;
-        t.elems = t.elems;
+        t
+            .elems = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.elems {
+                tmp.push(self.fold_chain_expr(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_exprarray(c, t)?;
         }
@@ -1983,7 +2046,8 @@ where
         for i in self.before() {
             t = i.chain_exprassign(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2007,7 +2071,8 @@ where
         for i in self.before() {
             t = i.chain_exprassignop(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2031,7 +2096,8 @@ where
         for i in self.before() {
             t = i.chain_exprasync(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2039,7 +2105,11 @@ where
             tmp
         };
         t.async_token = t.async_token;
-        t.capture = t.capture;
+        t
+            .capture = match t.capture {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.block = self.fold_chain_block(c, t.block)?;
         for i in self.after() {
             t = i.chain_exprasync(c, t)?;
@@ -2055,7 +2125,8 @@ where
         for i in self.before() {
             t = i.chain_exprawait(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2079,7 +2150,8 @@ where
         for i in self.before() {
             t = i.chain_exprbinary(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2103,14 +2175,16 @@ where
         for i in self.before() {
             t = i.chain_exprblock(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t.label = match t.label {
+        t
+            .label = match t.label {
             Some(o) => Some(self.fold_chain_label(c, o)?),
             None => None,
         };
@@ -2129,7 +2203,8 @@ where
         for i in self.before() {
             t = i.chain_exprbox(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2152,7 +2227,8 @@ where
         for i in self.before() {
             t = i.chain_exprbreak(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2160,11 +2236,13 @@ where
             tmp
         };
         t.break_token = t.break_token;
-        t.label = match t.label {
+        t
+            .label = match t.label {
             Some(o) => Some(self.fold_chain_lifetime(c, o)?),
             None => None,
         };
-        t.expr = match t.expr {
+        t
+            .expr = match t.expr {
             Some(o) => Some(Box::new(self.fold_chain_expr(c, *o)?)),
             None => None,
         };
@@ -2182,7 +2260,8 @@ where
         for i in self.before() {
             t = i.chain_exprcall(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2191,7 +2270,14 @@ where
         };
         t.func = Box::new(self.fold_chain_expr(c, *t.func)?);
         t.paren_token = t.paren_token;
-        t.args = t.args;
+        t
+            .args = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.args {
+                tmp.push(self.fold_chain_expr(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_exprcall(c, t)?;
         }
@@ -2206,7 +2292,8 @@ where
         for i in self.before() {
             t = i.chain_exprcast(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2230,18 +2317,38 @@ where
         for i in self.before() {
             t = i.chain_exprclosure(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t.movability = t.movability;
-        t.asyncness = t.asyncness;
-        t.capture = t.capture;
+        t
+            .movability = match t.movability {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .asyncness = match t.asyncness {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .capture = match t.capture {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.or1_token = t.or1_token;
-        t.inputs = t.inputs;
+        t
+            .inputs = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.inputs {
+                tmp.push(self.fold_chain_pat(c, p)?);
+            }
+            tmp
+        };
         t.or2_token = t.or2_token;
         t.output = self.fold_chain_returntype(c, t.output)?;
         t.body = Box::new(self.fold_chain_expr(c, *t.body)?);
@@ -2259,7 +2366,8 @@ where
         for i in self.before() {
             t = i.chain_exprcontinue(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2267,7 +2375,8 @@ where
             tmp
         };
         t.continue_token = t.continue_token;
-        t.label = match t.label {
+        t
+            .label = match t.label {
             Some(o) => Some(self.fold_chain_lifetime(c, o)?),
             None => None,
         };
@@ -2285,7 +2394,8 @@ where
         for i in self.before() {
             t = i.chain_exprfield(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2309,14 +2419,16 @@ where
         for i in self.before() {
             t = i.chain_exprforloop(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t.label = match t.label {
+        t
+            .label = match t.label {
             Some(o) => Some(self.fold_chain_label(c, o)?),
             None => None,
         };
@@ -2339,7 +2451,8 @@ where
         for i in self.before() {
             t = i.chain_exprgroup(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2362,7 +2475,8 @@ where
         for i in self.before() {
             t = i.chain_exprif(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2372,7 +2486,8 @@ where
         t.if_token = t.if_token;
         t.cond = Box::new(self.fold_chain_expr(c, *t.cond)?);
         t.then_branch = self.fold_chain_block(c, t.then_branch)?;
-        t.else_branch = match t.else_branch {
+        t
+            .else_branch = match t.else_branch {
             Some(o) => Some((o.0, Box::new(self.fold_chain_expr(c, *o.1)?))),
             None => None,
         };
@@ -2390,7 +2505,8 @@ where
         for i in self.before() {
             t = i.chain_exprindex(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2414,7 +2530,8 @@ where
         for i in self.before() {
             t = i.chain_exprlet(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2439,7 +2556,8 @@ where
         for i in self.before() {
             t = i.chain_exprlit(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2461,14 +2579,16 @@ where
         for i in self.before() {
             t = i.chain_exprloop(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t.label = match t.label {
+        t
+            .label = match t.label {
             Some(o) => Some(self.fold_chain_label(c, o)?),
             None => None,
         };
@@ -2488,7 +2608,8 @@ where
         for i in self.before() {
             t = i.chain_exprmacro(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2510,7 +2631,8 @@ where
         for i in self.before() {
             t = i.chain_exprmatch(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2520,7 +2642,8 @@ where
         t.match_token = t.match_token;
         t.expr = Box::new(self.fold_chain_expr(c, *t.expr)?);
         t.brace_token = t.brace_token;
-        t.arms = {
+        t
+            .arms = {
             let mut tmp = vec![];
             for v in t.arms {
                 tmp.push(self.fold_chain_arm(c, v)?);
@@ -2541,7 +2664,8 @@ where
         for i in self.before() {
             t = i.chain_exprmethodcall(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2551,12 +2675,20 @@ where
         t.receiver = Box::new(self.fold_chain_expr(c, *t.receiver)?);
         t.dot_token = t.dot_token;
         t.method = t.method;
-        t.turbofish = match t.turbofish {
+        t
+            .turbofish = match t.turbofish {
             Some(o) => Some(self.fold_chain_methodturbofish(c, o)?),
             None => None,
         };
         t.paren_token = t.paren_token;
-        t.args = t.args;
+        t
+            .args = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.args {
+                tmp.push(self.fold_chain_expr(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_exprmethodcall(c, t)?;
         }
@@ -2571,7 +2703,8 @@ where
         for i in self.before() {
             t = i.chain_exprparen(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2594,14 +2727,16 @@ where
         for i in self.before() {
             t = i.chain_exprpath(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t.qself = match t.qself {
+        t
+            .qself = match t.qself {
             Some(o) => Some(self.fold_chain_qself(c, o)?),
             None => None,
         };
@@ -2620,19 +2755,22 @@ where
         for i in self.before() {
             t = i.chain_exprrange(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t.from = match t.from {
+        t
+            .from = match t.from {
             Some(o) => Some(Box::new(self.fold_chain_expr(c, *o)?)),
             None => None,
         };
         t.limits = self.fold_chain_rangelimits(c, t.limits)?;
-        t.to = match t.to {
+        t
+            .to = match t.to {
             Some(o) => Some(Box::new(self.fold_chain_expr(c, *o)?)),
             None => None,
         };
@@ -2650,7 +2788,8 @@ where
         for i in self.before() {
             t = i.chain_exprreference(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2659,7 +2798,11 @@ where
         };
         t.and_token = t.and_token;
         t.raw = t.raw;
-        t.mutability = t.mutability;
+        t
+            .mutability = match t.mutability {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.expr = Box::new(self.fold_chain_expr(c, *t.expr)?);
         for i in self.after() {
             t = i.chain_exprreference(c, t)?;
@@ -2675,7 +2818,8 @@ where
         for i in self.before() {
             t = i.chain_exprrepeat(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2700,7 +2844,8 @@ where
         for i in self.before() {
             t = i.chain_exprreturn(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2708,7 +2853,8 @@ where
             tmp
         };
         t.return_token = t.return_token;
-        t.expr = match t.expr {
+        t
+            .expr = match t.expr {
             Some(o) => Some(Box::new(self.fold_chain_expr(c, *o)?)),
             None => None,
         };
@@ -2726,7 +2872,8 @@ where
         for i in self.before() {
             t = i.chain_exprstruct(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2735,9 +2882,21 @@ where
         };
         t.path = self.fold_chain_path(c, t.path)?;
         t.brace_token = t.brace_token;
-        t.fields = t.fields;
-        t.dot2_token = t.dot2_token;
-        t.rest = match t.rest {
+        t
+            .fields = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.fields {
+                tmp.push(self.fold_chain_fieldvalue(c, p)?);
+            }
+            tmp
+        };
+        t
+            .dot2_token = match t.dot2_token {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .rest = match t.rest {
             Some(o) => Some(Box::new(self.fold_chain_expr(c, *o)?)),
             None => None,
         };
@@ -2755,7 +2914,8 @@ where
         for i in self.before() {
             t = i.chain_exprtry(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2778,7 +2938,8 @@ where
         for i in self.before() {
             t = i.chain_exprtryblock(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2801,7 +2962,8 @@ where
         for i in self.before() {
             t = i.chain_exprtuple(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2809,7 +2971,14 @@ where
             tmp
         };
         t.paren_token = t.paren_token;
-        t.elems = t.elems;
+        t
+            .elems = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.elems {
+                tmp.push(self.fold_chain_expr(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_exprtuple(c, t)?;
         }
@@ -2824,7 +2993,8 @@ where
         for i in self.before() {
             t = i.chain_exprtype(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2848,7 +3018,8 @@ where
         for i in self.before() {
             t = i.chain_exprunary(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2871,7 +3042,8 @@ where
         for i in self.before() {
             t = i.chain_exprunsafe(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2894,14 +3066,16 @@ where
         for i in self.before() {
             t = i.chain_exprwhile(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t.label = match t.label {
+        t
+            .label = match t.label {
             Some(o) => Some(self.fold_chain_label(c, o)?),
             None => None,
         };
@@ -2922,7 +3096,8 @@ where
         for i in self.before() {
             t = i.chain_expryield(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2930,7 +3105,8 @@ where
             tmp
         };
         t.yield_token = t.yield_token;
-        t.expr = match t.expr {
+        t
+            .expr = match t.expr {
             Some(o) => Some(Box::new(self.fold_chain_expr(c, *o)?)),
             None => None,
         };
@@ -2948,7 +3124,8 @@ where
         for i in self.before() {
             t = i.chain_field(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2956,8 +3133,16 @@ where
             tmp
         };
         t.vis = self.fold_chain_visibility(c, t.vis)?;
-        t.ident = t.ident;
-        t.colon_token = t.colon_token;
+        t
+            .ident = match t.ident {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .colon_token = match t.colon_token {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.ty = self.fold_chain_type(c, t.ty)?;
         for i in self.after() {
             t = i.chain_field(c, t)?;
@@ -2973,7 +3158,8 @@ where
         for i in self.before() {
             t = i.chain_fieldpat(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -2981,7 +3167,11 @@ where
             tmp
         };
         t.member = self.fold_chain_member(c, t.member)?;
-        t.colon_token = t.colon_token;
+        t
+            .colon_token = match t.colon_token {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.pat = Box::new(self.fold_chain_pat(c, *t.pat)?);
         for i in self.after() {
             t = i.chain_fieldpat(c, t)?;
@@ -2997,7 +3187,8 @@ where
         for i in self.before() {
             t = i.chain_fieldvalue(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -3005,7 +3196,11 @@ where
             tmp
         };
         t.member = self.fold_chain_member(c, t.member)?;
-        t.colon_token = t.colon_token;
+        t
+            .colon_token = match t.colon_token {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.expr = self.fold_chain_expr(c, t.expr)?;
         for i in self.after() {
             t = i.chain_fieldvalue(c, t)?;
@@ -3083,7 +3278,14 @@ where
             t = i.chain_fieldsnamed(c, t)?;
         }
         t.brace_token = t.brace_token;
-        t.named = t.named;
+        t
+            .named = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.named {
+                tmp.push(self.fold_chain_field(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_fieldsnamed(c, t)?;
         }
@@ -3099,7 +3301,14 @@ where
             t = i.chain_fieldsunnamed(c, t)?;
         }
         t.paren_token = t.paren_token;
-        t.unnamed = t.unnamed;
+        t
+            .unnamed = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.unnamed {
+                tmp.push(self.fold_chain_field(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_fieldsunnamed(c, t)?;
         }
@@ -3114,15 +3323,21 @@ where
         for i in self.before() {
             t = i.chain_file(c, t)?;
         }
-        t.shebang = t.shebang;
-        t.attrs = {
+        t
+            .shebang = match t.shebang {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t.items = {
+        t
+            .items = {
             let mut tmp = vec![];
             for v in t.items {
                 tmp.push(self.fold_chain_item(c, v)?);
@@ -3206,10 +3421,14 @@ where
         }
         t = match t {
             syn::ForeignItem::Fn(tmp) => self.fold_chain_foreignitem_fn(c, (tmp))?,
-            syn::ForeignItem::Static(tmp) => self.fold_chain_foreignitem_static(c, (tmp))?,
+            syn::ForeignItem::Static(tmp) => {
+                self.fold_chain_foreignitem_static(c, (tmp))?
+            }
             syn::ForeignItem::Type(tmp) => self.fold_chain_foreignitem_type(c, (tmp))?,
             syn::ForeignItem::Macro(tmp) => self.fold_chain_foreignitem_macro(c, (tmp))?,
-            syn::ForeignItem::Verbatim(tmp) => self.fold_chain_foreignitem_verbatim(c, (tmp))?,
+            syn::ForeignItem::Verbatim(tmp) => {
+                self.fold_chain_foreignitem_verbatim(c, (tmp))?
+            }
             _ => t,
         };
         for i in self.after() {
@@ -3331,7 +3550,8 @@ where
         for i in self.before() {
             t = i.chain_foreignitemfn(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -3355,7 +3575,8 @@ where
         for i in self.before() {
             t = i.chain_foreignitemmacro(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -3363,7 +3584,11 @@ where
             tmp
         };
         t.mac = self.fold_chain_macro(c, t.mac)?;
-        t.semi_token = t.semi_token;
+        t
+            .semi_token = match t.semi_token {
+            Some(o) => Some(o),
+            None => None,
+        };
         for i in self.after() {
             t = i.chain_foreignitemmacro(c, t)?;
         }
@@ -3378,7 +3603,8 @@ where
         for i in self.before() {
             t = i.chain_foreignitemstatic(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -3387,7 +3613,11 @@ where
         };
         t.vis = self.fold_chain_visibility(c, t.vis)?;
         t.static_token = t.static_token;
-        t.mutability = t.mutability;
+        t
+            .mutability = match t.mutability {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.ident = t.ident;
         t.colon_token = t.colon_token;
         t.ty = Box::new(self.fold_chain_type(c, *t.ty)?);
@@ -3406,7 +3636,8 @@ where
         for i in self.before() {
             t = i.chain_foreignitemtype(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -3435,14 +3666,18 @@ where
             syn::GenericArgument::Lifetime(tmp) => {
                 self.fold_chain_genericargument_lifetime(c, (tmp))?
             }
-            syn::GenericArgument::Type(tmp) => self.fold_chain_genericargument_type(c, (tmp))?,
+            syn::GenericArgument::Type(tmp) => {
+                self.fold_chain_genericargument_type(c, (tmp))?
+            }
             syn::GenericArgument::Binding(tmp) => {
                 self.fold_chain_genericargument_binding(c, (tmp))?
             }
             syn::GenericArgument::Constraint(tmp) => {
                 self.fold_chain_genericargument_constraint(c, (tmp))?
             }
-            syn::GenericArgument::Const(tmp) => self.fold_chain_genericargument_const(c, (tmp))?,
+            syn::GenericArgument::Const(tmp) => {
+                self.fold_chain_genericargument_const(c, (tmp))?
+            }
             _ => t,
         };
         for i in self.after() {
@@ -3631,8 +3866,12 @@ where
         }
         t = match t {
             syn::GenericParam::Type(tmp) => self.fold_chain_genericparam_type(c, (tmp))?,
-            syn::GenericParam::Lifetime(tmp) => self.fold_chain_genericparam_lifetime(c, (tmp))?,
-            syn::GenericParam::Const(tmp) => self.fold_chain_genericparam_const(c, (tmp))?,
+            syn::GenericParam::Lifetime(tmp) => {
+                self.fold_chain_genericparam_lifetime(c, (tmp))?
+            }
+            syn::GenericParam::Const(tmp) => {
+                self.fold_chain_genericparam_const(c, (tmp))?
+            }
             _ => t,
         };
         for i in self.after() {
@@ -3712,10 +3951,26 @@ where
         for i in self.before() {
             t = i.chain_generics(c, t)?;
         }
-        t.lt_token = t.lt_token;
-        t.params = t.params;
-        t.gt_token = t.gt_token;
-        t.where_clause = match t.where_clause {
+        t
+            .lt_token = match t.lt_token {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .params = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.params {
+                tmp.push(self.fold_chain_genericparam(c, p)?);
+            }
+            tmp
+        };
+        t
+            .gt_token = match t.gt_token {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .where_clause = match t.where_clause {
             Some(o) => Some(self.fold_chain_whereclause(c, o)?),
             None => None,
         };
@@ -3860,7 +4115,8 @@ where
         for i in self.before() {
             t = i.chain_implitemconst(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -3868,7 +4124,11 @@ where
             tmp
         };
         t.vis = self.fold_chain_visibility(c, t.vis)?;
-        t.defaultness = t.defaultness;
+        t
+            .defaultness = match t.defaultness {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.const_token = t.const_token;
         t.ident = t.ident;
         t.colon_token = t.colon_token;
@@ -3890,7 +4150,8 @@ where
         for i in self.before() {
             t = i.chain_implitemmacro(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -3898,7 +4159,11 @@ where
             tmp
         };
         t.mac = self.fold_chain_macro(c, t.mac)?;
-        t.semi_token = t.semi_token;
+        t
+            .semi_token = match t.semi_token {
+            Some(o) => Some(o),
+            None => None,
+        };
         for i in self.after() {
             t = i.chain_implitemmacro(c, t)?;
         }
@@ -3913,7 +4178,8 @@ where
         for i in self.before() {
             t = i.chain_implitemmethod(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -3921,7 +4187,11 @@ where
             tmp
         };
         t.vis = self.fold_chain_visibility(c, t.vis)?;
-        t.defaultness = t.defaultness;
+        t
+            .defaultness = match t.defaultness {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.sig = self.fold_chain_signature(c, t.sig)?;
         t.block = self.fold_chain_block(c, t.block)?;
         for i in self.after() {
@@ -3938,7 +4208,8 @@ where
         for i in self.before() {
             t = i.chain_implitemtype(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -3946,7 +4217,11 @@ where
             tmp
         };
         t.vis = self.fold_chain_visibility(c, t.vis)?;
-        t.defaultness = t.defaultness;
+        t
+            .defaultness = match t.defaultness {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.type_token = t.type_token;
         t.ident = t.ident;
         t.generics = self.fold_chain_generics(c, t.generics)?;
@@ -4374,7 +4649,8 @@ where
         for i in self.before() {
             t = i.chain_itemconst(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4403,7 +4679,8 @@ where
         for i in self.before() {
             t = i.chain_itemenum(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4415,7 +4692,14 @@ where
         t.ident = t.ident;
         t.generics = self.fold_chain_generics(c, t.generics)?;
         t.brace_token = t.brace_token;
-        t.variants = t.variants;
+        t
+            .variants = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.variants {
+                tmp.push(self.fold_chain_variant(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_itemenum(c, t)?;
         }
@@ -4430,7 +4714,8 @@ where
         for i in self.before() {
             t = i.chain_itemexterncrate(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4441,7 +4726,8 @@ where
         t.extern_token = t.extern_token;
         t.crate_token = t.crate_token;
         t.ident = t.ident;
-        t.rename = match t.rename {
+        t
+            .rename = match t.rename {
             Some(o) => Some((o.0, o.1)),
             None => None,
         };
@@ -4460,7 +4746,8 @@ where
         for i in self.before() {
             t = i.chain_itemfn(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4484,7 +4771,8 @@ where
         for i in self.before() {
             t = i.chain_itemforeignmod(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4493,7 +4781,8 @@ where
         };
         t.abi = self.fold_chain_abi(c, t.abi)?;
         t.brace_token = t.brace_token;
-        t.items = {
+        t
+            .items = {
             let mut tmp = vec![];
             for v in t.items {
                 tmp.push(self.fold_chain_foreignitem(c, v)?);
@@ -4514,24 +4803,44 @@ where
         for i in self.before() {
             t = i.chain_itemimpl(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t.defaultness = t.defaultness;
-        t.unsafety = t.unsafety;
+        t
+            .defaultness = match t.defaultness {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .unsafety = match t.unsafety {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.impl_token = t.impl_token;
         t.generics = self.fold_chain_generics(c, t.generics)?;
-        t.trait_ = match t.trait_ {
-            Some(o) => Some((o.0, self.fold_chain_path(c, o.1)?, o.2)),
+        t
+            .trait_ = match t.trait_ {
+            Some(o) => {
+                Some((
+                    match o.0 {
+                        Some(o) => Some(o),
+                        None => None,
+                    },
+                    self.fold_chain_path(c, o.1)?,
+                    o.2,
+                ))
+            }
             None => None,
         };
         t.self_ty = Box::new(self.fold_chain_type(c, *t.self_ty)?);
         t.brace_token = t.brace_token;
-        t.items = {
+        t
+            .items = {
             let mut tmp = vec![];
             for v in t.items {
                 tmp.push(self.fold_chain_implitem(c, v)?);
@@ -4552,16 +4861,25 @@ where
         for i in self.before() {
             t = i.chain_itemmacro(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t.ident = t.ident;
+        t
+            .ident = match t.ident {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.mac = self.fold_chain_macro(c, t.mac)?;
-        t.semi_token = t.semi_token;
+        t
+            .semi_token = match t.semi_token {
+            Some(o) => Some(o),
+            None => None,
+        };
         for i in self.after() {
             t = i.chain_itemmacro(c, t)?;
         }
@@ -4576,7 +4894,8 @@ where
         for i in self.before() {
             t = i.chain_itemmacro2(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4601,7 +4920,8 @@ where
         for i in self.before() {
             t = i.chain_itemmod(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4611,17 +4931,27 @@ where
         t.vis = self.fold_chain_visibility(c, t.vis)?;
         t.mod_token = t.mod_token;
         t.ident = t.ident;
-        t.content = match t.content {
-            Some(o) => Some((o.0, {
-                let mut tmp = vec![];
-                for v in o.1 {
-                    tmp.push(self.fold_chain_item(c, v)?);
-                }
-                tmp
-            })),
+        t
+            .content = match t.content {
+            Some(o) => {
+                Some((
+                    o.0,
+                    {
+                        let mut tmp = vec![];
+                        for v in o.1 {
+                            tmp.push(self.fold_chain_item(c, v)?);
+                        }
+                        tmp
+                    },
+                ))
+            }
             None => None,
         };
-        t.semi = t.semi;
+        t
+            .semi = match t.semi {
+            Some(o) => Some(o),
+            None => None,
+        };
         for i in self.after() {
             t = i.chain_itemmod(c, t)?;
         }
@@ -4636,7 +4966,8 @@ where
         for i in self.before() {
             t = i.chain_itemstatic(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4645,7 +4976,11 @@ where
         };
         t.vis = self.fold_chain_visibility(c, t.vis)?;
         t.static_token = t.static_token;
-        t.mutability = t.mutability;
+        t
+            .mutability = match t.mutability {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.ident = t.ident;
         t.colon_token = t.colon_token;
         t.ty = Box::new(self.fold_chain_type(c, *t.ty)?);
@@ -4666,7 +5001,8 @@ where
         for i in self.before() {
             t = i.chain_itemstruct(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4678,7 +5014,11 @@ where
         t.ident = t.ident;
         t.generics = self.fold_chain_generics(c, t.generics)?;
         t.fields = self.fold_chain_fields(c, t.fields)?;
-        t.semi_token = t.semi_token;
+        t
+            .semi_token = match t.semi_token {
+            Some(o) => Some(o),
+            None => None,
+        };
         for i in self.after() {
             t = i.chain_itemstruct(c, t)?;
         }
@@ -4693,7 +5033,8 @@ where
         for i in self.before() {
             t = i.chain_itemtrait(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4701,15 +5042,35 @@ where
             tmp
         };
         t.vis = self.fold_chain_visibility(c, t.vis)?;
-        t.unsafety = t.unsafety;
-        t.auto_token = t.auto_token;
+        t
+            .unsafety = match t.unsafety {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .auto_token = match t.auto_token {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.trait_token = t.trait_token;
         t.ident = t.ident;
         t.generics = self.fold_chain_generics(c, t.generics)?;
-        t.colon_token = t.colon_token;
-        t.supertraits = t.supertraits;
+        t
+            .colon_token = match t.colon_token {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .supertraits = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.supertraits {
+                tmp.push(self.fold_chain_typeparambound(c, p)?);
+            }
+            tmp
+        };
         t.brace_token = t.brace_token;
-        t.items = {
+        t
+            .items = {
             let mut tmp = vec![];
             for v in t.items {
                 tmp.push(self.fold_chain_traititem(c, v)?);
@@ -4730,7 +5091,8 @@ where
         for i in self.before() {
             t = i.chain_itemtraitalias(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4742,7 +5104,14 @@ where
         t.ident = t.ident;
         t.generics = self.fold_chain_generics(c, t.generics)?;
         t.eq_token = t.eq_token;
-        t.bounds = t.bounds;
+        t
+            .bounds = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.bounds {
+                tmp.push(self.fold_chain_typeparambound(c, p)?);
+            }
+            tmp
+        };
         t.semi_token = t.semi_token;
         for i in self.after() {
             t = i.chain_itemtraitalias(c, t)?;
@@ -4758,7 +5127,8 @@ where
         for i in self.before() {
             t = i.chain_itemtype(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4786,7 +5156,8 @@ where
         for i in self.before() {
             t = i.chain_itemunion(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4812,7 +5183,8 @@ where
         for i in self.before() {
             t = i.chain_itemuse(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4821,7 +5193,11 @@ where
         };
         t.vis = self.fold_chain_visibility(c, t.vis)?;
         t.use_token = t.use_token;
-        t.leading_colon = t.leading_colon;
+        t
+            .leading_colon = match t.leading_colon {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.tree = self.fold_chain_usetree(c, t.tree)?;
         t.semi_token = t.semi_token;
         for i in self.after() {
@@ -4870,7 +5246,8 @@ where
         for i in self.before() {
             t = i.chain_lifetimedef(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -4878,8 +5255,19 @@ where
             tmp
         };
         t.lifetime = self.fold_chain_lifetime(c, t.lifetime)?;
-        t.colon_token = t.colon_token;
-        t.bounds = t.bounds;
+        t
+            .colon_token = match t.colon_token {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .bounds = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.bounds {
+                tmp.push(self.fold_chain_lifetime(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_lifetimedef(c, t)?;
         }
@@ -5187,7 +5575,8 @@ where
         for i in self.before() {
             t = i.chain_local(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -5196,7 +5585,8 @@ where
         };
         t.let_token = t.let_token;
         t.pat = self.fold_chain_pat(c, t.pat)?;
-        t.init = match t.init {
+        t
+            .init = match t.init {
             Some(o) => Some((o.0, Box::new(self.fold_chain_expr(c, *o.1)?))),
             None => None,
         };
@@ -5234,8 +5624,12 @@ where
             t = i.chain_macrodelimiter(c, t)?;
         }
         t = match t {
-            syn::MacroDelimiter::Paren(tmp) => self.fold_chain_macrodelimiter_paren(c, (tmp))?,
-            syn::MacroDelimiter::Brace(tmp) => self.fold_chain_macrodelimiter_brace(c, (tmp))?,
+            syn::MacroDelimiter::Paren(tmp) => {
+                self.fold_chain_macrodelimiter_paren(c, (tmp))?
+            }
+            syn::MacroDelimiter::Brace(tmp) => {
+                self.fold_chain_macrodelimiter_brace(c, (tmp))?
+            }
             syn::MacroDelimiter::Bracket(tmp) => {
                 self.fold_chain_macrodelimiter_bracket(c, (tmp))?
             }
@@ -5464,7 +5858,14 @@ where
         }
         t.path = self.fold_chain_path(c, t.path)?;
         t.paren_token = t.paren_token;
-        t.nested = t.nested;
+        t
+            .nested = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.nested {
+                tmp.push(self.fold_chain_nestedmeta(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_metalist(c, t)?;
         }
@@ -5498,7 +5899,14 @@ where
         }
         t.colon2_token = t.colon2_token;
         t.lt_token = t.lt_token;
-        t.args = t.args;
+        t
+            .args = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.args {
+                tmp.push(self.fold_chain_genericmethodargument(c, p)?);
+            }
+            tmp
+        };
         t.gt_token = t.gt_token;
         for i in self.after() {
             t = i.chain_methodturbofish(c, t)?;
@@ -5576,7 +5984,14 @@ where
             t = i.chain_parenthesizedgenericarguments(c, t)?;
         }
         t.paren_token = t.paren_token;
-        t.inputs = t.inputs;
+        t
+            .inputs = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.inputs {
+                tmp.push(self.fold_chain_type(c, p)?);
+            }
+            tmp
+        };
         t.output = self.fold_chain_returntype(c, t.output)?;
         for i in self.after() {
             t = i.chain_parenthesizedgenericarguments(c, t)?;
@@ -5961,7 +6376,8 @@ where
         for i in self.before() {
             t = i.chain_patbox(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -5984,17 +6400,27 @@ where
         for i in self.before() {
             t = i.chain_patident(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t.by_ref = t.by_ref;
-        t.mutability = t.mutability;
+        t
+            .by_ref = match t.by_ref {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .mutability = match t.mutability {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.ident = t.ident;
-        t.subpat = match t.subpat {
+        t
+            .subpat = match t.subpat {
             Some(o) => Some((o.0, Box::new(self.fold_chain_pat(c, *o.1)?))),
             None => None,
         };
@@ -6012,7 +6438,8 @@ where
         for i in self.before() {
             t = i.chain_patlit(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6034,7 +6461,8 @@ where
         for i in self.before() {
             t = i.chain_patmacro(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6056,15 +6484,27 @@ where
         for i in self.before() {
             t = i.chain_pator(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t.leading_vert = t.leading_vert;
-        t.cases = t.cases;
+        t
+            .leading_vert = match t.leading_vert {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .cases = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.cases {
+                tmp.push(self.fold_chain_pat(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_pator(c, t)?;
         }
@@ -6079,14 +6519,16 @@ where
         for i in self.before() {
             t = i.chain_patpath(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t.qself = match t.qself {
+        t
+            .qself = match t.qself {
             Some(o) => Some(self.fold_chain_qself(c, o)?),
             None => None,
         };
@@ -6105,7 +6547,8 @@ where
         for i in self.before() {
             t = i.chain_patrange(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6129,7 +6572,8 @@ where
         for i in self.before() {
             t = i.chain_patreference(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6137,7 +6581,11 @@ where
             tmp
         };
         t.and_token = t.and_token;
-        t.mutability = t.mutability;
+        t
+            .mutability = match t.mutability {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.pat = Box::new(self.fold_chain_pat(c, *t.pat)?);
         for i in self.after() {
             t = i.chain_patreference(c, t)?;
@@ -6153,7 +6601,8 @@ where
         for i in self.before() {
             t = i.chain_patrest(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6175,7 +6624,8 @@ where
         for i in self.before() {
             t = i.chain_patslice(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6183,7 +6633,14 @@ where
             tmp
         };
         t.bracket_token = t.bracket_token;
-        t.elems = t.elems;
+        t
+            .elems = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.elems {
+                tmp.push(self.fold_chain_pat(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_patslice(c, t)?;
         }
@@ -6198,7 +6655,8 @@ where
         for i in self.before() {
             t = i.chain_patstruct(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6207,8 +6665,19 @@ where
         };
         t.path = self.fold_chain_path(c, t.path)?;
         t.brace_token = t.brace_token;
-        t.fields = t.fields;
-        t.dot2_token = t.dot2_token;
+        t
+            .fields = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.fields {
+                tmp.push(self.fold_chain_fieldpat(c, p)?);
+            }
+            tmp
+        };
+        t
+            .dot2_token = match t.dot2_token {
+            Some(o) => Some(o),
+            None => None,
+        };
         for i in self.after() {
             t = i.chain_patstruct(c, t)?;
         }
@@ -6223,7 +6692,8 @@ where
         for i in self.before() {
             t = i.chain_pattuple(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6231,7 +6701,14 @@ where
             tmp
         };
         t.paren_token = t.paren_token;
-        t.elems = t.elems;
+        t
+            .elems = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.elems {
+                tmp.push(self.fold_chain_pat(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_pattuple(c, t)?;
         }
@@ -6246,7 +6723,8 @@ where
         for i in self.before() {
             t = i.chain_pattuplestruct(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6269,7 +6747,8 @@ where
         for i in self.before() {
             t = i.chain_pattype(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6293,7 +6772,8 @@ where
         for i in self.before() {
             t = i.chain_patwild(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6315,8 +6795,19 @@ where
         for i in self.before() {
             t = i.chain_path(c, t)?;
         }
-        t.leading_colon = t.leading_colon;
-        t.segments = t.segments;
+        t
+            .leading_colon = match t.leading_colon {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .segments = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.segments {
+                tmp.push(self.fold_chain_pathsegment(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_path(c, t)?;
         }
@@ -6431,7 +6922,14 @@ where
         }
         t.lifetime = self.fold_chain_lifetime(c, t.lifetime)?;
         t.colon_token = t.colon_token;
-        t.bounds = t.bounds;
+        t
+            .bounds = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.bounds {
+                tmp.push(self.fold_chain_lifetime(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_predicatelifetime(c, t)?;
         }
@@ -6446,13 +6944,21 @@ where
         for i in self.before() {
             t = i.chain_predicatetype(c, t)?;
         }
-        t.lifetimes = match t.lifetimes {
+        t
+            .lifetimes = match t.lifetimes {
             Some(o) => Some(self.fold_chain_boundlifetimes(c, o)?),
             None => None,
         };
         t.bounded_ty = self.fold_chain_type(c, t.bounded_ty)?;
         t.colon_token = t.colon_token;
-        t.bounds = t.bounds;
+        t
+            .bounds = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.bounds {
+                tmp.push(self.fold_chain_typeparambound(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_predicatetype(c, t)?;
         }
@@ -6470,7 +6976,11 @@ where
         t.lt_token = t.lt_token;
         t.ty = Box::new(self.fold_chain_type(c, *t.ty)?);
         t.position = t.position;
-        t.as_token = t.as_token;
+        t
+            .as_token = match t.as_token {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.gt_token = t.gt_token;
         for i in self.after() {
             t = i.chain_qself(c, t)?;
@@ -6487,8 +6997,12 @@ where
             t = i.chain_rangelimits(c, t)?;
         }
         t = match t {
-            syn::RangeLimits::HalfOpen(tmp) => self.fold_chain_rangelimits_halfopen(c, (tmp))?,
-            syn::RangeLimits::Closed(tmp) => self.fold_chain_rangelimits_closed(c, (tmp))?,
+            syn::RangeLimits::HalfOpen(tmp) => {
+                self.fold_chain_rangelimits_halfopen(c, (tmp))?
+            }
+            syn::RangeLimits::Closed(tmp) => {
+                self.fold_chain_rangelimits_closed(c, (tmp))?
+            }
             _ => t,
         };
         for i in self.after() {
@@ -6547,24 +7061,32 @@ where
         for i in self.before() {
             t = i.chain_receiver(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
             }
             tmp
         };
-        t.reference = match t.reference {
-            Some(o) => Some((
-                o.0,
-                match o.1 {
-                    Some(o) => Some(self.fold_chain_lifetime(c, o)?),
-                    None => None,
-                },
-            )),
+        t
+            .reference = match t.reference {
+            Some(o) => {
+                Some((
+                    o.0,
+                    match o.1 {
+                        Some(o) => Some(self.fold_chain_lifetime(c, o)?),
+                        None => None,
+                    },
+                ))
+            }
             None => None,
         };
-        t.mutability = t.mutability;
+        t
+            .mutability = match t.mutability {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.self_token = t.self_token;
         for i in self.after() {
             t = i.chain_receiver(c, t)?;
@@ -6622,10 +7144,23 @@ where
         for i in self.before() {
             t = i.chain_signature(c, t)?;
         }
-        t.constness = t.constness;
-        t.asyncness = t.asyncness;
-        t.unsafety = t.unsafety;
-        t.abi = match t.abi {
+        t
+            .constness = match t.constness {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .asyncness = match t.asyncness {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .unsafety = match t.unsafety {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .abi = match t.abi {
             Some(o) => Some(self.fold_chain_abi(c, o)?),
             None => None,
         };
@@ -6633,8 +7168,16 @@ where
         t.ident = t.ident;
         t.generics = self.fold_chain_generics(c, t.generics)?;
         t.paren_token = t.paren_token;
-        t.inputs = t.inputs;
-        t.variadic = match t.variadic {
+        t
+            .inputs = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.inputs {
+                tmp.push(self.fold_chain_fnarg(c, p)?);
+            }
+            tmp
+        };
+        t
+            .variadic = match t.variadic {
             Some(o) => Some(self.fold_chain_variadic(c, o)?),
             None => None,
         };
@@ -6657,7 +7200,9 @@ where
             syn::Stmt::Local(tmp) => self.fold_chain_stmt_local(c, (tmp))?,
             syn::Stmt::Item(tmp) => self.fold_chain_stmt_item(c, (tmp))?,
             syn::Stmt::Expr(tmp) => self.fold_chain_stmt_expr(c, (tmp))?,
-            syn::Stmt::Semi(tmp_0, tmp_1) => self.fold_chain_stmt_semi(c, (tmp_0, tmp_1))?,
+            syn::Stmt::Semi(tmp_0, tmp_1) => {
+                self.fold_chain_stmt_semi(c, (tmp_0, tmp_1))?
+            }
             _ => t,
         };
         for i in self.after() {
@@ -6759,9 +7304,14 @@ where
         for i in self.before() {
             t = i.chain_traitbound(c, t)?;
         }
-        t.paren_token = t.paren_token;
+        t
+            .paren_token = match t.paren_token {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.modifier = self.fold_chain_traitboundmodifier(c, t.modifier)?;
-        t.lifetimes = match t.lifetimes {
+        t
+            .lifetimes = match t.lifetimes {
             Some(o) => Some(self.fold_chain_boundlifetimes(c, o)?),
             None => None,
         };
@@ -6826,7 +7376,9 @@ where
             syn::TraitItem::Method(tmp) => self.fold_chain_traititem_method(c, (tmp))?,
             syn::TraitItem::Type(tmp) => self.fold_chain_traititem_type(c, (tmp))?,
             syn::TraitItem::Macro(tmp) => self.fold_chain_traititem_macro(c, (tmp))?,
-            syn::TraitItem::Verbatim(tmp) => self.fold_chain_traititem_verbatim(c, (tmp))?,
+            syn::TraitItem::Verbatim(tmp) => {
+                self.fold_chain_traititem_verbatim(c, (tmp))?
+            }
             _ => t,
         };
         for i in self.after() {
@@ -6948,7 +7500,8 @@ where
         for i in self.before() {
             t = i.chain_traititemconst(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6959,7 +7512,8 @@ where
         t.ident = t.ident;
         t.colon_token = t.colon_token;
         t.ty = self.fold_chain_type(c, t.ty)?;
-        t.default = match t.default {
+        t
+            .default = match t.default {
             Some(o) => Some((o.0, self.fold_chain_expr(c, o.1)?)),
             None => None,
         };
@@ -6978,7 +7532,8 @@ where
         for i in self.before() {
             t = i.chain_traititemmacro(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -6986,7 +7541,11 @@ where
             tmp
         };
         t.mac = self.fold_chain_macro(c, t.mac)?;
-        t.semi_token = t.semi_token;
+        t
+            .semi_token = match t.semi_token {
+            Some(o) => Some(o),
+            None => None,
+        };
         for i in self.after() {
             t = i.chain_traititemmacro(c, t)?;
         }
@@ -7001,7 +7560,8 @@ where
         for i in self.before() {
             t = i.chain_traititemmethod(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -7009,11 +7569,16 @@ where
             tmp
         };
         t.sig = self.fold_chain_signature(c, t.sig)?;
-        t.default = match t.default {
+        t
+            .default = match t.default {
             Some(o) => Some(self.fold_chain_block(c, o)?),
             None => None,
         };
-        t.semi_token = t.semi_token;
+        t
+            .semi_token = match t.semi_token {
+            Some(o) => Some(o),
+            None => None,
+        };
         for i in self.after() {
             t = i.chain_traititemmethod(c, t)?;
         }
@@ -7028,7 +7593,8 @@ where
         for i in self.before() {
             t = i.chain_traititemtype(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -7038,9 +7604,21 @@ where
         t.type_token = t.type_token;
         t.ident = t.ident;
         t.generics = self.fold_chain_generics(c, t.generics)?;
-        t.colon_token = t.colon_token;
-        t.bounds = t.bounds;
-        t.default = match t.default {
+        t
+            .colon_token = match t.colon_token {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .bounds = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.bounds {
+                tmp.push(self.fold_chain_typeparambound(c, p)?);
+            }
+            tmp
+        };
+        t
+            .default = match t.default {
             Some(o) => Some((o.0, self.fold_chain_type(c, o.1)?)),
             None => None,
         };
@@ -7424,19 +8002,33 @@ where
         for i in self.before() {
             t = i.chain_typebarefn(c, t)?;
         }
-        t.lifetimes = match t.lifetimes {
+        t
+            .lifetimes = match t.lifetimes {
             Some(o) => Some(self.fold_chain_boundlifetimes(c, o)?),
             None => None,
         };
-        t.unsafety = t.unsafety;
-        t.abi = match t.abi {
+        t
+            .unsafety = match t.unsafety {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .abi = match t.abi {
             Some(o) => Some(self.fold_chain_abi(c, o)?),
             None => None,
         };
         t.fn_token = t.fn_token;
         t.paren_token = t.paren_token;
-        t.inputs = t.inputs;
-        t.variadic = match t.variadic {
+        t
+            .inputs = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.inputs {
+                tmp.push(self.fold_chain_barefnarg(c, p)?);
+            }
+            tmp
+        };
+        t
+            .variadic = match t.variadic {
             Some(o) => Some(self.fold_chain_variadic(c, o)?),
             None => None,
         };
@@ -7472,7 +8064,14 @@ where
             t = i.chain_typeimpltrait(c, t)?;
         }
         t.impl_token = t.impl_token;
-        t.bounds = t.bounds;
+        t
+            .bounds = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.bounds {
+                tmp.push(self.fold_chain_typeparambound(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_typeimpltrait(c, t)?;
         }
@@ -7532,7 +8131,8 @@ where
         for i in self.before() {
             t = i.chain_typeparam(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -7540,10 +8140,26 @@ where
             tmp
         };
         t.ident = t.ident;
-        t.colon_token = t.colon_token;
-        t.bounds = t.bounds;
-        t.eq_token = t.eq_token;
-        t.default = match t.default {
+        t
+            .colon_token = match t.colon_token {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .bounds = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.bounds {
+                tmp.push(self.fold_chain_typeparambound(c, p)?);
+            }
+            tmp
+        };
+        t
+            .eq_token = match t.eq_token {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .default = match t.default {
             Some(o) => Some(self.fold_chain_type(c, o)?),
             None => None,
         };
@@ -7562,7 +8178,9 @@ where
             t = i.chain_typeparambound(c, t)?;
         }
         t = match t {
-            syn::TypeParamBound::Trait(tmp) => self.fold_chain_typeparambound_trait(c, (tmp))?,
+            syn::TypeParamBound::Trait(tmp) => {
+                self.fold_chain_typeparambound_trait(c, (tmp))?
+            }
             syn::TypeParamBound::Lifetime(tmp) => {
                 self.fold_chain_typeparambound_lifetime(c, (tmp))?
             }
@@ -7640,7 +8258,8 @@ where
         for i in self.before() {
             t = i.chain_typepath(c, t)?;
         }
-        t.qself = match t.qself {
+        t
+            .qself = match t.qself {
             Some(o) => Some(self.fold_chain_qself(c, o)?),
             None => None,
         };
@@ -7660,8 +8279,16 @@ where
             t = i.chain_typeptr(c, t)?;
         }
         t.star_token = t.star_token;
-        t.const_token = t.const_token;
-        t.mutability = t.mutability;
+        t
+            .const_token = match t.const_token {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .mutability = match t.mutability {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.elem = Box::new(self.fold_chain_type(c, *t.elem)?);
         for i in self.after() {
             t = i.chain_typeptr(c, t)?;
@@ -7678,11 +8305,16 @@ where
             t = i.chain_typereference(c, t)?;
         }
         t.and_token = t.and_token;
-        t.lifetime = match t.lifetime {
+        t
+            .lifetime = match t.lifetime {
             Some(o) => Some(self.fold_chain_lifetime(c, o)?),
             None => None,
         };
-        t.mutability = t.mutability;
+        t
+            .mutability = match t.mutability {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.elem = Box::new(self.fold_chain_type(c, *t.elem)?);
         for i in self.after() {
             t = i.chain_typereference(c, t)?;
@@ -7714,8 +8346,19 @@ where
         for i in self.before() {
             t = i.chain_typetraitobject(c, t)?;
         }
-        t.dyn_token = t.dyn_token;
-        t.bounds = t.bounds;
+        t
+            .dyn_token = match t.dyn_token {
+            Some(o) => Some(o),
+            None => None,
+        };
+        t
+            .bounds = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.bounds {
+                tmp.push(self.fold_chain_typeparambound(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_typetraitobject(c, t)?;
         }
@@ -7731,7 +8374,14 @@ where
             t = i.chain_typetuple(c, t)?;
         }
         t.paren_token = t.paren_token;
-        t.elems = t.elems;
+        t
+            .elems = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.elems {
+                tmp.push(self.fold_chain_type(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_typetuple(c, t)?;
         }
@@ -7845,7 +8495,14 @@ where
             t = i.chain_usegroup(c, t)?;
         }
         t.brace_token = t.brace_token;
-        t.items = t.items;
+        t
+            .items = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.items {
+                tmp.push(self.fold_chain_usetree(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_usegroup(c, t)?;
         }
@@ -8036,7 +8693,8 @@ where
         for i in self.before() {
             t = i.chain_variadic(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -8058,7 +8716,8 @@ where
         for i in self.before() {
             t = i.chain_variant(c, t)?;
         }
-        t.attrs = {
+        t
+            .attrs = {
             let mut tmp = vec![];
             for v in t.attrs {
                 tmp.push(self.fold_chain_attribute(c, v)?);
@@ -8067,7 +8726,8 @@ where
         };
         t.ident = t.ident;
         t.fields = self.fold_chain_fields(c, t.fields)?;
-        t.discriminant = match t.discriminant {
+        t
+            .discriminant = match t.discriminant {
             Some(o) => Some((o.0, self.fold_chain_expr(c, o.1)?)),
             None => None,
         };
@@ -8117,7 +8777,11 @@ where
         }
         t.pub_token = t.pub_token;
         t.paren_token = t.paren_token;
-        t.in_token = t.in_token;
+        t
+            .in_token = match t.in_token {
+            Some(o) => Some(o),
+            None => None,
+        };
         t.path = Box::new(self.fold_chain_path(c, *t.path)?);
         for i in self.after() {
             t = i.chain_visrestricted(c, t)?;
@@ -8136,7 +8800,9 @@ where
         t = match t {
             syn::Visibility::Public(tmp) => self.fold_chain_visibility_public(c, (tmp))?,
             syn::Visibility::Crate(tmp) => self.fold_chain_visibility_crate(c, (tmp))?,
-            syn::Visibility::Restricted(tmp) => self.fold_chain_visibility_restricted(c, (tmp))?,
+            syn::Visibility::Restricted(tmp) => {
+                self.fold_chain_visibility_restricted(c, (tmp))?
+            }
             _ => t,
         };
         for i in self.after() {
@@ -8217,7 +8883,14 @@ where
             t = i.chain_whereclause(c, t)?;
         }
         t.where_token = t.where_token;
-        t.predicates = t.predicates;
+        t
+            .predicates = {
+            let mut tmp = syn::punctuated::Punctuated::new();
+            for p in t.predicates {
+                tmp.push(self.fold_chain_wherepredicate(c, p)?);
+            }
+            tmp
+        };
         for i in self.after() {
             t = i.chain_whereclause(c, t)?;
         }
@@ -8233,7 +8906,9 @@ where
             t = i.chain_wherepredicate(c, t)?;
         }
         t = match t {
-            syn::WherePredicate::Type(tmp) => self.fold_chain_wherepredicate_type(c, (tmp))?,
+            syn::WherePredicate::Type(tmp) => {
+                self.fold_chain_wherepredicate_type(c, (tmp))?
+            }
             syn::WherePredicate::Lifetime(tmp) => {
                 self.fold_chain_wherepredicate_lifetime(c, (tmp))?
             }

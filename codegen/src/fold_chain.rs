@@ -284,6 +284,20 @@ fn gen_fold_type(field: &String, ty: &Type) -> TokenStream {
                 Box::new(#ts)
             }
         }
+        Type::Punctuated(p) => {
+            let field = format_tokenstream!("{}", field);
+            let ts = gen_fold_type(&"p".to_string(), &*p.element);
+
+            quote! {
+                {
+                    let mut tmp = syn::punctuated::Punctuated::new();
+                    for p in #field {
+                        tmp.push(#ts);
+                    }
+                    tmp
+                }
+            }
+        }
         _ => format_tokenstream!("{}", field),
     }
 }

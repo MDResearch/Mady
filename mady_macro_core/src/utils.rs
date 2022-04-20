@@ -32,7 +32,6 @@ pub fn to_upper_camel_case(name: String) -> String {
 
 pub struct Marker {
     ty_name: TokenStream,
-    fn_ty: Ident,
 }
 
 impl Marker {
@@ -43,13 +42,11 @@ impl Marker {
         let ty = method_node.to_ident();
         let tys = arg_nodes.into_iter().map(|x| x.to_ident());
         let ty_trait = format_ident!("Grad{}", to_upper_camel_case(method_name.to_string()));
-        let fn_ty = format_ident!("grad_{}", method_name.to_string());
 
         Self {
             ty_name: quote! {
                 <#ty as #ty_trait<#(#tys),*>>
             },
-            fn_ty,
         }
     }
 
@@ -59,18 +56,12 @@ impl Marker {
     {
         let tys = arg_nodes.into_iter().map(|x| x.to_ident());
         let ty_trait = format_ident!("GradFn{}", to_upper_camel_case(fn_name.to_string()));
-        let fn_ty = format_ident!("grad_fn_{}", fn_name.to_string());
 
         Self {
             ty_name: quote! {
                 <#ty_trait<#(#tys),*>>
             },
-            fn_ty,
         }
-    }
-
-    pub fn grad_fn(&self) -> Ident {
-        self.fn_ty.clone()
     }
 
     pub fn grad(&self, n: usize) -> TokenStream {
@@ -88,4 +79,18 @@ impl Marker {
             #fn_name::#ident
         }
     }
+}
+
+pub fn grad_method<T>(method_name: T) -> Ident
+where
+    T: ToString,
+{
+    format_ident!("grad_{}", method_name.to_string())
+}
+
+pub fn grad_call<T>(fn_name: T) -> Ident
+where
+    T: ToString,
+{
+    format_ident!("grad_fn_{}", fn_name.to_string())
 }

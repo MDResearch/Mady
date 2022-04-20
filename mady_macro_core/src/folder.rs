@@ -4,6 +4,7 @@ use syn::{parse_quote, Error};
 
 use super::utils::{to_upper_camel_case, Marker};
 use crate::gen::Chain;
+use crate::utils::grad_method;
 
 use super::parser::{Recorder, Register, Var};
 
@@ -50,15 +51,7 @@ impl Chain for AfterFolder {
             .peek_stack()
             .ok_or(Error::new(t.span(), "cannot find node when fold binary"))?;
 
-        let grad_fn = Marker::new_method(
-            op,
-            parent,
-            c.graph
-                .to_edges(parent)
-                .map(|x| c.graph.to_node(x))
-                .collect(),
-        )
-        .grad_fn();
+        let grad_fn = grad_method(op);
 
         let mut destruct = vec![];
         for i in c.graph.to_edges(parent) {
@@ -74,11 +67,56 @@ impl Chain for AfterFolder {
                     .ok_or(Error::new(t.span(), "not find right node"))?,
             )
             .to_ident();
-        let parent = parent.to_ident();
 
         let ast = parse_quote! {
-            (#parent, (#(#destruct),*)) = #grad_fn(#right)
+            {
+                let mady_tmp;
+                (mady_tmp, (#(#destruct),*)) = #grad_fn(#right);
+                mady_tmp
+            }
         };
         Ok(ast)
     }
+
+    // fn chain_expr_methodcall(&mut self, c: &mut Self::Input, t: syn::ExprMethodCall) -> Result<syn::Expr, Self::Err> {
+
+    //     let parent = c
+    //         .peek_stack()
+    //         .ok_or(Error::new(t.span(), "cannot find node when fold binary"))?;
+
+    //     let grad_fn = Marker::new_method(
+    //         op,
+    //         parent,
+    //         c.graph
+    //             .to_edges(parent)
+    //             .map(|x| c.graph.to_node(x))
+    //             .collect(),
+    //     )
+    //     .grad_fn();
+
+    //     let mut destruct = vec![];
+    //     for i in c.graph.to_edges(parent) {
+    //         destruct.push(i.to_ident())
+    //     }
+
+    //     let right = c
+    //         .graph
+    //         .to_node(
+    //             c.graph
+    //                 .to_edges(parent)
+    //                 .nth(1)
+    //                 .ok_or(Error::new(t.span(), "not find right node"))?,
+    //         )
+    //         .to_ident();
+
+    //     let ast = parse_quote! {
+    //         {
+    //             let mady_tmp;
+    //             (mady_tmp, (#(#destruct),*)) = #grad_fn(#right);
+    //             mady_tmp
+    //         }
+    //     };
+    //     Ok(ast)
+
+    // }
 }

@@ -22,7 +22,9 @@ struct AfterLinker(Rc<RefCell<Linker>>);
 
 impl Linker {
     pub fn new() -> Self {
-        Default::default()
+        let mut tmp = Self::default();
+        tmp.stack.push(Default::default());
+        tmp
     }
 }
 
@@ -62,25 +64,48 @@ impl Chain for AfterLinker {
             .stack
             .pop()
             .ok_or(Error::new(t.span(), "unexpect out of block"))?;
-            
+
         Ok(t)
     }
 
-    fn chain_path(&mut self, c: &mut Self::Input, t: syn::Path) -> Result<syn::Path, Self::Err> {
-        if let Some(v) = t.get_ident() {
-            let hash = into_hash(v);
+    // fn chain_path(&mut self, c: &mut Self::Input, t: syn::Path) -> Result<syn::Path, Self::Err> {
+    //     if let Some(v) = t.get_ident() {
+    //         let hash = into_hash(v);
 
-            for s in self.0.borrow_mut().stack.iter().rev() {
-                for (var_hash, node) in s.iter().rev() {
-                    if &hash == var_hash {
-                        c.push_stack(*node);
-                        return Ok(t);
-                    }
+    //         for s in self.0.borrow_mut().stack.iter().rev() {
+    //             for (var_hash, node) in s.iter().rev() {
+    //                 if &hash == var_hash {
+    //                     c.push_stack(*node);
+    //                     return Ok(t);
+    //                 }
+    //             }
+    //         }
+    //     }
+
+    //     Err(Error::new(t.span(), "cannot find var in block stack"))
+    // }
+
+    fn chain_expr_path(
+        &mut self,
+        c: &mut Self::Input,
+        t: syn::ExprPath,
+    ) -> Result<syn::Expr, Self::Err> {
+        let hash = into_hash(
+            t.path
+                .get_ident()
+                .ok_or(Error::new(t.span(), "cannot find var in block stack"))?,
+        );
+
+        for s in self.0.borrow_mut().stack.iter().rev() {
+            for (var_hash, node) in s.iter().rev() {
+                if &hash == var_hash {
+                    c.push_stack(*node);
+                    break;
                 }
             }
         }
 
-        Err(Error::new(t.span(), "cannot find var in block stack"))
+        Ok(syn::Expr::Path(t))
     }
 
     fn chain_pat_ident(
