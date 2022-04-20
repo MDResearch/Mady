@@ -92,6 +92,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "mady_macro_core"
+version = "0.1.0"
+
+[[package]]
 name = "mady_math"
 version = "0.1.0"
 

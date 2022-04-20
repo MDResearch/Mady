@@ -1,8 +1,8 @@
-use proc_macro2::TokenStream;
-use quote::quote;
-use syn::{Error, ItemFn, PatType};
+use proc_macro2::{Ident, TokenStream};
+use quote::{format_ident, quote};
+use syn::Error;
 
-use super::graph::{Graph, Node};
+use super::graph::{Edge, Graph, Node};
 use crate::gen::*;
 
 type ParserChian = dyn Chain<Input = Recorder, Err = Error>;
@@ -16,13 +16,13 @@ pub struct Parser {
 #[derive(Debug, Default)]
 pub struct Recorder {
     pub graph: Graph<Var, Var>,
-    pub stack: Vec<Node<Var, Var>>,
+    stack: Vec<Node>,
 }
 
 #[derive(Debug)]
 pub struct Var {
-    pub ty: VarType,
-    pub annotate: Option<PatType>,
+    ty: VarType,
+    annotate: Option<syn::TypePath>,
 }
 
 #[derive(Debug)]
@@ -39,6 +39,63 @@ pub enum VarType {
 
 pub trait Register {
     fn register(self, p: Parser) -> Parser;
+}
+
+impl Var {
+    pub fn new(ty: VarType) -> Self {
+        Self { ty, annotate: None }
+    }
+
+    pub fn annotate(&self) -> &Option<syn::TypePath> {
+        &self.annotate
+    }
+
+    pub fn annotate_mut(&mut self) -> &mut Option<syn::TypePath> {
+        &mut self.annotate
+    }
+
+    pub fn ty(&self) -> &VarType {
+        &self.ty
+    }
+
+    pub fn ty_mut(&mut self) -> &mut VarType {
+        &mut self.ty
+    }
+}
+
+impl Recorder {
+    pub fn new() -> Self {
+        Default::default()
+    }
+
+    pub fn peek_stack(&self) -> Option<Node> {
+        self.stack.last().map(|x| *x)
+    }
+
+    pub fn pop_stack(&mut self) -> Option<Node> {
+        self.stack.pop()
+    }
+
+    pub fn push_stack(&mut self, value: Node) {
+        self.stack.push(value)
+    }
+
+    pub fn add_node_and_push_stack(&mut self, value: Var) -> Node {
+        let node = self.graph.add_node(value);
+        self.stack.push(node);
+        node
+    }
+
+    pub fn add_tmp_edges<T>(&mut self, parent: Node, children: T) -> Vec<Edge>
+    where
+        T: IntoIterator<Item = Node>,
+    {
+        let mut edges = vec![];
+        for i in children {
+            edges.push(self.graph.add_edge(Var::new(VarType::TMP), (parent, i)))
+        }
+        edges
+    }
 }
 
 impl Parser {
@@ -69,12 +126,13 @@ impl Parser {
         self
     }
 
-    pub fn gen(mut self, t: ItemFn) -> TokenStream {
+    pub fn gen(mut self, t: syn::ItemFn) -> (TokenStream, Recorder) {
         let mut chain = Recorder::default();
-        match self.fold_chain_item_fn(&mut chain, t) {
+        let ts = match self.fold_chain_item_fn(&mut chain, t) {
             Ok(i) => quote! {#i},
             Err(s) => s.to_compile_error(),
-        }
+        };
+        (ts, chain)
     }
 }
 
