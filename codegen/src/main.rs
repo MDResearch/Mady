@@ -16,8 +16,11 @@ const SYN: &str = include_str!("syn.json");
 
 fn main() {
     let defs: Definitions = from_str(SYN).unwrap();
-    write_out("mady_macro/src/gen/chain.rs", chain::gen(&defs));
-    write_out("mady_macro/src/gen/fold_chain.rs", fold_chain::gen(&defs));
+    write_out("mady_macro_core/src/gen/chain.rs", chain::gen(&defs));
+    write_out(
+        "mady_macro_core/src/gen/fold_chain.rs",
+        fold_chain::gen(&defs),
+    );
 }
 
 fn write_out(path: &str, content: TokenStream) {
