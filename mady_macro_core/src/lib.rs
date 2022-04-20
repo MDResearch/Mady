@@ -1,19 +1,15 @@
-mod gen;
 mod annotator;
 mod folder;
+mod gen;
 mod graph;
 mod linker;
 mod parser;
 mod utils;
 
-
-
 use folder::Folder;
 use graph::{Edge, Node};
 use linker::Linker;
 use parser::Parser;
-use proc_macro2::Ident;
-use quote::format_ident;
 
 pub fn new() -> Parser {
     Parser::new()

@@ -62,7 +62,7 @@ impl Chain for AfterLinker {
             .stack
             .pop()
             .ok_or(Error::new(t.span(), "unexpect out of block"))?;
-            
+
         Ok(t)
     }
 

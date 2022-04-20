@@ -1,5 +1,5 @@
 use std::collections::LinkedList;
-use std::marker::{Copy, PhantomData};
+use std::marker::Copy;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Node(usize);

@@ -25,7 +25,7 @@ impl Edge {
 }
 
 pub fn to_upper_camel_case(name: String) -> String {
-    name.split("_")
+    name.split('_')
         .map(|x| format!("{}{}", x[..1].to_uppercase(), &x[1..]))
         .collect::<String>()
 }
@@ -57,7 +57,7 @@ impl Marker {
     where
         T: ToString,
     {
-        let tys = arg_nodes.into_iter().map(|x| x.to_ident());
+        let tys = arg_nodes.iter().map(|x| x.to_ident());
         let ty_trait = format_ident!("GradFn{}", to_upper_camel_case(fn_name.to_string()));
         let fn_ty = format_ident!("grad_fn_{}", fn_name.to_string());
 

@@ -1,11 +1,10 @@
-use quote::{format_ident, quote};
 use syn::spanned::Spanned;
 use syn::{parse_quote, Error};
 
-use super::utils::{to_upper_camel_case, Marker};
+use super::utils::Marker;
 use crate::gen::Chain;
 
-use super::parser::{Recorder, Register, Var};
+use super::parser::{Recorder, Register};
 
 #[derive(Default)]
 pub struct Folder;

@@ -1,5 +1,5 @@
-use proc_macro2::{Ident, TokenStream};
-use quote::{format_ident, quote};
+use proc_macro2::TokenStream;
+use quote::quote;
 use syn::Error;
 
 use super::graph::{Edge, Graph, Node};
@@ -69,7 +69,7 @@ impl Recorder {
     }
 
     pub fn peek_stack(&self) -> Option<Node> {
-        self.stack.last().map(|x| *x)
+        self.stack.last().copied()
     }
 
     pub fn pop_stack(&mut self) -> Option<Node> {
