@@ -1,11 +1,8 @@
 use crate::gen::Chain;
 
-use super::graph::{Edge, Node};
-use proc_macro2::{Ident, TokenStream};
-use quote::{format_ident, quote};
-use syn::{parse_quote, spanned::Spanned, Error, PatPath};
+use syn::{spanned::Spanned, Error};
 
-use super::parser::{Recorder, Register, Var, VarType};
+use super::parser::{Recorder, Register};
 
 #[derive(Default)]
 pub struct Annotator;
