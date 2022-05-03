@@ -1,10 +1,13 @@
 use std::collections::LinkedList;
+use std::fmt::Debug;
 use std::marker::Copy;
+use tabbycat::attributes;
+use tabbycat::{GraphBuilder, GraphType, Identity, Stmt, StmtList};
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Hash, Eq)]
 pub struct Node(usize);
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Hash, Eq)]
 pub struct Edge(usize, usize);
 
 pub struct IterTopological<'a, N, E> {
@@ -16,7 +19,7 @@ pub struct IterTopological<'a, N, E> {
 /// fast add edit node & edge
 /// cannot remove node & edge
 /// raw method only
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Graph<N, E> {
     table: Vec<(N, Vec<(E, usize)>)>, // extend of children
 }
@@ -24,6 +27,40 @@ pub struct Graph<N, E> {
 impl<N, E> Default for Graph<N, E> {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl<N, E> Debug for Graph<N, E> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut stmt = StmtList::new();
+
+        for n in self.nodes() {
+            let from = Identity::String(n.index().to_string());
+            stmt = stmt.add_node(from.clone(), None, None);
+
+            for e in self.to_edges(n) {
+                let to = Identity::String(self.to_node(e).index().to_string());
+                stmt = stmt.add_node(to.clone(), None, None);
+                let edge = e.index();
+                stmt = stmt.add_edge(
+                    tabbycat::Edge::head_node(from.clone(), None)
+                        .arrow_to_node(to, None)
+                        .add_attrpair(attributes::xlabel(format!("{},{}", edge.0, edge.1))),
+                );
+            }
+        }
+
+        write!(
+            f,
+            "```\n\n{}\n\n```",
+            GraphBuilder::default()
+                .graph_type(GraphType::DiGraph)
+                .strict(false)
+                .id(Identity::String("Mady".to_string()))
+                .stmts(stmt)
+                .build()
+                .unwrap()
+        )
     }
 }
 
@@ -79,16 +116,23 @@ impl<N, E> Graph<N, E> {
     }
 
     /// find all edges by node
-    pub fn to_edges(&self, node: Node) -> impl Iterator<Item = Edge> + '_ {
+    pub fn to_edges(&self, node: Node) -> Vec<Edge> {
         let index = node.index();
-        self.table[index]
-            .1
-            .iter()
-            .map(move |(_, i)| Edge::new(index, *i))
+        (0..self.table[index].1.len())
+            .map(|i| Edge::new(index, i))
+            .collect()
+    }
+
+    /// find all node by node
+    pub fn to_nodes(&self, node: Node) -> Vec<Node> {
+        self.to_edges(node)
+            .into_iter()
+            .map(|x| self.to_node(x))
+            .collect()
     }
 
     /// get graph root
-    pub fn roots(&self) -> impl Iterator<Item = Node> + '_ {
+    pub fn roots(&self) -> Vec<Node> {
         let mut in_degree = vec![false; self.table.len()];
         self.table
             .iter()
@@ -98,18 +142,23 @@ impl<N, E> Graph<N, E> {
             .into_iter()
             .enumerate()
             .filter_map(|(i, x)| (!x).then(|| Node::new(i)))
+            .collect()
     }
 
     // get all node
-    pub fn nodes(&self) -> impl Iterator<Item = Node> + '_ {
-        self.table.iter().enumerate().map(|(i, ..)| Node::new(i))
+    pub fn nodes(&self) -> Vec<Node> {
+        self.table
+            .iter()
+            .enumerate()
+            .map(|(i, ..)| Node::new(i))
+            .collect()
     }
 
     // O(N^2)
     // N is amount of edge
     /// use topolohival sort to get the order of caculation
-    pub fn topological_iter<'a>(&'a self) -> impl Iterator<Item = Node> + 'a {
-        IterTopological::new(self)
+    pub fn topological_iter(&self) -> Vec<Node> {
+        IterTopological::new(self).collect()
     }
 }
 
@@ -208,7 +257,7 @@ mod tests {
 
         g.add_edge("", (node_a, node_c));
 
-        assert_eq!(g.topological_iter().next().unwrap(), node_e);
+        assert_eq!(g.roots()[0], node_e);
     }
 
     #[test]
@@ -222,7 +271,7 @@ mod tests {
         g.add_edge("", (node_b, node_a));
         g.add_edge("", (node_c, node_b));
 
-        let nodes: Vec<_> = g.topological_iter().collect();
+        let nodes: Vec<_> = g.topological_iter();
 
         dbg!(&nodes);
 
@@ -248,7 +297,7 @@ mod tests {
         g.add_edge("", (node_a, node_c));
         g.add_edge("", (node_f, node_c));
 
-        let nodes: Vec<_> = g.topological_iter().collect();
+        let nodes: Vec<_> = g.topological_iter();
 
         dbg!(&nodes);
 

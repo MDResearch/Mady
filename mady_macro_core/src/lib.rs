@@ -1,6 +1,7 @@
 mod annotator;
 mod folder;
 mod gen;
+mod generator;
 mod graph;
 mod linker;
 mod parser;
@@ -8,7 +9,6 @@ mod utils;
 
 use annotator::Annotator;
 use folder::Folder;
-use graph::{Edge, Node};
 use linker::Linker;
 use parser::Parser;
 
@@ -21,6 +21,7 @@ pub fn new() -> Parser {
 
 #[cfg(test)]
 mod tests {
+    use quote::quote;
     use syn::parse_quote;
 
     use super::*;
@@ -28,12 +29,19 @@ mod tests {
     #[test]
     fn gen() {
         let ts = parse_quote! {
-            fn a(a:usize, b:usize) -> usize {
-                a + b
+            fn a(a:usize) -> usize {
+                a * a * a * a * a * a
             }
         };
 
-        let (ts, graph) = new().gen(ts);
+        let mut parser = new();
+
+        let ts = match parser.gen(ts) {
+            Ok(ts) => quote! {#ts},
+            Err(err) => err.to_compile_error(),
+        };
+
+        let graph = parser.unwarp();
 
         dbg!(ts.to_string());
         dbg!(graph);

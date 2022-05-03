@@ -1,10 +1,22 @@
-use super::{Edge, Node};
+use crate::{
+    graph::{Edge, Graph, Node},
+    parser::{Var, VarType},
+};
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
+use syn::{parse_quote, TypePath};
 
 impl Node {
     pub fn to_ident(&self) -> Ident {
         format_ident!("mady_tmp_{}", self.index())
+    }
+
+    pub fn to_type_ident(&self) -> Ident {
+        format_ident!("mady_ty_{}", self.index())
+    }
+
+    pub fn to_grad_type_ident(&self) -> Ident {
+        format_ident!("mady_gty_{}", self.index())
     }
 
     pub fn to_string(&self) -> String {
@@ -18,9 +30,28 @@ impl Edge {
         format_ident!("mady_tmp_{}_{}", index.0, index.1)
     }
 
+    pub fn to_type_ident(&self) -> Ident {
+        let index = self.index();
+        format_ident!("mady_ty_{}_{}", index.0, index.1)
+    }
+
+    pub fn to_grad_type_ident(&self) -> Ident {
+        let index = self.index();
+        format_ident!("mady_gty_{}_{}", index.0, index.1)
+    }
+
     pub fn to_string(&self) -> String {
         let index = self.index();
         format!("mady_tmp_{}_{}", index.0, index.1)
+    }
+}
+
+impl Graph<Var, Var> {
+    pub fn out_nodes(&self) -> Vec<Node> {
+        self.nodes()
+            .into_iter()
+            .filter(|x| self.node_weight(*x).ty() == &VarType::Out)
+            .collect()
     }
 }
 
@@ -39,8 +70,8 @@ impl Marker {
     where
         T: ToString,
     {
-        let ty = method_node.to_ident();
-        let tys = arg_nodes.into_iter().map(|x| x.to_ident());
+        let ty = method_node.to_type_ident();
+        let tys = arg_nodes.into_iter().map(|x| x.to_type_ident());
         let ty_trait = format_ident!("Grad{}", to_upper_camel_case(method_name.to_string()));
 
         Self {
@@ -54,7 +85,7 @@ impl Marker {
     where
         T: ToString,
     {
-        let tys = arg_nodes.iter().map(|x| x.to_ident());
+        let tys = arg_nodes.iter().map(|x| x.to_type_ident());
         let ty_trait = format_ident!("GradFn{}", to_upper_camel_case(fn_name.to_string()));
 
         Self {
@@ -64,18 +95,18 @@ impl Marker {
         }
     }
 
-    pub fn grad(&self, n: usize) -> TokenStream {
+    pub fn grad(&self, n: usize) -> TypePath {
         let fn_name = self.ty_name.clone();
         let ident = format_ident!("G{}", n);
-        quote! {
+        parse_quote! {
             #fn_name::#ident
         }
     }
 
-    pub fn output(&self, n: usize) -> TokenStream {
+    pub fn output(&self, n: usize) -> TypePath {
         let fn_name = self.ty_name.clone();
         let ident = format_ident!("O{}", n);
-        quote! {
+        parse_quote! {
             #fn_name::#ident
         }
     }
@@ -93,4 +124,18 @@ where
     T: ToString,
 {
     format_ident!("grad_fn_{}", fn_name.to_string())
+}
+
+pub fn ops_to_string(op: &syn::BinOp) -> Option<&'static str> {
+    Some(match op {
+        syn::BinOp::Add(_) => "add",
+        syn::BinOp::Sub(_) => "sub",
+        syn::BinOp::Mul(_) => "mul",
+        syn::BinOp::Div(_) => "div",
+        // syn::BinOp::AddEq(_) => todo!(),
+        // syn::BinOp::SubEq(_) => todo!(),
+        // syn::BinOp::MulEq(_) => todo!(),
+        // syn::BinOp::DivEq(_) => todo!(),
+        _ => return None,
+    })
 }

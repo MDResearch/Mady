@@ -13,5 +13,8 @@ quote = "1.0"
 features = ["full", "extra-traits", "fold", "parsing"]
 version = "1.0"
 
+[dependencies.mady_macro_core]
+path = "./../mady_macro_core"
+
 [lib]
 proc-macro = true

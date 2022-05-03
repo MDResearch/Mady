@@ -1,9 +1,14 @@
-use proc_macro2::TokenStream;
-use quote::quote;
-use syn::Error;
+use std::time::{SystemTime, UNIX_EPOCH};
+
+use proc_macro2::{Span, TokenStream};
+use quote::{format_ident, quote};
+use syn::{parse_quote, Error, Token};
 
 use super::graph::{Edge, Graph, Node};
-use crate::gen::*;
+use crate::{
+    gen::*,
+    generator::{gen_backward, gen_declare, gen_types},
+};
 
 type ParserChian = dyn Chain<Input = Recorder, Err = Error>;
 
@@ -11,29 +16,37 @@ type ParserChian = dyn Chain<Input = Recorder, Err = Error>;
 pub struct Parser {
     before: Vec<Box<ParserChian>>,
     after: Vec<Box<ParserChian>>,
+    recorder: Option<Recorder>,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Recorder {
     pub graph: Graph<Var, Var>,
     stack: Vec<Node>,
+    // todo; add attr
+    counter: usize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Var {
     ty: VarType,
     annotate: Option<syn::TypePath>,
+    span: Span,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum VarType {
     /// not init
     TMP,
-    /// init to Zero::zero
+    /// init to first assign
+    /// store gradient
     Grad,
-    /// not init, `if ...{...}`
+    /// init to first assign
+    /// store gradient & return as output
+    Out,
+    /// init to false, `if ...{...}`
     IF,
-    /// not init, `if...{...}else{...}`
+    /// init to false, `if...{...}else{...}`
     IFEL,
 }
 
@@ -42,8 +55,12 @@ pub trait Register {
 }
 
 impl Var {
-    pub fn new(ty: VarType) -> Self {
-        Self { ty, annotate: None }
+    pub fn new(ty: VarType, span: Span) -> Self {
+        Self {
+            ty,
+            annotate: None,
+            span,
+        }
     }
 
     pub fn annotate(&self) -> &Option<syn::TypePath> {
@@ -60,6 +77,10 @@ impl Var {
 
     pub fn ty_mut(&mut self) -> &mut VarType {
         &mut self.ty
+    }
+
+    pub fn span(&self) -> Span {
+        self.span
     }
 }
 
@@ -92,9 +113,24 @@ impl Recorder {
     {
         let mut edges = vec![];
         for i in children {
-            edges.push(self.graph.add_edge(Var::new(VarType::TMP), (parent, i)))
+            edges.push(
+                self.graph
+                    .add_edge(Var::new(VarType::TMP, Span::call_site()), (parent, i)),
+            )
         }
         edges
+    }
+
+    pub fn block_level(&self) -> usize {
+        self.counter
+    }
+
+    pub fn enter_block(&mut self) {
+        self.counter += 1;
+    }
+
+    pub fn exit_block(&mut self) {
+        self.counter += 1;
     }
 }
 
@@ -126,13 +162,46 @@ impl Parser {
         self
     }
 
-    pub fn gen(mut self, t: syn::ItemFn) -> (TokenStream, Recorder) {
-        let mut chain = Recorder::default();
-        let ts = match self.fold_chain_item_fn(&mut chain, t) {
-            Ok(i) => quote! {#i},
-            Err(s) => s.to_compile_error(),
+    pub fn gen(&mut self, t: syn::ItemFn) -> Result<TokenStream, Error> {
+        let mut chain = Recorder::new();
+        let mut func = self.fold_chain_itemfn(&mut chain, t)?;
+        let types = gen_types(&chain)?;
+        let mut declare = gen_declare(&chain)?;
+        let time = (SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+            & (usize::MAX as u128)) as usize;
+        let mod_name = format_ident!("mady_{}", time);
+        let func_name = func.sig.ident.clone();
+        let vis = match func.vis.clone() {
+            syn::Visibility::Public(p) => quote! {
+                #p #func_name;
+            },
+            syn::Visibility::Restricted(p) => quote! {
+                #p #func_name;
+            },
+            syn::Visibility::Crate(_) | syn::Visibility::Inherited => quote! {},
         };
-        (ts, chain)
+        func.vis = syn::Visibility::Public(syn::VisPublic {
+            pub_token: <Token!(pub)>::default(),
+        });
+        declare.extend(func.block.stmts);
+        func.block.stmts = declare;
+        self.recorder = Some(chain);
+        Ok(quote! {
+            use #mod_name::#func_name;
+            #vis
+            mod #mod_name{
+                use super::*;
+                #(#types)*
+                #func
+            }
+        })
+    }
+
+    pub fn unwarp(self) -> Recorder {
+        self.recorder.unwrap()
     }
 }
 

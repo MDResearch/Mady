@@ -1,5 +1,10 @@
 //! about the std ops trait
 
+pub trait MadyChain<Rhs = Self> {
+    type O0;
+    fn mady_chain(self, i: Rhs) -> Self::O0;
+}
+
 /// return one in a type
 ///
 /// one must can
@@ -102,6 +107,24 @@ pub trait GradMax {
 // pub trait Gradtanh {
 //     fn grad_tanh(i: Self) -> (Self, (Self,));
 // }
+
+mod impl_chain {
+    use super::MadyChain;
+    use crate::impl_trait;
+
+    macro_rules! parse {
+        ($ty:ident) => {
+            impl MadyChain for $ty {
+                type O0 = Self;
+                fn mady_chain(self, rhs: Self) -> Self::O0 {
+                    self * rhs
+                }
+            }
+        };
+    }
+
+    impl_trait![parse, u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize, f32, f64];
+}
 
 mod impl_one {
     use super::One;
@@ -254,7 +277,7 @@ mod impl_add {
 
     macro_rules! parse {
         ($ty:ident) => {
-            impl GradAdd<Self> for $ty {
+            impl GradAdd for $ty {
                 type O0 = Self;
                 type G0 = Self;
                 type G1 = Self;
@@ -274,7 +297,7 @@ mod impl_sub {
 
     macro_rules! parse {
         ($ty:ident) => {
-            impl GradSub<Self> for $ty {
+            impl GradSub for $ty {
                 type O0 = Self;
                 type G0 = Self;
                 type G1 = Self;
@@ -294,7 +317,7 @@ mod impl_mul {
 
     macro_rules! parse {
         ($ty:ident) => {
-            impl GradMul<Self> for $ty {
+            impl GradMul for $ty {
                 type O0 = Self;
                 type G0 = Self;
                 type G1 = Self;
@@ -314,7 +337,7 @@ mod impl_div {
 
     macro_rules! parse {
         ($ty:ident) => {
-            impl GradDiv<Self> for $ty {
+            impl GradDiv for $ty {
                 type O0 = Self;
                 type G0 = Self;
                 type G1 = Self;

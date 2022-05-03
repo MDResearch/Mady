@@ -1,13 +1,14 @@
-extern crate proc_macro;
+use mady_macro_core;
 use proc_macro::TokenStream;
+use quote::quote;
 use syn::{parse_macro_input, ItemFn};
-
-mod graph;
-mod parser;
 
 #[proc_macro_attribute]
 pub fn grad(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let parser = parser::grad::Parser::new();
-    let itemfn = parse_macro_input!(input as ItemFn);
-    parser.gen(itemfn).into()
+    let mut parser = mady_macro_core::new();
+    let ts = match parser.gen(parse_macro_input!(input as ItemFn)) {
+        Ok(ts) => quote! {#ts},
+        Err(err) => err.to_compile_error(),
+    };
+    TokenStream::from(ts)
 }

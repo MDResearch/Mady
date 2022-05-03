@@ -1,4 +1,4 @@
-// use mady::prelude::*;
+use mady::prelude::*;
 // use rand::prelude::*;
 // use rand_distr::{Distribution, Normal, Standard};
 // use std::fs::File;
@@ -90,4 +90,68 @@
 //     *w = w.clone() - d * Array0::new(0.0005);
 // }
 
-fn main() {}
+fn main() {
+}
+
+// use mady_0::a;
+// mod mady_0 {
+//     use super::*;
+
+//     type mady_ty_2 = <mady_ty_0 as GradAdd<mady_ty_1>>::O0;
+//     type mady_gty_2 = <mady_ty_2 as One>::O0;
+//     type mady_ty_2_0 = <mady_ty_0 as GradAdd<mady_ty_1>>::G0;
+//     type mady_gty_0 = <mady_gty_2 as MadyChain<mady_ty_2_0>>::O0;
+//     type mady_ty_2_1 = <mady_ty_0 as GradAdd<mady_ty_1>>::G1;
+//     type mady_gty_1 = <mady_gty_2 as MadyChain<mady_ty_2_1>>::O0;
+//     type mady_ty_1 = usize;
+//     type mady_ty_0 = usize;
+//     pub fn a(a: usize, b: usize) -> (usize, (mady_gty_0, mady_gty_1)) {
+//         let mady_tmp_0: mady_gty_0;
+//         let mady_tmp_1: mady_gty_1;
+//         let mady_tmp_2: mady_gty_2;
+//         let mady_tmp_2_0: mady_ty_2_0;
+//         let mady_tmp_2_1: mady_ty_2_1;
+//         {
+//             let mady_return = {
+//                 let mady_tmp;
+//                 (mady_tmp, (mady_tmp_2_0, mady_tmp_2_1)) = a.grad_add(b);
+//                 mady_tmp
+//             };
+//             mady_tmp_2 = mady_ty_2::one();
+//             mady_tmp_0 = mady_tmp_2.mady_chain(mady_tmp_2_0);
+//             mady_tmp_1 = mady_tmp_2.mady_chain(mady_tmp_2_1);
+//             (mady_return, (mady_tmp_0, mady_tmp_1))
+//         }
+//     }
+// }
+
+use mady_0::a;
+mod mady_0 {
+    use super::*;
+    type mady_ty_2 = <mady_ty_0 as GradAdd<mady_ty_1>>::O0;
+    type mady_gty_2 = <mady_ty_2 as One>::O0;
+    type mady_ty_2_0 = <mady_ty_0 as GradAdd<mady_ty_1>>::G0;
+    type mady_gty_0 = <mady_gty_2 as MadyChain<mady_ty_2_0>>::O0;
+    type mady_ty_2_1 = <mady_ty_0 as GradAdd<mady_ty_1>>::G1;
+    type mady_gty_1 = <mady_gty_2 as MadyChain<mady_ty_2_1>>::O0;
+    type mady_ty_1 = usize;
+    type mady_ty_0 = usize;
+    pub fn a(a: usize, b: usize) -> (usize, (mady_gty_0, mady_gty_1)) {
+        let mady_tmp_0: mady_gty_0;
+        let mady_tmp_1: mady_gty_1;
+        let mady_tmp_2: mady_gty_2;
+        let mady_tmp_2_0: mady_ty_2_0;
+        let mady_tmp_2_1: mady_ty_2_1;
+        {
+            let mady_return = {
+                let mady_tmp;
+                (mady_tmp, (mady_tmp_2_0, mady_tmp_2_1)) = a.grad_add(b);
+                mady_tmp
+            };
+            mady_tmp_2 = mady_ty_2::one();
+            mady_tmp_0 = mady_tmp_2.mady_chain(mady_tmp_2_0);
+            mady_tmp_1 = mady_tmp_2.mady_chain(mady_tmp_2_1);
+            (mady_return, (mady_tmp_0, mady_tmp_1))
+        }
+    }
+}

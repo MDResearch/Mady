@@ -40,12 +40,9 @@ impl Chain for BeforeLinker {
     type Input = Recorder;
     type Err = Error;
 
-    fn chain_block(
-        &mut self,
-        _c: &mut Self::Input,
-        t: syn::Block,
-    ) -> Result<syn::Block, Self::Err> {
+    fn chain_block(&mut self, c: &mut Self::Input, t: syn::Block) -> Result<syn::Block, Self::Err> {
         self.0.borrow_mut().stack.push(Default::default());
+        c.enter_block();
         Ok(t)
     }
 }
@@ -54,17 +51,13 @@ impl Chain for AfterLinker {
     type Input = Recorder;
     type Err = Error;
 
-    fn chain_block(
-        &mut self,
-        _c: &mut Self::Input,
-        t: syn::Block,
-    ) -> Result<syn::Block, Self::Err> {
+    fn chain_block(&mut self, c: &mut Self::Input, t: syn::Block) -> Result<syn::Block, Self::Err> {
         self.0
             .borrow_mut()
             .stack
             .pop()
             .ok_or(Error::new(t.span(), "unexpect out of block"))?;
-
+        c.exit_block();
         Ok(t)
     }
 
@@ -85,11 +78,11 @@ impl Chain for AfterLinker {
     //     Err(Error::new(t.span(), "cannot find var in block stack"))
     // }
 
-    fn chain_expr_path(
+    fn chain_exprpath(
         &mut self,
         c: &mut Self::Input,
         t: syn::ExprPath,
-    ) -> Result<syn::Expr, Self::Err> {
+    ) -> Result<syn::ExprPath, Self::Err> {
         let hash = into_hash(
             t.path
                 .get_ident()
@@ -104,41 +97,44 @@ impl Chain for AfterLinker {
                 }
             }
         }
-
-        Ok(syn::Expr::Path(t))
+        Ok(t)
     }
 
-    fn chain_pat_ident(
+    fn chain_patident(
         &mut self,
         c: &mut Self::Input,
         t: syn::PatIdent,
-    ) -> Result<syn::Pat, Self::Err> {
-        let node = c.add_node_and_push_stack(Var::new(VarType::Grad));
+    ) -> Result<syn::PatIdent, Self::Err> {
+        let node =if c.block_level() == 0 {
+            c.add_node_and_push_stack(Var::new(VarType::Out, t.span()))
+        }else{
+            c.add_node_and_push_stack(Var::new(VarType::Grad, t.span()))
+        };
+        
         self.0
             .borrow_mut()
             .stack
             .last_mut()
             .ok_or(Error::new(t.span(), "unexpect out of block"))?
             .push_back((into_hash(&t.ident), node));
-
-        Ok(syn::Pat::Ident(t))
+        Ok(t)
     }
 
-    fn chain_expr_binary(
+    fn chain_exprbinary(
         &mut self,
         c: &mut Self::Input,
         t: syn::ExprBinary,
-    ) -> Result<syn::Expr, Self::Err> {
+    ) -> Result<syn::ExprBinary, Self::Err> {
         let right = c
             .pop_stack()
             .ok_or(Error::new(t.span(), "cannot find varible at `right` side"))?;
         let left = c
             .pop_stack()
             .ok_or(Error::new(t.span(), "cannot find varible at `left` side"))?;
-        let parent = c.add_node_and_push_stack(Var::new(VarType::Grad));
+        let parent = c.add_node_and_push_stack(Var::new(VarType::Grad, t.span()));
         c.add_tmp_edges(parent, [left, right]);
 
-        Ok(syn::Expr::Binary(t))
+        Ok(t)
     }
 }
 
