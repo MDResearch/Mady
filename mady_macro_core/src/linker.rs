@@ -105,12 +105,12 @@ impl Chain for AfterLinker {
         c: &mut Self::Input,
         t: syn::PatIdent,
     ) -> Result<syn::PatIdent, Self::Err> {
-        let node =if c.block_level() == 0 {
+        let node = if c.block_level() == 0 {
             c.add_node_and_push_stack(Var::new(VarType::Out, t.span()))
-        }else{
+        } else {
             c.add_node_and_push_stack(Var::new(VarType::Grad, t.span()))
         };
-        
+
         self.0
             .borrow_mut()
             .stack

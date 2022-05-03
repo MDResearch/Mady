@@ -5,7 +5,7 @@ use crate::gen::Chain;
 use crate::generator::gen_backward;
 use crate::utils::{grad_method, ops_to_string};
 
-use super::parser::{Recorder, Register, VarType};
+use super::parser::{Recorder, Register};
 
 #[derive(Default)]
 pub struct Folder;

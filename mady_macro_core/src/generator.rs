@@ -1,9 +1,8 @@
-use proc_macro2::{Ident, TokenStream};
 use syn::{parse_quote, Error};
 
 use crate::parser::{Recorder, VarType};
 
-use std::collections::{hash_map::RandomState, HashMap, HashSet};
+use std::collections::HashSet;
 
 pub fn gen_declare(c: &Recorder) -> Result<Vec<syn::Stmt>, Error> {
     let mut stmts = vec![];

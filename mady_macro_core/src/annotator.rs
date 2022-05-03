@@ -1,5 +1,5 @@
 use crate::gen::Chain;
-use crate::graph::Node;
+
 use crate::utils::{ops_to_string, Marker};
 
 use syn::{spanned::Spanned, Error};
@@ -59,7 +59,7 @@ impl Chain for AfterAnnotator {
             *c.graph.edge_weight_mut(e).annotate_mut() = Some(marker.grad(i))
         }
         *c.graph.node_weight_mut(parent).annotate_mut() = Some(marker.output(0));
-        
+
         Ok(t)
     }
 }

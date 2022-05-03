@@ -2,12 +2,12 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
-use syn::{parse_quote, Error, Token};
+use syn::{Error, Token};
 
 use super::graph::{Edge, Graph, Node};
 use crate::{
     gen::*,
-    generator::{gen_backward, gen_declare, gen_types},
+    generator::{gen_declare, gen_types},
 };
 
 type ParserChian = dyn Chain<Input = Recorder, Err = Error>;

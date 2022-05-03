@@ -2,7 +2,7 @@ use std::collections::LinkedList;
 use std::fmt::Debug;
 use std::marker::Copy;
 use tabbycat::attributes;
-use tabbycat::{GraphBuilder, GraphType, Identity, Stmt, StmtList};
+use tabbycat::{GraphBuilder, GraphType, Identity, StmtList};
 
 #[derive(Debug, Clone, Copy, PartialEq, Hash, Eq)]
 pub struct Node(usize);
