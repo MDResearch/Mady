@@ -1,15 +1,10 @@
-use std::{
-    hash::Hash,
-    time::{SystemTime, UNIX_EPOCH},
-};
-
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{Error, Token};
 
-use crate::graph::{Edge, Graph, Node};
 use crate::gen::*;
 use crate::generator::{gen_declare, gen_types};
+use crate::graph::{Edge, Graph, Node};
 use crate::utils::into_hash;
 
 type ParserChian = dyn Chain<Input = Recorder, Err = Error>;

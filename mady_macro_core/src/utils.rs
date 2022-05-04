@@ -4,10 +4,9 @@ use crate::{
 };
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
-use syn::{parse_quote, TypePath};
-use std::hash::{Hash, Hasher};
 use std::collections::hash_map::DefaultHasher;
-
+use std::hash::{Hash, Hasher};
+use syn::{parse_quote, TypePath};
 
 impl Node {
     pub fn to_ident(&self) -> Ident {

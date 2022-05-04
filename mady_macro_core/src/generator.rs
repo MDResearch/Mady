@@ -103,7 +103,7 @@ pub fn gen_types(c: &Recorder) -> Result<Vec<syn::Stmt>, Error> {
                 edge.span(),
                 "cannot infer type, please add type here",
             ))?;
-            
+
             stmts.push(parse_quote! {
                 type #ty = #annotate;
             });
@@ -112,7 +112,7 @@ pub fn gen_types(c: &Recorder) -> Result<Vec<syn::Stmt>, Error> {
             if !grads.contains(&to_node) {
                 grads.insert(to_node);
                 let grad_ty = to_node.to_grad_type_ident();
-    
+
                 stmts.push(parse_quote! {
                     type #grad_ty = <#node_grad_ty as MadyChain<#ty>>::O0;
                 });
