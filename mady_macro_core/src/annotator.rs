@@ -1,7 +1,11 @@
+use std::str::FromStr;
+
 use crate::gen::Chain;
 
 use crate::utils::{ops_to_string, Marker};
 
+use proc_macro2::TokenStream;
+use syn::parse_quote;
 use syn::{spanned::Spanned, Error};
 
 use crate::parser::{Recorder, Register};
@@ -60,6 +64,38 @@ impl Chain for AfterAnnotator {
         }
         *c.graph.node_weight_mut(parent).annotate_mut() = Some(marker.output(0));
 
+        Ok(t)
+    }
+
+    fn chain_litint(
+        &mut self,
+        c: &mut Self::Input,
+        t: syn::LitInt,
+    ) -> Result<syn::LitInt, Self::Err> {
+        let node = c
+            .peek_stack()
+            .ok_or(Error::new(t.span(), "cannot find node when fold lit int"))?;
+        if t.suffix().is_empty() {
+            return Err(Error::new(t.span(), "cannot infer type, add type here"));
+        }
+        let ty = TokenStream::from_str(t.suffix()).unwrap();
+        *c.graph.node_weight_mut(node).annotate_mut() = Some(parse_quote! {#ty});
+        Ok(t)
+    }
+
+    fn chain_litfloat(
+        &mut self,
+        c: &mut Self::Input,
+        t: syn::LitFloat,
+    ) -> Result<syn::LitFloat, Self::Err> {
+        let node = c
+            .peek_stack()
+            .ok_or(Error::new(t.span(), "cannot find node when fold lit float"))?;
+        if t.suffix().is_empty() {
+            return Err(Error::new(t.span(), "cannot infer type, add type here"));
+        }
+        let ty = TokenStream::from_str(t.suffix()).unwrap();
+        *c.graph.node_weight_mut(node).annotate_mut() = Some(parse_quote! {#ty});
         Ok(t)
     }
 }

@@ -30,7 +30,7 @@ mod tests {
     fn gen() {
         let ts = parse_quote! {
             fn a(a:usize) -> usize {
-                a * a * a * a * a * a
+                a + 10_usize
             }
         };
 
@@ -40,10 +40,9 @@ mod tests {
             Ok(ts) => quote! {#ts},
             Err(err) => err.to_compile_error(),
         };
+        dbg!(ts.to_string());
 
         let graph = parser.unwarp();
-
-        dbg!(ts.to_string());
         dbg!(graph);
     }
 }

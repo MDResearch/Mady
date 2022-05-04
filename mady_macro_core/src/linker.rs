@@ -60,23 +60,6 @@ impl Chain for AfterLinker {
         Ok(t)
     }
 
-    // fn chain_path(&mut self, c: &mut Self::Input, t: syn::Path) -> Result<syn::Path, Self::Err> {
-    //     if let Some(v) = t.get_ident() {
-    //         let hash = into_hash(v);
-
-    //         for s in self.0.borrow_mut().stack.iter().rev() {
-    //             for (var_hash, node) in s.iter().rev() {
-    //                 if &hash == var_hash {
-    //                     c.push_stack(*node);
-    //                     return Ok(t);
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     Err(Error::new(t.span(), "cannot find var in block stack"))
-    // }
-
     fn chain_exprpath(
         &mut self,
         c: &mut Self::Input,
@@ -85,18 +68,18 @@ impl Chain for AfterLinker {
         let hash = into_hash(
             t.path
                 .get_ident()
-                .ok_or(Error::new(t.span(), "cannot find var in block stack"))?,
+                .ok_or(Error::new(t.span(), "cannot convert to ident"))?,
         );
 
         for s in self.0.borrow_mut().stack.iter().rev() {
             for (var_hash, node) in s.iter().rev() {
                 if &hash == var_hash {
                     c.push_stack(*node);
-                    break;
+                    return Ok(t);
                 }
             }
         }
-        Ok(t)
+        Err(Error::new(t.span(), "cannot find var in block stack"))
     }
 
     fn chain_patident(
@@ -133,6 +116,16 @@ impl Chain for AfterLinker {
         let parent = c.add_node_and_push_stack(Var::new(VarType::Grad, t.span()));
         c.add_tmp_edges(parent, [left, right]);
 
+        Ok(t)
+    }
+
+    fn chain_litint(&mut self, c: &mut Self::Input, t: syn::LitInt) -> Result<syn::LitInt, Self::Err> {
+        c.add_node_and_push_stack(Var::new(VarType::Grad, t.span()));
+        Ok(t)
+    }
+
+    fn chain_litfloat(&mut self, c: &mut Self::Input, t: syn::LitFloat) -> Result<syn::LitFloat, Self::Err> {
+        c.add_node_and_push_stack(Var::new(VarType::Grad, t.span()));
         Ok(t)
     }
 }
