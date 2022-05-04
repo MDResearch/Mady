@@ -5,14 +5,12 @@ use std::{
 
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
-use syn::{parse_quote, Error, Token};
+use syn::{Error, Token};
 
-use super::graph::{Edge, Graph, Node};
-use crate::{
-    gen::*,
-    generator::{gen_backward, gen_declare, gen_types},
-    utils::into_hash,
-};
+use crate::graph::{Edge, Graph, Node};
+use crate::gen::*;
+use crate::generator::{gen_declare, gen_types};
+use crate::utils::into_hash;
 
 type ParserChian = dyn Chain<Input = Recorder, Err = Error>;
 

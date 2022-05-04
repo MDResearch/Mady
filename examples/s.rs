@@ -90,8 +90,7 @@ use mady::prelude::*;
 //     *w = w.clone() - d * Array0::new(0.0005);
 // }
 
-fn main() {
-}
+fn main() {}
 
 // use mady_0::a;
 // mod mady_0 {
@@ -125,7 +124,6 @@ fn main() {
 //     }
 // }
 
-use mady_0::a;
 mod mady_0 {
     use super::*;
     type mady_ty_2 = <mady_ty_0 as GradAdd<mady_ty_1>>::O0;
