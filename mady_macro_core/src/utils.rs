@@ -5,6 +5,9 @@ use crate::{
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
 use syn::{parse_quote, TypePath};
+use std::hash::{Hash, Hasher};
+use std::collections::hash_map::DefaultHasher;
+
 
 impl Node {
     pub fn to_ident(&self) -> Ident {
@@ -138,4 +141,13 @@ pub fn ops_to_string(op: &syn::BinOp) -> Option<&'static str> {
         // syn::BinOp::DivEq(_) => todo!(),
         _ => return None,
     })
+}
+
+pub fn into_hash<T>(v: &T) -> u64
+where
+    T: Hash,
+{
+    let mut hasher = DefaultHasher::new();
+    v.hash(&mut hasher);
+    hasher.finish()
 }

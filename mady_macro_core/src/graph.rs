@@ -35,11 +35,11 @@ impl<N, E> Debug for Graph<N, E> {
         let mut stmt = StmtList::new();
 
         for n in self.nodes() {
-            let from = Identity::String(n.index().to_string());
+            let from = Identity::Usize(n.index());
             stmt = stmt.add_node(from.clone(), None, None);
 
             for e in self.to_edges(n) {
-                let to = Identity::String(self.to_node(e).index().to_string());
+                let to = Identity::Usize(self.to_node(e).index());
                 stmt = stmt.add_node(to.clone(), None, None);
                 let edge = e.index();
                 stmt = stmt.add_edge(

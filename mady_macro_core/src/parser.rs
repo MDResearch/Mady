@@ -1,4 +1,7 @@
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{
+    hash::Hash,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
@@ -8,6 +11,7 @@ use super::graph::{Edge, Graph, Node};
 use crate::{
     gen::*,
     generator::{gen_backward, gen_declare, gen_types},
+    utils::into_hash,
 };
 
 type ParserChian = dyn Chain<Input = Recorder, Err = Error>;
@@ -167,13 +171,8 @@ impl Parser {
         let mut func = self.fold_chain_itemfn(&mut chain, t)?;
         let types = gen_types(&chain)?;
         let mut declare = gen_declare(&chain)?;
-        let time = (SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_nanos()
-            & (usize::MAX as u128)) as usize;
-        let mod_name = format_ident!("mady_{}", time);
         let func_name = func.sig.ident.clone();
+        let mod_name = format_ident!("mady_{}", into_hash(&func.sig.ident));
         let vis = match func.vis.clone() {
             syn::Visibility::Public(p) => quote! {
                 #p #func_name;

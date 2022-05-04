@@ -1,7 +1,5 @@
 use std::cell::RefCell;
-use std::collections::hash_map::DefaultHasher;
 use std::collections::LinkedList;
-use std::hash::{Hash, Hasher};
 use std::rc::Rc;
 
 use syn::spanned::Spanned;
@@ -10,6 +8,7 @@ use syn::Error;
 use super::graph::Node;
 use super::parser::{Recorder, Register, Var, VarType};
 use crate::gen::Chain;
+use crate::utils::into_hash;
 
 #[derive(Default)]
 pub struct Linker {
@@ -105,12 +104,12 @@ impl Chain for AfterLinker {
         c: &mut Self::Input,
         t: syn::PatIdent,
     ) -> Result<syn::PatIdent, Self::Err> {
-        let node =if c.block_level() == 0 {
+        let node = if c.block_level() == 0 {
             c.add_node_and_push_stack(Var::new(VarType::Out, t.span()))
-        }else{
+        } else {
             c.add_node_and_push_stack(Var::new(VarType::Grad, t.span()))
         };
-        
+
         self.0
             .borrow_mut()
             .stack
@@ -136,13 +135,4 @@ impl Chain for AfterLinker {
 
         Ok(t)
     }
-}
-
-fn into_hash<T>(v: T) -> u64
-where
-    T: Hash,
-{
-    let mut hasher = DefaultHasher::new();
-    v.hash(&mut hasher);
-    hasher.finish()
 }
