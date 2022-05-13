@@ -2,13 +2,13 @@ use std::str::FromStr;
 
 use crate::gen::Chain;
 
-use crate::utils::{ops_to_string, Marker};
+use crate::utils::{null, ops_to_string, Marker};
 
 use proc_macro2::TokenStream;
 use syn::parse_quote;
 use syn::{spanned::Spanned, Error};
 
-use crate::parser::{Recorder, Register};
+use crate::parser::{Parser, Recorder, Register};
 
 #[derive(Default)]
 pub struct Annotator;
@@ -22,7 +22,7 @@ impl Annotator {
 }
 
 impl Register for Annotator {
-    fn register(self, p: super::parser::Parser) -> super::parser::Parser {
+    fn register(self, p: Parser) -> Parser {
         p.add_after(AfterAnnotator)
     }
 }
@@ -63,6 +63,17 @@ impl Chain for AfterAnnotator {
             *c.graph.edge_weight_mut(e).annotate_mut() = Some(marker.grad(i))
         }
         *c.graph.node_weight_mut(parent).annotate_mut() = Some(marker.output(0));
+
+        Ok(t)
+    }
+
+    fn chain_local(&mut self, c: &mut Self::Input, t: syn::Local) -> Result<syn::Local, Self::Err> {
+        // dump left node
+        let left = c.pop_stack().ok_or(Error::new(
+            t.span(),
+            "cannot dump varible when fold local, may be it's contain unsupport systax",
+        ))?;
+        *c.graph.node_weight_mut(left).annotate_mut() = Some(null());
 
         Ok(t)
     }

@@ -1,6 +1,6 @@
 use syn::{parse_quote, Error};
 
-use crate::parser::{Recorder, VarType};
+use crate::{parser::{Recorder, VarType}, error::ParseError};
 
 use std::collections::HashSet;
 
@@ -59,12 +59,12 @@ pub fn gen_backward(c: &Recorder) -> Result<Vec<syn::Stmt>, Error> {
 
             if grads.contains(&t) {
                 stmts.push(parse_quote! {
-                    #to_node += #node.mady_chain(#edge);
+                    #to_node += #node.mady_chain(#edge).clone();
                 });
             } else {
                 grads.insert(t);
                 stmts.push(parse_quote! {
-                    #to_node = #node.mady_chain(#edge);
+                    #to_node = #node.mady_chain(#edge).clone();
                 });
             }
         }
@@ -82,10 +82,7 @@ pub fn gen_types(c: &Recorder) -> Result<Vec<syn::Stmt>, Error> {
         let ty = n.to_type_ident();
         let node = c.graph.node_weight(n);
         let node_grad_ty = n.to_grad_type_ident();
-        let annotate = node.annotate().clone().ok_or(Error::new(
-            node.span(),
-            "cannot infer type, please add type here",
-        ))?;
+        let annotate = node.annotate().clone().ok_or(ParseError::CantInferType.new(node.span()))?;
         stmts.push(parse_quote! {
             type #ty = #annotate;
         });
@@ -99,10 +96,7 @@ pub fn gen_types(c: &Recorder) -> Result<Vec<syn::Stmt>, Error> {
         for e in c.graph.to_edges(n) {
             let ty = e.to_type_ident();
             let edge = c.graph.edge_weight(e);
-            let annotate = edge.annotate().clone().ok_or(Error::new(
-                edge.span(),
-                "cannot infer type, please add type here",
-            ))?;
+            let annotate = edge.annotate().clone().ok_or(ParseError::CantInferType.new(edge.span()))?;
 
             stmts.push(parse_quote! {
                 type #ty = #annotate;

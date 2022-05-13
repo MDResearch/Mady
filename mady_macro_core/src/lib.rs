@@ -6,6 +6,7 @@ mod graph;
 mod linker;
 mod parser;
 mod utils;
+mod error;
 
 use annotator::Annotator;
 use folder::Folder;
@@ -30,17 +31,25 @@ mod tests {
     fn gen() {
         let ts = parse_quote! {
             fn a(a:usize) -> usize {
-                a + 10_usize
+                let mut b = a;
+                b = b * a;
+                b = b * a;
+                b = b * a;
+                b
             }
         };
 
         let mut parser = new();
 
-        let ts = match parser.gen(ts) {
-            Ok(ts) => quote! {#ts},
-            Err(err) => err.to_compile_error(),
-        };
-        dbg!(ts.to_string());
+        match parser.gen(ts) {
+            Ok(ts) => {
+                dbg!(quote! {#ts}.to_string());
+            }
+            Err(err) => {
+                dbg!((err.span().start(), err.span().end()));
+                dbg!(err.to_string());
+            }
+        }
 
         let graph = parser.unwarp();
         dbg!(graph);

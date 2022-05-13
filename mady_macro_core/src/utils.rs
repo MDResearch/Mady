@@ -150,3 +150,9 @@ where
     v.hash(&mut hasher);
     hasher.finish()
 }
+
+pub fn null() -> TypePath {
+    parse_quote! {
+        MadyNull
+    }
+}

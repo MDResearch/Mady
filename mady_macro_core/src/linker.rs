@@ -5,10 +5,11 @@ use std::rc::Rc;
 use syn::spanned::Spanned;
 use syn::Error;
 
-use super::graph::Node;
-use super::parser::{Recorder, Register, Var, VarType};
+use crate::error::ParseError;
 use crate::gen::Chain;
-use crate::utils::into_hash;
+use crate::graph::Node;
+use crate::parser::{Parser, Recorder, Register, Var, VarType};
+use crate::utils::{into_hash, null};
 
 #[derive(Default)]
 pub struct Linker {
@@ -28,10 +29,45 @@ impl Linker {
 }
 
 impl Register for Linker {
-    fn register(self, p: super::parser::Parser) -> super::parser::Parser {
+    fn register(self, p: Parser) -> Parser {
         let share = Rc::new(RefCell::new(self));
         p.add_before(BeforeLinker(share.clone()))
             .add_after(AfterLinker(share))
+    }
+}
+
+impl Linker {
+    fn enter_block(&mut self) {
+        self.stack.push(Default::default());
+    }
+
+    fn exit_block(&mut self) {
+        // should never out of block
+        self.stack.pop().unwrap();
+    }
+
+    fn new_var(&mut self, hash: u64, node: Node) {
+        // should never out of block
+        self.stack
+            .last_mut()
+            .map(|x| x.push_back((hash, node)))
+            .unwrap();
+    }
+
+    fn replace_phantom(&mut self, hash: u64, new: Node) -> Option<()> {
+        self.stack
+            .iter_mut()
+            .rev()
+            .flat_map(|x| x.iter_mut().rev())
+            .find_map(|(x, n)| (x == &hash).then(|| *n = new))
+    }
+
+    fn find_var(&self, hash: u64) -> Option<Node> {
+        self.stack
+            .iter()
+            .rev()
+            .flat_map(|x| x.iter().rev())
+            .find_map(|(x, n)| (x == &hash).then(|| *n))
     }
 }
 
@@ -40,7 +76,7 @@ impl Chain for BeforeLinker {
     type Err = Error;
 
     fn chain_block(&mut self, c: &mut Self::Input, t: syn::Block) -> Result<syn::Block, Self::Err> {
-        self.0.borrow_mut().stack.push(Default::default());
+        self.0.borrow_mut().enter_block();
         c.enter_block();
         Ok(t)
     }
@@ -51,11 +87,7 @@ impl Chain for AfterLinker {
     type Err = Error;
 
     fn chain_block(&mut self, c: &mut Self::Input, t: syn::Block) -> Result<syn::Block, Self::Err> {
-        self.0
-            .borrow_mut()
-            .stack
-            .pop()
-            .ok_or(Error::new(t.span(), "unexpect out of block"))?;
+        self.0.borrow_mut().exit_block();
         c.exit_block();
         Ok(t)
     }
@@ -70,16 +102,12 @@ impl Chain for AfterLinker {
                 .get_ident()
                 .ok_or(Error::new(t.span(), "cannot convert to ident"))?,
         );
-
-        for s in self.0.borrow_mut().stack.iter().rev() {
-            for (var_hash, node) in s.iter().rev() {
-                if &hash == var_hash {
-                    c.push_stack(*node);
-                    return Ok(t);
-                }
-            }
+        if let Some(node) = self.0.borrow().find_var(hash) {
+            c.push_stack(node);
+            Ok(t)
+        } else {
+            Err(ParseError::NotFindValue.new(t.span()))
         }
-        Err(Error::new(t.span(), "cannot find var in block stack"))
     }
 
     fn chain_patident(
@@ -92,13 +120,8 @@ impl Chain for AfterLinker {
         } else {
             c.add_node_and_push_stack(Var::new(VarType::Grad, t.span()))
         };
+        self.0.borrow_mut().new_var(into_hash(&t.ident), node);
 
-        self.0
-            .borrow_mut()
-            .stack
-            .last_mut()
-            .ok_or(Error::new(t.span(), "unexpect out of block"))?
-            .push_back((into_hash(&t.ident), node));
         Ok(t)
     }
 
@@ -109,22 +132,76 @@ impl Chain for AfterLinker {
     ) -> Result<syn::ExprBinary, Self::Err> {
         let right = c
             .pop_stack()
-            .ok_or(Error::new(t.span(), "cannot find varible at `right` side"))?;
+            .ok_or(ParseError::NotFindNode.new(t.right.span()))?;
         let left = c
             .pop_stack()
-            .ok_or(Error::new(t.span(), "cannot find varible at `left` side"))?;
+            .ok_or(ParseError::NotFindNode.new(t.left.span()))?;
         let parent = c.add_node_and_push_stack(Var::new(VarType::Grad, t.span()));
         c.add_tmp_edges(parent, [left, right]);
 
         Ok(t)
     }
 
-    fn chain_litint(&mut self, c: &mut Self::Input, t: syn::LitInt) -> Result<syn::LitInt, Self::Err> {
+    fn chain_exprassign(
+        &mut self,
+        c: &mut Self::Input,
+        t: syn::ExprAssign,
+    ) -> Result<syn::ExprAssign, Self::Err> {
+        if let syn::Expr::Path(ref p) = *t.left {
+            let left = p
+                .path
+                .get_ident()
+                .ok_or(Error::new(t.span(), "cannot convert to ident"))?;
+            let right = c
+                .pop_stack()
+                .ok_or(ParseError::NotFindNode.new(t.right.span()))?;
+
+            // dump left node
+            c.pop_stack()
+                .ok_or(Error::new(t.span(), "cannot find varible when fold assign"))?;
+
+            self.0
+                .borrow_mut()
+                .replace_phantom(into_hash(left), right)
+                .ok_or(Error::new(t.span(), "cannot find var in block stack"))?;
+            Ok(t)
+        } else {
+            Err(ParseError::UnsupportedSyntax.new(t.left.span()))
+        }
+    }
+
+    fn chain_local(&mut self, c: &mut Self::Input, t: syn::Local) -> Result<syn::Local, Self::Err> {
+        if let syn::Pat::Ident(ref p) = t.pat {
+            if let Some((_, ref init)) = t.init {
+                let right = c
+                    .pop_stack()
+                    .ok_or(ParseError::NotFindNode.new(init.span()))?;
+                self.0
+                    .borrow_mut()
+                    .replace_phantom(into_hash(&p.ident), right)
+                    .ok_or(ParseError::NotFindValue.new(p.span()))?;
+            }
+
+            Ok(t)
+        } else {
+            Err(ParseError::UnsupportedSyntax.new(t.span()))
+        }
+    }
+
+    fn chain_litint(
+        &mut self,
+        c: &mut Self::Input,
+        t: syn::LitInt,
+    ) -> Result<syn::LitInt, Self::Err> {
         c.add_node_and_push_stack(Var::new(VarType::Grad, t.span()));
         Ok(t)
     }
 
-    fn chain_litfloat(&mut self, c: &mut Self::Input, t: syn::LitFloat) -> Result<syn::LitFloat, Self::Err> {
+    fn chain_litfloat(
+        &mut self,
+        c: &mut Self::Input,
+        t: syn::LitFloat,
+    ) -> Result<syn::LitFloat, Self::Err> {
         c.add_node_and_push_stack(Var::new(VarType::Grad, t.span()));
         Ok(t)
     }
