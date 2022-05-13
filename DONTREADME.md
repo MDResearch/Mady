@@ -43,3 +43,25 @@
 上傳程式碼前記得看一下油圖，養護身心靈
 
 [![油圖](https://pixiv.cat/83554234-2.png)](https://www.pixiv.net/artworks/83554234)
+
+## Commit Message
+
+```
+Event(Scope) Message
+```
+
+## A list about the mean of emoji
+
+### Event
+
+- ⚒️ WIP
+- 🪲 Fix Bugs
+- ✨ Feat
+- ⚠️ Breakthrough Change
+- 🔕 Internal Change
+
+### Scope
+
+- 🤖 Macro
+- 🔢 Math
+- 🦀 Src

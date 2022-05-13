@@ -17,8 +17,11 @@ see cargo
 
 ## installation
 
+not ready yet
+
+<!-- 
 ```shell
 cargo install mady
-```
+``` -->
 
 ## example
