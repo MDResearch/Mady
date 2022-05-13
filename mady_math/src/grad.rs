@@ -1,5 +1,7 @@
 //! about the std ops trait
 
+pub struct MadyNull;
+
 pub trait MadyChain<Rhs = Self> {
     type O0;
     fn mady_chain(self, i: Rhs) -> Self::O0;
@@ -127,7 +129,7 @@ mod impl_chain {
 }
 
 mod impl_one {
-    use super::One;
+    use super::{MadyNull, One};
     use crate::impl_trait;
 
     macro_rules! parse_i {
@@ -155,6 +157,19 @@ mod impl_one {
     }
 
     impl_trait![parse_f, f32, f64];
+
+    macro_rules! parse_p {
+        ($ty:ident) => {
+            impl One for $ty {
+                type O0 = Self;
+                fn one() -> Self::O0 {
+                    Self
+                }
+            }
+        };
+    }
+
+    impl_trait![parse_p, MadyNull];
 }
 
 mod impl_zero {
