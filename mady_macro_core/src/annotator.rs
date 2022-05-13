@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+use crate::error::ParseError;
 use crate::gen::Chain;
 
 use crate::utils::{null, ops_to_string, Marker};
@@ -38,7 +39,7 @@ impl Chain for AfterAnnotator {
     ) -> Result<syn::TypePath, Self::Err> {
         let node = c
             .peek_stack()
-            .ok_or(Error::new(t.span(), "cannot find varible name"))?;
+            .ok_or(ParseError::NotFindNode.new(t.span()))?;
         *c.graph.node_weight_mut(node).annotate_mut() = Some(t.clone());
         Ok(t)
     }
@@ -50,11 +51,11 @@ impl Chain for AfterAnnotator {
     ) -> Result<syn::ExprBinary, Self::Err> {
         let parent = c
             .peek_stack()
-            .ok_or(Error::new(t.span(), "cannot find node when fold binary"))?;
+            .ok_or(ParseError::NotFindNode.new(t.left.span()))?;
 
         let iter = c.graph.to_nodes(parent);
         let marker = Marker::new_method(
-            ops_to_string(&t.op).ok_or(Error::new(t.op.span(), "unsupport Op"))?,
+            ops_to_string(&t.op).ok_or(ParseError::UnsupportedSyntax.new(t.op.span()))?,
             iter[0],
             vec![iter[1]],
         );
@@ -85,9 +86,9 @@ impl Chain for AfterAnnotator {
     ) -> Result<syn::LitInt, Self::Err> {
         let node = c
             .peek_stack()
-            .ok_or(Error::new(t.span(), "cannot find node when fold lit int"))?;
+            .ok_or(ParseError::NotFindNode.new(t.span()))?;
         if t.suffix().is_empty() {
-            return Err(Error::new(t.span(), "cannot infer type, add type here"));
+            return Err(ParseError::CantInferType.new(t.span()));
         }
         let ty = TokenStream::from_str(t.suffix()).unwrap();
         *c.graph.node_weight_mut(node).annotate_mut() = Some(parse_quote! {#ty});
@@ -101,9 +102,9 @@ impl Chain for AfterAnnotator {
     ) -> Result<syn::LitFloat, Self::Err> {
         let node = c
             .peek_stack()
-            .ok_or(Error::new(t.span(), "cannot find node when fold lit float"))?;
+            .ok_or(ParseError::NotFindNode.new(t.span()))?;
         if t.suffix().is_empty() {
-            return Err(Error::new(t.span(), "cannot infer type, add type here"));
+            return Err(ParseError::CantInferType.new(t.span()));
         }
         let ty = TokenStream::from_str(t.suffix()).unwrap();
         *c.graph.node_weight_mut(node).annotate_mut() = Some(parse_quote! {#ty});
