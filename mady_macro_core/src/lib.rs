@@ -1,4 +1,5 @@
 mod annotator;
+mod error;
 mod folder;
 mod gen;
 mod generator;
@@ -6,7 +7,6 @@ mod graph;
 mod linker;
 mod parser;
 mod utils;
-mod error;
 
 use annotator::Annotator;
 use folder::Folder;

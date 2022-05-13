@@ -9,7 +9,7 @@ use crate::error::ParseError;
 use crate::gen::Chain;
 use crate::graph::Node;
 use crate::parser::{Parser, Recorder, Register, Var, VarType};
-use crate::utils::{into_hash, null};
+use crate::utils::into_hash;
 
 #[derive(Default)]
 pub struct Linker {

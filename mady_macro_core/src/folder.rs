@@ -38,8 +38,9 @@ impl Chain for AfterFolder {
             .peek_stack()
             .ok_or(ParseError::NotFindNode.new(t.span()))?;
 
-        let grad_fn =
-            grad_method(ops_to_string(&t.op).ok_or(ParseError::UnsupportedSyntax.new(t.op.span()))?);
+        let grad_fn = grad_method(
+            ops_to_string(&t.op).ok_or(ParseError::UnsupportedSyntax.new(t.op.span()))?,
+        );
 
         let mut destruct = vec![];
         for i in c.graph.to_edges(parent) {
