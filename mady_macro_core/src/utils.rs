@@ -1,58 +1,62 @@
-use crate::{
-    graph::{Edge, Graph, Node},
-    parser::{Var, VarType},
-};
+use crate::graph::{Edge, Graph, Node};
+use crate::parser::{Id, ParseGraph, Var, VarType};
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use syn::{parse_quote, TypePath};
 
-impl Node {
-    pub fn to_ident(&self) -> Ident {
-        format_ident!("mady_tmp_{}", self.index())
-    }
+// impl Node {
+//     pub fn to_ident(&self) -> Ident {
+//         format_ident!("mady_tmp_{}", self.index())
+//     }
 
-    pub fn to_type_ident(&self) -> Ident {
-        format_ident!("mady_ty_{}", self.index())
-    }
+//     pub fn to_type_ident(&self) -> Ident {
+//         format_ident!("mady_ty_{}", self.index())
+//     }
 
-    pub fn to_grad_type_ident(&self) -> Ident {
-        format_ident!("mady_gty_{}", self.index())
-    }
+//     pub fn to_grad_type_ident(&self) -> Ident {
+//         format_ident!("mady_gty_{}", self.index())
+//     }
 
-    pub fn to_string(&self) -> String {
-        format!("mady_tmp_{}", self.index())
-    }
-}
+//     pub fn to_string(&self) -> String {
+//         format!("mady_tmp_{}", self.index())
+//     }
+// }
 
-impl Edge {
-    pub fn to_ident(&self) -> Ident {
-        let index = self.index();
-        format_ident!("mady_tmp_{}_{}", index.0, index.1)
-    }
+// impl Edge {
+//     pub fn to_ident(&self) -> Ident {
+//         let index = self.index();
+//         format_ident!("mady_tmp_{}_{}", index.0, index.1)
+//     }
 
-    pub fn to_type_ident(&self) -> Ident {
-        let index = self.index();
-        format_ident!("mady_ty_{}_{}", index.0, index.1)
-    }
+//     pub fn to_type_ident(&self) -> Ident {
+//         let index = self.index();
+//         format_ident!("mady_ty_{}_{}", index.0, index.1)
+//     }
 
-    pub fn to_grad_type_ident(&self) -> Ident {
-        let index = self.index();
-        format_ident!("mady_gty_{}_{}", index.0, index.1)
-    }
+//     pub fn to_grad_type_ident(&self) -> Ident {
+//         let index = self.index();
+//         format_ident!("mady_gty_{}_{}", index.0, index.1)
+//     }
 
-    pub fn to_string(&self) -> String {
-        let index = self.index();
-        format!("mady_tmp_{}_{}", index.0, index.1)
-    }
-}
+//     pub fn to_string(&self) -> String {
+//         let index = self.index();
+//         format!("mady_tmp_{}_{}", index.0, index.1)
+//     }
+// }
 
-impl Graph<Var, Var> {
+impl ParseGraph {
     pub fn out_nodes(&self) -> Vec<Node> {
         self.nodes()
             .into_iter()
-            .filter(|x| self.node_weight(*x).ty() == &VarType::Out)
+            .filter(|x| {
+                if let VarType::Grad(_) = self.node_weight(*x) {
+                    true
+                } else {
+                    false
+                }
+            })
             .collect()
     }
 }
@@ -68,7 +72,7 @@ pub struct Marker {
 }
 
 impl Marker {
-    pub fn new_method<T>(method_name: T, method_node: Node, arg_nodes: Vec<Node>) -> Self
+    pub fn new_method<T>(method_name: T, method_node: Id, arg_nodes: &Vec<Id>) -> Self
     where
         T: ToString,
     {
@@ -83,7 +87,7 @@ impl Marker {
         }
     }
 
-    pub fn new_call<T>(fn_name: T, arg_nodes: &Vec<Node>) -> Self
+    pub fn new_call<T>(fn_name: T, arg_nodes: &Vec<&Var>) -> Self
     where
         T: ToString,
     {

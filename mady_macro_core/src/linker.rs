@@ -100,7 +100,7 @@ impl Chain for AfterLinker {
         let hash = into_hash(
             t.path
                 .get_ident()
-                .ok_or(Error::new(t.span(), "cannot convert to ident"))?,
+                .ok_or(ParseError::UnsupportedSyntax.new(t.path.span()))?,
         );
         if let Some(node) = self.0.borrow().find_var(hash) {
             c.push_stack(node);
@@ -115,12 +115,15 @@ impl Chain for AfterLinker {
         c: &mut Self::Input,
         t: syn::PatIdent,
     ) -> Result<syn::PatIdent, Self::Err> {
-        let node = if c.block_level() == 0 {
-            c.add_node_and_push_stack(Var::new(VarType::Out, t.span()))
+        let var = if c.is_sig_level() {
+            VarType::Grad(Var::new(c, t.span()))
         } else {
-            c.add_node_and_push_stack(Var::new(VarType::Grad, t.span()))
+            VarType::Tmp(Var::new(c, t.span()))
         };
-        self.0.borrow_mut().new_var(into_hash(&t.ident), node);
+
+        self.0
+            .borrow_mut()
+            .new_var(into_hash(&t.ident), c.add_node_and_push_stack(var));
 
         Ok(t)
     }
@@ -136,8 +139,9 @@ impl Chain for AfterLinker {
         let left = c
             .pop_stack()
             .ok_or(ParseError::NotFindNode.new(t.left.span()))?;
-        let parent = c.add_node_and_push_stack(Var::new(VarType::Grad, t.span()));
-        c.add_tmp_edges(parent, [left, right]);
+        let var = VarType::Tmp(Var::new(c, t.span()));
+        let parent = c.add_node_and_push_stack(var);
+        c.add_edges(parent, [left, right]);
 
         Ok(t)
     }
@@ -151,19 +155,19 @@ impl Chain for AfterLinker {
             let left = p
                 .path
                 .get_ident()
-                .ok_or(Error::new(t.span(), "cannot convert to ident"))?;
+                .ok_or(ParseError::UnsupportedSyntax.new(t.left.span()))?;
             let right = c
                 .pop_stack()
                 .ok_or(ParseError::NotFindNode.new(t.right.span()))?;
 
             // dump left node
             c.pop_stack()
-                .ok_or(Error::new(t.span(), "cannot find varible when fold assign"))?;
+                .ok_or(ParseError::NotFindNode.new(t.left.span()))?;
 
             self.0
                 .borrow_mut()
                 .replace_phantom(into_hash(left), right)
-                .ok_or(Error::new(t.span(), "cannot find var in block stack"))?;
+                .ok_or(ParseError::NotFindValue.new(t.left.span()))?;
             Ok(t)
         } else {
             Err(ParseError::UnsupportedSyntax.new(t.left.span()))
@@ -193,7 +197,8 @@ impl Chain for AfterLinker {
         c: &mut Self::Input,
         t: syn::LitInt,
     ) -> Result<syn::LitInt, Self::Err> {
-        c.add_node_and_push_stack(Var::new(VarType::Grad, t.span()));
+        let var = VarType::Tmp(Var::new(c, t.span()));
+        c.add_node_and_push_stack(var);
         Ok(t)
     }
 
@@ -202,7 +207,8 @@ impl Chain for AfterLinker {
         c: &mut Self::Input,
         t: syn::LitFloat,
     ) -> Result<syn::LitFloat, Self::Err> {
-        c.add_node_and_push_stack(Var::new(VarType::Grad, t.span()));
+        let var = VarType::Tmp(Var::new(c, t.span()));
+        c.add_node_and_push_stack(var);
         Ok(t)
     }
 }

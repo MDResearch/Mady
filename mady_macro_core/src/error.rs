@@ -15,6 +15,9 @@ pub enum ParseError {
 
     #[error("cannot infer type, please add type here")]
     CantInferType,
+
+    #[error("unexpect node type, maybe use unsupported syntax")]
+    UnexpectNodeType,
 }
 
 impl ParseError {

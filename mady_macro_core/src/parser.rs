@@ -1,4 +1,4 @@
-use proc_macro2::{Span, TokenStream};
+use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{Error, Token};
 
@@ -8,6 +8,7 @@ use crate::graph::{Edge, Graph, Node};
 use crate::utils::into_hash;
 
 type ParserChian = dyn Chain<Input = Recorder, Err = Error>;
+pub type ParseGraph = Graph<VarType, Var>;
 
 #[derive(Default)]
 pub struct Parser {
@@ -18,33 +19,44 @@ pub struct Parser {
 
 #[derive(Debug, Default, Clone)]
 pub struct Recorder {
-    pub graph: Graph<Var, Var>,
-    stack: Vec<Node>,
-    // todo; add attr
-    counter: usize,
+    pub graph: ParseGraph,
+    // TODO reserve for future use
+    // attr_stack:Vec<>,
+    link_stack: Vec<Node>,
+    node_counter: usize,
+    level_counter: usize,
 }
 
 #[derive(Debug, Clone)]
 pub struct Var {
-    ty: VarType,
-    annotate: Option<syn::TypePath>,
+    id: usize,
+    ty: Option<syn::TypePath>,
     span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy)]
+pub struct Id(usize);
+
+struct Attr {
+    // TODO reserve for future use
+}
+
+#[derive(Debug, Clone)]
 pub enum VarType {
-    /// not init
-    TMP,
     /// init to first assign
     /// store gradient
-    Grad,
+    Tmp(Var),
     /// init to first assign
     /// store gradient & return as output
-    Out,
+    Grad(Var),
     /// init to false, `if ...{...}`
-    IF,
+    IF(Var, ParseGraph),
     /// init to false, `if...{...}else{...}`
-    IFEL,
+    ///
+    /// `(true, false)`
+    IFEL(Var, ParseGraph, ParseGraph),
+    /// will optimize out by Mady & rustc
+    Null,
 }
 
 pub trait Register {
@@ -52,32 +64,56 @@ pub trait Register {
 }
 
 impl Var {
-    pub fn new(ty: VarType, span: Span) -> Self {
-        Self {
-            ty,
-            annotate: None,
-            span,
-        }
+    pub fn new(r: &mut Recorder, span: Span) -> Self {
+        let id = r.node_counter;
+        r.node_counter += 1;
+        Self { id, ty: None, span }
     }
 
-    pub fn annotate(&self) -> &Option<syn::TypePath> {
-        &self.annotate
-    }
-
-    pub fn annotate_mut(&mut self) -> &mut Option<syn::TypePath> {
-        &mut self.annotate
-    }
-
-    pub fn ty(&self) -> &VarType {
+    pub fn ty(&self) -> &Option<syn::TypePath> {
         &self.ty
     }
 
-    pub fn ty_mut(&mut self) -> &mut VarType {
+    pub fn ty_mut(&mut self) -> &mut Option<syn::TypePath> {
         &mut self.ty
     }
 
     pub fn span(&self) -> Span {
         self.span
+    }
+
+    pub fn to_ident(&self) -> Ident {
+        format_ident!("mady_var_{}", self.id)
+    }
+
+    pub fn to_type_ident(&self) -> Ident {
+        format_ident!("mady_ty_{}", self.id)
+    }
+
+    pub fn to_grad_type_ident(&self) -> Ident {
+        format_ident!("mady_gty_{}", self.id)
+    }
+
+    pub fn to_string(&self) -> String {
+        format!("mady_var_{}", self.id)
+    }
+}
+
+impl VarType {
+    pub fn span(&self) -> Span {
+        match self {
+            Self::Tmp(v) | Self::Grad(v) => v.span(),
+            _ => todo!(),
+        }
+    }
+
+    pub fn id(&self) -> Id {
+        match self {
+            VarType::Tmp(v) | VarType::Grad(v) | VarType::IF(v, _) | VarType::IFEL(v, _, _) => {
+                Id::new(v.id)
+            }
+            VarType::Null => todo!(),
+        }
     }
 }
 
@@ -87,47 +123,71 @@ impl Recorder {
     }
 
     pub fn peek_stack(&self) -> Option<Node> {
-        self.stack.last().copied()
+        self.link_stack.last().copied()
     }
 
     pub fn pop_stack(&mut self) -> Option<Node> {
-        self.stack.pop()
+        self.link_stack.pop()
     }
 
     pub fn push_stack(&mut self, value: Node) {
-        self.stack.push(value)
+        self.link_stack.push(value)
     }
 
-    pub fn add_node_and_push_stack(&mut self, value: Var) -> Node {
+    pub fn add_node_and_push_stack(&mut self, value: VarType) -> Node {
         let node = self.graph.add_node(value);
-        self.stack.push(node);
+        self.link_stack.push(node);
         node
     }
 
-    pub fn add_tmp_edges<T>(&mut self, parent: Node, children: T) -> Vec<Edge>
+    pub fn add_edges<T>(&mut self, parent: Node, children: T) -> Vec<Edge>
     where
         T: IntoIterator<Item = Node>,
     {
         let mut edges = vec![];
         for i in children {
-            edges.push(
-                self.graph
-                    .add_edge(Var::new(VarType::TMP, Span::call_site()), (parent, i)),
-            )
+            let var = Var::new(self, Span::call_site());
+            edges.push(self.graph.add_edge(var, (parent, i)))
         }
         edges
     }
 
-    pub fn block_level(&self) -> usize {
-        self.counter
+    pub fn is_top_level(&self) -> bool {
+        self.level_counter == 1
+    }
+
+    pub fn is_sig_level(&self) -> bool {
+        self.level_counter == 0
     }
 
     pub fn enter_block(&mut self) {
-        self.counter += 1;
+        self.level_counter += 1;
     }
 
     pub fn exit_block(&mut self) {
-        self.counter += 1;
+        self.level_counter -= 1;
+    }
+}
+
+impl Id {
+    fn new(id: usize) -> Self {
+        Self(id)
+    }
+
+    pub fn to_ident(&self) -> Ident {
+        format_ident!("mady_var_{}", self.0)
+    }
+
+    pub fn to_type_ident(&self) -> Ident {
+        format_ident!("mady_ty_{}", self.0)
+    }
+
+    pub fn to_grad_type_ident(&self) -> Ident {
+        format_ident!("mady_gty_{}", self.0)
+    }
+
+    pub fn to_string(&self) -> String {
+        format!("mady_var_{}", self.0)
     }
 }
 

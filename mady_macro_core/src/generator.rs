@@ -11,31 +11,24 @@ pub fn gen_declare(c: &Recorder) -> Result<Vec<syn::Stmt>, Error> {
     let mut stmts = vec![];
     for n in c.graph.nodes() {
         let node = c.graph.node_weight(n);
-        let ident = n.to_ident();
-        match node.ty() {
-            VarType::Grad | VarType::Out => {
-                let ty = n.to_grad_type_ident();
+        match node {
+            VarType::Tmp(v) | VarType::Grad(v) => {
+                let ident = v.to_ident();
+                let ty = v.to_grad_type_ident();
                 stmts.push(parse_quote! {
                     let mut #ident: #ty;
                 });
-            }
-            VarType::TMP => unimplemented!("node tmp RFU"),
-            VarType::IF | VarType::IFEL => unimplemented!("logic WIP"),
-        }
-
-        for e in c.graph.to_edges(n) {
-            let edge = c.graph.edge_weight(e);
-            let ident = e.to_ident();
-            match edge.ty() {
-                VarType::TMP => {
-                    let ty = e.to_type_ident();
+                for e in c.graph.to_edges(n) {
+                    let edge = c.graph.edge_weight(e);
+                    let ident = edge.to_ident();
+                    let ty = edge.to_type_ident();
                     stmts.push(parse_quote! {
                         let #ident: #ty;
                     });
                 }
-                VarType::Grad | VarType::Out => unimplemented!("edge grad RFU"),
-                VarType::IF | VarType::IFEL => unimplemented!("logic WIP"),
             }
+            VarType::IF(..) | VarType::IFEL(..) => unimplemented!("logic WIP"),
+            VarType::Null => {}
         }
     }
     Ok(stmts)
@@ -47,29 +40,35 @@ pub fn gen_backward(c: &Recorder) -> Result<Vec<syn::Stmt>, Error> {
     let mut grads = HashSet::new();
     for n in c.graph.topological_iter() {
         grads.insert(n);
-        let node = n.to_ident();
-        let node_ty = n.to_type_ident();
-        if roots.contains(&n) {
-            stmts.push(parse_quote! {
-                #node = #node_ty::one();
-            });
-        }
+        let node = c.graph.node_weight(n);
+        match node {
+            VarType::Tmp(v) | VarType::Grad(v) => {
+                let node_ident = v.to_ident();
+                let node_ty = v.to_type_ident();
+                if roots.contains(&n) {
+                    stmts.push(parse_quote! {
+                        #node_ident = #node_ty::one();
+                    });
+                }
+                for e in c.graph.to_edges(n) {
+                    let edge = c.graph.edge_weight(e).to_ident();
+                    let t = c.graph.to_node(e);
+                    let to_node = c.graph.node_weight(t).id().to_ident();
 
-        for e in c.graph.to_edges(n) {
-            let edge = e.to_ident();
-            let t = c.graph.to_node(e);
-            let to_node = t.to_ident();
-
-            if grads.contains(&t) {
-                stmts.push(parse_quote! {
-                    #to_node += #node.mady_chain(#edge).clone();
-                });
-            } else {
-                grads.insert(t);
-                stmts.push(parse_quote! {
-                    #to_node = #node.mady_chain(#edge).clone();
-                });
+                    if grads.contains(&t) {
+                        stmts.push(parse_quote! {
+                            #to_node += #node_ident.mady_chain(#edge).clone();
+                        });
+                    } else {
+                        grads.insert(t);
+                        stmts.push(parse_quote! {
+                            #to_node = #node_ident.mady_chain(#edge).clone();
+                        });
+                    }
+                }
             }
+            VarType::IF(..) | VarType::IFEL(..) => unimplemented!("logic WIP"),
+            VarType::Null => {}
         }
     }
 
@@ -82,44 +81,50 @@ pub fn gen_types(c: &Recorder) -> Result<Vec<syn::Stmt>, Error> {
     let mut grads = HashSet::new();
     for n in c.graph.topological_iter() {
         grads.insert(n);
-        let ty = n.to_type_ident();
         let node = c.graph.node_weight(n);
-        let node_grad_ty = n.to_grad_type_ident();
-        let annotate = node
-            .annotate()
-            .clone()
-            .ok_or(ParseError::CantInferType.new(node.span()))?;
-        stmts.push(parse_quote! {
-            type #ty = #annotate;
-        });
-
-        if roots.contains(&n) {
-            stmts.push(parse_quote! {
-                type #node_grad_ty = <#ty as One>::O0;
-            });
-        }
-
-        for e in c.graph.to_edges(n) {
-            let ty = e.to_type_ident();
-            let edge = c.graph.edge_weight(e);
-            let annotate = edge
-                .annotate()
-                .clone()
-                .ok_or(ParseError::CantInferType.new(edge.span()))?;
-
-            stmts.push(parse_quote! {
-                type #ty = #annotate;
-            });
-
-            let to_node = c.graph.to_node(e);
-            if !grads.contains(&to_node) {
-                grads.insert(to_node);
-                let grad_ty = to_node.to_grad_type_ident();
-
+        match node {
+            VarType::Tmp(v) | VarType::Grad(v) => {
+                let ty = v.to_type_ident();
+                let node_grad_ty = v.to_grad_type_ident();
+                let annotate = v
+                    .ty()
+                    .clone()
+                    .ok_or(ParseError::CantInferType.new(node.span()))?;
                 stmts.push(parse_quote! {
-                    type #grad_ty = <#node_grad_ty as MadyChain<#ty>>::O0;
+                    type #ty = #annotate;
                 });
+
+                if roots.contains(&n) {
+                    stmts.push(parse_quote! {
+                        type #node_grad_ty = <#ty as One>::O0;
+                    });
+                }
+
+                for e in c.graph.to_edges(n) {
+                    let edge = c.graph.edge_weight(e);
+                    let ty = edge.to_type_ident();
+                    let annotate = edge
+                        .ty()
+                        .clone()
+                        .ok_or(ParseError::CantInferType.new(edge.span()))?;
+
+                    stmts.push(parse_quote! {
+                        type #ty = #annotate;
+                    });
+
+                    let to_node = c.graph.to_node(e);
+                    if !grads.contains(&to_node) {
+                        grads.insert(to_node);
+                        let grad_ty = c.graph.node_weight(to_node).id().to_grad_type_ident();
+
+                        stmts.push(parse_quote! {
+                            type #grad_ty = <#node_grad_ty as MadyChain<#ty>>::O0;
+                        });
+                    }
+                }
             }
+            VarType::Null => {}
+            _ => unimplemented!(),
         }
     }
 

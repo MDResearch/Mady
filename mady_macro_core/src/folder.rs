@@ -6,7 +6,7 @@ use crate::gen::Chain;
 use crate::generator::gen_backward;
 use crate::utils::{grad_method, ops_to_string};
 
-use crate::parser::{Parser, Recorder, Register};
+use crate::parser::{Parser, Recorder, Register, VarType};
 
 #[derive(Default)]
 pub struct Folder;
@@ -44,7 +44,8 @@ impl Chain for AfterFolder {
 
         let mut destruct = vec![];
         for i in c.graph.to_edges(parent) {
-            destruct.push(i.to_ident())
+            let var = c.graph.edge_weight(i);
+            destruct.push(var.to_ident())
         }
 
         let left = t.left;
@@ -65,8 +66,12 @@ impl Chain for AfterFolder {
         c: &mut Self::Input,
         t: syn::Expr,
     ) -> Result<syn::Stmt, Self::Err> {
-        let stmt = if c.block_level() == 1 {
-            let outs = c.graph.out_nodes().into_iter().map(|x| x.to_ident());
+        let stmt = if c.is_top_level() {
+            let outs = c
+                .graph
+                .out_nodes()
+                .into_iter()
+                .map(|x| c.graph.node_weight(x).id().to_ident());
             let backward = gen_backward(c)?;
             parse_quote! {
                 {
@@ -90,7 +95,7 @@ impl Chain for AfterFolder {
             .graph
             .out_nodes()
             .into_iter()
-            .map(|x| x.to_grad_type_ident());
+            .map(|x| c.graph.node_weight(x).id().to_grad_type_ident());
         match t {
             syn::ReturnType::Default => todo!(),
             syn::ReturnType::Type(_, t) => Ok(parse_quote! {
