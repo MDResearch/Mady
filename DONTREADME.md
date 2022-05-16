@@ -59,6 +59,9 @@ Event(Scope) Message
 - ✨ Feat
 - ⚠️ Breakthrough Change
 - 🔕 Internal Change
+- 🔨 Refector
+- 🚚 Change File/Dir
+- ⚡ Release
 
 ### Scope
 
