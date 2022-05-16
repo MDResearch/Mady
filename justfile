@@ -21,8 +21,13 @@ build:
 fmt:
     cargo fmt --all
 
+# clippy all code in workspace
 lint:
     cargo clippy --all --fix
+
+# clean up all code in workspace
+clean:
+    cargo clean --all
 
 # run all task
 all: lint fmt check test build
