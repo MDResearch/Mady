@@ -68,3 +68,4 @@ Event(Scope) Message
 - 🤖 Macro
 - 🔢 Math
 - 🦀 Src
+- 🧪 Test
