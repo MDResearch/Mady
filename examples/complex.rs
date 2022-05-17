@@ -69,7 +69,7 @@ where
     type Output = Complex<T>;
 
     fn div(self, rhs: Complex<T>) -> Complex<T> {
-        let a = rhs.real * rhs.real + self.imaginary * self.imaginary;
+        let a = rhs.real * rhs.real + rhs.imaginary * rhs.imaginary;
         Complex {
             real: (self.real * rhs.real + self.imaginary * rhs.imaginary) / a,
             imaginary: (rhs.real * self.imaginary - self.real * rhs.imaginary) / a,
@@ -98,5 +98,54 @@ mod test {
             imaginary: 2_i32,
         };
         assert_eq!(a + b, c);
+    }
+    #[test]
+    fn sub() {
+        let a = Complex {
+            real: 8_i32,
+            imaginary: 9_i32,
+        };
+        let b = Complex {
+            real: 2_i32,
+            imaginary: 1_i32,
+        };
+        let c = Complex {
+            real: 6_i32,
+            imaginary: 8_i32,
+        };
+        assert_eq!(a - b, c);
+    }
+    #[test]
+    fn mul() {
+        let a = Complex {
+            real: 1_i32,
+            imaginary: 1_i32,
+        };
+        let b = Complex {
+            real: 2_i32,
+            imaginary: 1_i32,
+        };
+        let c = Complex {
+            real: 1_i32,
+            imaginary: 3_i32,
+        };
+        assert_eq!(a * b, c);
+    }
+    #[test]
+    fn div() {
+        let a = Complex {
+            real: 9_f64,
+            imaginary: 3_f64,
+        };
+        let b = Complex {
+            real: 1_f64,
+            imaginary: 2_f64,
+        };
+
+        let c = Complex {
+            real: 3_f64,
+            imaginary: -3_f64,
+        };
+        assert_eq!(a / b, c);
     }
 }
