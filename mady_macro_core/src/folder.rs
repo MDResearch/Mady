@@ -61,21 +61,42 @@ impl Chain for AfterFolder {
         Ok(ast)
     }
 
-    fn chain_stmt_expr(
-        &mut self,
-        c: &mut Self::Input,
-        t: syn::Expr,
-    ) -> Result<syn::Stmt, Self::Err> {
-        let stmt = if c.is_top_level() {
+    // fn chain_stmt_expr(
+    //     &mut self,
+    //     c: &mut Self::Input,
+    //     t: syn::Expr,
+    // ) -> Result<syn::Stmt, Self::Err> {
+    //     let stmt = if c.is_top_level() {
+    //         let outs = c
+    //             .graph
+    //             .out_nodes()
+    //             .into_iter()
+    //             .map(|x| c.graph.node_weight(x).id().to_ident());
+    //         let backward = gen_backward(c)?;
+    //         parse_quote! {
+    //             {
+    //                 let mady_return = #t;
+    //                 #(#backward)*
+    //                 (mady_return, (#(#outs),*))
+    //             }
+    //         }
+    //     } else {
+    //         t
+    //     };
+    //     Ok(syn::Stmt::Expr(stmt))
+    // }
+
+    fn chain_block(&mut self, c: &mut Self::Input, t: syn::Block) -> Result<syn::Block, Self::Err> {
+        let stmt = if c.is_sig_level() {
             let outs = c
                 .graph
-                .out_nodes()
+                .grad_node()
                 .into_iter()
                 .map(|x| c.graph.node_weight(x).id().to_ident());
             let backward = gen_backward(c)?;
             parse_quote! {
                 {
-                    let mady_return = #t;
+                    let mady_return = {#t};
                     #(#backward)*
                     (mady_return, (#(#outs),*))
                 }
@@ -83,7 +104,7 @@ impl Chain for AfterFolder {
         } else {
             t
         };
-        Ok(syn::Stmt::Expr(stmt))
+        Ok(stmt)
     }
 
     fn chain_returntype(
@@ -93,7 +114,7 @@ impl Chain for AfterFolder {
     ) -> Result<syn::ReturnType, Self::Err> {
         let outs = c
             .graph
-            .out_nodes()
+            .grad_node()
             .into_iter()
             .map(|x| c.graph.node_weight(x).id().to_grad_type_ident());
         match t {
@@ -102,5 +123,32 @@ impl Chain for AfterFolder {
                 -> (#t, (#(#outs),*))
             }),
         }
+    }
+
+    fn chain_expr_methodcall(
+        &mut self,
+        c: &mut Self::Input,
+        t: syn::ExprMethodCall,
+    ) -> Result<syn::Expr, Self::Err> {
+        let parent = c
+            .peek_stack()
+            .ok_or(ParseError::NotFindNode.new(t.span()))?;
+
+        let mut destruct = vec![];
+        for i in c.graph.to_edges(parent) {
+            let var = c.graph.edge_weight(i);
+            destruct.push(var.to_ident())
+        }
+        let mut t = t;
+        t.method = grad_method(t.method);
+
+        let ast = parse_quote! {
+            {
+                let mady_tmp;
+                (mady_tmp, (#(#destruct),*)) = #t;
+                mady_tmp
+            }
+        };
+        Ok(ast)
     }
 }

@@ -55,7 +55,7 @@ impl Chain for AfterAnnotator {
     ) -> Result<syn::ExprBinary, Self::Err> {
         let parent = c
             .peek_stack()
-            .ok_or(ParseError::NotFindNode.new(t.left.span()))?;
+            .ok_or(ParseError::NotFindNode.new(t.span()))?;
 
         let iter = c.graph.to_nodes(parent);
         let marker = Marker::new_method(
@@ -84,6 +84,38 @@ impl Chain for AfterAnnotator {
         *c.graph.node_weight_mut(left) = VarType::Null;
 
         Ok(t)
+    }
+
+    fn chain_exprmethodcall(
+        &mut self,
+        c: &mut Self::Input,
+        t: syn::ExprMethodCall,
+    ) -> Result<syn::ExprMethodCall, Self::Err> {
+        let parent = c
+            .peek_stack()
+            .ok_or(ParseError::NotFindNode.new(t.span()))?;
+
+        let iter = c.graph.to_nodes(parent);
+
+        let marker = Marker::new_method(
+            &t.method,
+            c.graph.node_weight(iter[0]).id(),
+            &iter[1..]
+                .iter()
+                .map(|&x| c.graph.node_weight(x).id())
+                .collect(),
+        );
+
+        for (i, e) in c.graph.to_edges(parent).into_iter().enumerate() {
+            *c.graph.edge_weight_mut(e).ty_mut() = Some(marker.grad(i))
+        }
+
+        if let VarType::Tmp(v) | VarType::Grad(v) = c.graph.node_weight_mut(parent) {
+            *v.ty_mut() = Some(marker.output(0));
+            Ok(t)
+        } else {
+            Err(ParseError::UnexpectNodeType.new(t.span()))
+        }
     }
 
     fn chain_litint(

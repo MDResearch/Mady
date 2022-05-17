@@ -30,12 +30,8 @@ mod tests {
     #[test]
     fn gen() {
         let ts = parse_quote! {
-            fn a(a:usize) -> usize {
-                let mut b = a;
-                b = b * a;
-                b = b * a;
-                b = b * a;
-                b
+            fn a(a:usize,b:usize) -> usize {
+                a.mul(b) 
             }
         };
 

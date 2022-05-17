@@ -192,6 +192,26 @@ impl Chain for AfterLinker {
         }
     }
 
+    fn chain_exprmethodcall(
+        &mut self,
+        c: &mut Self::Input,
+        t: syn::ExprMethodCall,
+    ) -> Result<syn::ExprMethodCall, Self::Err> {
+        let mut children = vec![];
+        for _ in 0..=t.args.len() {
+            children.push(
+                c.pop_stack()
+                    .ok_or(ParseError::NotFindNode.new(t.args.span()))?,
+            );
+        }
+        let var = VarType::Tmp(Var::new(c, t.span()));
+        let parent = c.add_node_and_push_stack(var);
+
+        c.add_edges(parent, children.into_iter().rev());
+
+        Ok(t)
+    }
+
     fn chain_litint(
         &mut self,
         c: &mut Self::Input,

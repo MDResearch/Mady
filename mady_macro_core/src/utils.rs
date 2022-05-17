@@ -47,7 +47,7 @@ use syn::{parse_quote, TypePath};
 // }
 
 impl ParseGraph {
-    pub fn out_nodes(&self) -> Vec<Node> {
+    pub fn grad_node(&self) -> Vec<Node> {
         self.nodes()
             .into_iter()
             .filter(|x| {
