@@ -31,7 +31,7 @@ mod tests {
     fn gen() {
         let ts = parse_quote! {
             fn a(a:usize,b:usize) -> usize {
-                a.mul(b) 
+                a.mul(b)
             }
         };
 

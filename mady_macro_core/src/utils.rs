@@ -1,4 +1,4 @@
-use crate::graph::{Edge, Graph, Node};
+use crate::graph::Node;
 use crate::parser::{Id, ParseGraph, Var, VarType};
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
@@ -77,7 +77,7 @@ impl Marker {
         T: ToString,
     {
         let ty = method_node.to_type_ident();
-        let tys = arg_nodes.into_iter().map(|x| x.to_type_ident());
+        let tys = arg_nodes.iter().map(|x| x.to_type_ident());
         let ty_trait = format_ident!("Grad{}", to_upper_camel_case(method_name.to_string()));
 
         Self {

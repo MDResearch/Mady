@@ -3,7 +3,7 @@ use std::str::FromStr;
 use crate::error::ParseError;
 use crate::gen::Chain;
 
-use crate::utils::{null, ops_to_string, Marker};
+use crate::utils::{ops_to_string, Marker};
 
 use proc_macro2::TokenStream;
 use syn::parse_quote;
