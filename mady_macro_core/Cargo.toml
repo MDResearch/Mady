@@ -16,4 +16,4 @@ version = "1.0"
 
 [dependencies.proc-macro2]
 features = ["span-locations"]
-version = "1.0.38"
+version = "1.0.39"
