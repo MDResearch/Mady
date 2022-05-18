@@ -30,8 +30,11 @@ mod tests {
     #[test]
     fn gen() {
         let ts = parse_quote! {
-            fn a(a:usize,b:usize) -> usize {
-                a.mul(b)
+            fn rotate_37(a: Complex<f64>) -> Complex<f64> {
+                a * Complex {
+                    real: 0.6_f64,
+                    imaginary: 0.8_f64,
+                }
             }
         };
 
