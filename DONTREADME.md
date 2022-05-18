@@ -69,3 +69,4 @@ Event(Scope) Message
 - 🔢 Math
 - 🦀 Src
 - 🧪 Test
+- 📚 example
