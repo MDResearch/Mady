@@ -17,10 +17,7 @@ use syn::{parse_macro_input, ItemFn};
 ///
 /// The 1st line decribe the method of importing grad
 ///  
-/// The 2nd line describe a function,and this function include the formula to be different.
-/// The parameter involve which Immutable number used in the formula
-///
-/// The third line decribe the formula you want to different; for this instance, it different a `a + b` formula
+/// The 3..N line decribe the formula you want to different; for this instance, it different a `a + b` formula
 ///
 #[proc_macro_attribute]
 pub fn grad(_attr: TokenStream, input: TokenStream) -> TokenStream {
