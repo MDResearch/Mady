@@ -1,11 +1,10 @@
-use proc_macro2::{Ident, Span, TokenStream};
-use quote::{format_ident, quote};
-use syn::{Error, Token};
+use proc_macro2::{Ident, Span};
+use quote::format_ident;
+use syn::Error;
 
 use crate::gen::*;
 use crate::generator::gen_declare;
 use crate::graph::{Edge, Graph, Node};
-use crate::utils::into_hash;
 
 type ParserChian = dyn Chain<Input = Recorder, Err = Error>;
 pub type ParseGraph = Graph<VarType, Var>;

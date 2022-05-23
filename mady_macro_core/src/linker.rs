@@ -116,17 +116,16 @@ impl Chain for AfterLinker {
         t: syn::PatIdent,
     ) -> Result<syn::PatIdent, Self::Err> {
         if c.is_sig_level() {
-            let var=VarType::Grad(Var::new(c, t.span()));
+            let var = VarType::Grad(Var::new(c, t.span()));
             self.0
                 .borrow_mut()
                 .new_var(into_hash(&t.ident), c.graph.add_node(var));
         } else {
-            let var=VarType::Tmp(Var::new(c, t.span()));
+            let var = VarType::Tmp(Var::new(c, t.span()));
             self.0
                 .borrow_mut()
                 .new_var(into_hash(&t.ident), c.add_node_and_push_stack(var));
         };
-
 
         Ok(t)
     }

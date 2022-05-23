@@ -36,7 +36,7 @@ pub fn gen_backward(c: &Recorder) -> Result<Vec<syn::Stmt>, Error> {
     let mut stmts = vec![];
     let roots = HashSet::<_>::from_iter(c.graph.roots());
     let mut grads = HashSet::new();
-    let mut tys = c.tys().into_iter().rev();
+    let mut tys = c.tys().iter().rev();
     for n in c.graph.topological_iter() {
         grads.insert(n);
         let node = c.graph.node_weight(n);

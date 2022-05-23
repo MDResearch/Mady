@@ -1,10 +1,9 @@
 use crate::graph::Node;
-use crate::parser::{Id, ParseGraph, Var, VarType};
-use proc_macro2::{Ident, TokenStream};
-use quote::{format_ident, quote};
+use crate::parser::{ParseGraph, VarType};
+use proc_macro2::Ident;
+use quote::format_ident;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
-use syn::{parse_quote, TypePath};
 
 impl ParseGraph {
     pub fn grad_node(&self) -> Vec<Node> {

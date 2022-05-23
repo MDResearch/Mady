@@ -112,7 +112,7 @@ impl Chain for AfterFolder {
         c: &mut Self::Input,
         t: syn::ReturnType,
     ) -> Result<syn::ReturnType, Self::Err> {
-        let outs = c.tys().into_iter().take(c.tys().len() - 1);
+        let outs = c.tys().iter().take(c.tys().len() - 1);
         match t {
             syn::ReturnType::Default => todo!(),
             syn::ReturnType::Type(_, t) => Ok(parse_quote! {
