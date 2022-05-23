@@ -20,11 +20,24 @@ use syn::{parse_macro_input, ItemFn};
 /// The 3..N line decribe the formula you want to different; for this instance, it different a `a + b` formula
 ///
 #[proc_macro_attribute]
-pub fn grad(_attr: TokenStream, input: TokenStream) -> TokenStream {
+pub fn grad(attr: TokenStream, input: TokenStream) -> TokenStream {
     let mut parser = mady_macro_core::new();
-    let ts = match parser.gen(parse_macro_input!(input as ItemFn)) {
+    let tys = parse_macro_input!(attr as Arg);
+    let ts = match parser.gen(tys.0, parse_macro_input!(input as ItemFn)) {
         Ok(ts) => quote! {#ts},
         Err(err) => err.to_compile_error(),
     };
     TokenStream::from(ts)
+}
+
+struct Arg(Vec<syn::TypePath>);
+
+impl syn::parse::Parse for Arg {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let tys =
+            syn::punctuated::Punctuated::<syn::TypePath, syn::Token!(,)>::parse_terminated(input)?
+                .into_iter()
+                .collect();
+        Ok(Self(tys))
+    }
 }

@@ -1,11 +1,11 @@
 use mady::prelude::*;
 
-#[grad]
+#[grad(f64)]
 fn add(a: f64) -> f64 {
     a + 10_f64
 }
 
-#[grad]
+#[grad(f64, f64)]
 fn mix(a: f64, b: f64) -> f64 {
     (a * 6_f64) / (b - 2_f64)
 }

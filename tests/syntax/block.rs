@@ -1,6 +1,6 @@
 use mady::prelude::*;
 
-#[grad]
+#[grad(f64)]
 fn block_mul(a: f64) -> f64 {
     let mut b = a;
     {
@@ -15,7 +15,7 @@ fn block_mul(a: f64) -> f64 {
     b
 }
 
-#[grad]
+#[grad(f64, f64)]
 fn block_return(a: f64, b: f64) -> f64 {
     let c = (a + b) * a;
     {
@@ -31,7 +31,7 @@ fn block_return(a: f64, b: f64) -> f64 {
     }
 }
 
-#[grad]
+#[grad(f64, f64)]
 fn separate_multiple(a: f64, b: f64) -> f64 {
     let c = (a + b) * a;
     let d;

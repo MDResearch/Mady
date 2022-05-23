@@ -1,11 +1,5 @@
 error: unsupported syntax
- --> tests/fail/unsupport.rs:5:6
+ --> tests/fail/unsupport.rs:5:7
   |
-5 |    a >> b ^ b << a
-  |      ^^
-
-error: cannot infer type, please add type here
-  --> tests/fail/unsupport.rs:10:13
-   |
-10 |     a * b + 10
-   |             ^^
+5 |     a >> b ^ b << a
+  |       ^^

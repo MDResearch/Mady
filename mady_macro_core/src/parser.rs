@@ -3,7 +3,7 @@ use quote::{format_ident, quote};
 use syn::{Error, Token};
 
 use crate::gen::*;
-use crate::generator::{gen_declare, gen_types};
+use crate::generator::gen_declare;
 use crate::graph::{Edge, Graph, Node};
 use crate::utils::into_hash;
 
@@ -25,12 +25,12 @@ pub struct Recorder {
     link_stack: Vec<Node>,
     node_counter: usize,
     level_counter: usize,
+    tys: Vec<syn::TypePath>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Var {
     id: usize,
-    ty: Option<syn::TypePath>,
     span: Span,
 }
 
@@ -67,15 +67,7 @@ impl Var {
     pub fn new(r: &mut Recorder, span: Span) -> Self {
         let id = r.node_counter;
         r.node_counter += 1;
-        Self { id, ty: None, span }
-    }
-
-    pub fn ty(&self) -> &Option<syn::TypePath> {
-        &self.ty
-    }
-
-    pub fn ty_mut(&mut self) -> &mut Option<syn::TypePath> {
-        &mut self.ty
+        Self { id, span }
     }
 
     pub fn span(&self) -> Span {
@@ -83,19 +75,11 @@ impl Var {
     }
 
     pub fn to_ident(&self) -> Ident {
-        format_ident!("mady_var_{}", self.id)
-    }
-
-    pub fn to_type_ident(&self) -> Ident {
-        format_ident!("mady_ty_{}", self.id)
-    }
-
-    pub fn to_grad_type_ident(&self) -> Ident {
-        format_ident!("mady_gty_{}", self.id)
+        format_ident!("_mady_var_{}", self.id)
     }
 
     pub fn to_string(&self) -> String {
-        format!("mady_var_{}", self.id)
+        format!("_mady_var_{}", self.id)
     }
 }
 
@@ -132,6 +116,14 @@ impl Recorder {
 
     pub fn push_stack(&mut self, value: Node) {
         self.link_stack.push(value)
+    }
+
+    pub fn tys(&self) -> &Vec<syn::TypePath> {
+        &self.tys
+    }
+
+    pub fn push_ty(&mut self, path: syn::TypePath) {
+        self.tys.push(path);
     }
 
     pub fn add_node_and_push_stack(&mut self, value: VarType) -> Node {
@@ -175,19 +167,11 @@ impl Id {
     }
 
     pub fn to_ident(&self) -> Ident {
-        format_ident!("mady_var_{}", self.0)
-    }
-
-    pub fn to_type_ident(&self) -> Ident {
-        format_ident!("mady_ty_{}", self.0)
-    }
-
-    pub fn to_grad_type_ident(&self) -> Ident {
-        format_ident!("mady_gty_{}", self.0)
+        format_ident!("_mady_var_{}", self.0)
     }
 
     pub fn to_string(&self) -> String {
-        format!("mady_var_{}", self.0)
+        format!("_mady_var_{}", self.0)
     }
 }
 
@@ -219,37 +203,17 @@ impl Parser {
         self
     }
 
-    pub fn gen(&mut self, t: syn::ItemFn) -> Result<TokenStream, Error> {
+    pub fn gen(&mut self, attr: Vec<syn::TypePath>, t: syn::ItemFn) -> Result<syn::ItemFn, Error> {
         let mut chain = Recorder::new();
+        for i in attr {
+            chain.push_ty(i);
+        }
         let mut func = self.fold_chain_itemfn(&mut chain, t)?;
-        let types = gen_types(&chain)?;
         let mut declare = gen_declare(&chain)?;
-        let func_name = func.sig.ident.clone();
-        let mod_name = format_ident!("mady_{}", into_hash(&func.sig.ident));
-        let vis = match func.vis.clone() {
-            syn::Visibility::Public(p) => quote! {
-                #p #func_name;
-            },
-            syn::Visibility::Restricted(p) => quote! {
-                #p #func_name;
-            },
-            syn::Visibility::Crate(_) | syn::Visibility::Inherited => quote! {},
-        };
-        func.vis = syn::Visibility::Public(syn::VisPublic {
-            pub_token: <Token!(pub)>::default(),
-        });
         declare.extend(func.block.stmts);
         func.block.stmts = declare;
         self.recorder = Some(chain);
-        Ok(quote! {
-            use #mod_name::#func_name;
-            #vis
-            mod #mod_name{
-                use super::*;
-                #(#types)*
-                #func
-            }
-        })
+        Ok(func)
     }
 
     pub fn unwarp(self) -> Recorder {

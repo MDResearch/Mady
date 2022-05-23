@@ -10,6 +10,9 @@ pub enum ParseError {
     #[error("cannot find node in link stack, maybe use unsupported syntax")]
     NotFindNode,
 
+    #[error("cannot find type in return type list, maybe use unsupported syntax")]
+    NotFindType,
+
     #[error("unsupported syntax")]
     UnsupportedSyntax,
 
@@ -18,10 +21,14 @@ pub enum ParseError {
 
     #[error("unexpect node type, maybe use unsupported syntax")]
     UnexpectNodeType,
+
+    #[error("unexpect error, maybe use unsupported syntax")]
+    UnexpectError,
 }
 
 impl ParseError {
     pub fn new(self, span: Span) -> Error {
+        // panic!("Error: {}", self);
         Error::new(span, self)
     }
 }

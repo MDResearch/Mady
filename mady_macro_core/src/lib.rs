@@ -1,4 +1,3 @@
-mod annotator;
 mod error;
 mod folder;
 mod gen;
@@ -8,7 +7,6 @@ mod linker;
 mod parser;
 mod utils;
 
-use annotator::Annotator;
 use folder::Folder;
 use linker::Linker;
 use parser::Parser;
@@ -16,7 +14,6 @@ use parser::Parser;
 pub fn new() -> Parser {
     Parser::new()
         .register(Linker::new())
-        .register(Annotator::new())
         .register(Folder::new())
 }
 
@@ -30,17 +27,17 @@ mod tests {
     #[test]
     fn gen() {
         let ts = parse_quote! {
-            fn rotate_37(a: Complex<f64>) -> Complex<f64> {
-                a * Complex {
-                    real: 0.6_f64,
-                    imaginary: 0.8_f64,
-                }
+            fn let_mul(a: f64) -> f64 {
+                let mut b = a;
+                b = b * a;
+                b
             }
         };
+        let tys = vec![parse_quote!(f64), parse_quote!(f64)];
 
         let mut parser = new();
 
-        match parser.gen(ts) {
+        match parser.gen(tys, ts) {
             Ok(ts) => {
                 dbg!(quote! {#ts}.to_string());
             }

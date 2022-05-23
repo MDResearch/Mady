@@ -1,6 +1,6 @@
 use mady::prelude::*;
 
-#[grad]
+#[grad(f64, f64)]
 fn mul(a: f64, b: f64) -> f64 {
     a.mul(b)
 }

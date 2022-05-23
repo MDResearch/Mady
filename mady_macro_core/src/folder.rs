@@ -96,9 +96,9 @@ impl Chain for AfterFolder {
             let backward = gen_backward(c)?;
             parse_quote! {
                 {
-                    let mady_return = {#t};
+                    let _mady_return = {#t};
                     #(#backward)*
-                    (mady_return, (#(#outs),*))
+                    (_mady_return, (#(#outs),*))
                 }
             }
         } else {
@@ -112,11 +112,7 @@ impl Chain for AfterFolder {
         c: &mut Self::Input,
         t: syn::ReturnType,
     ) -> Result<syn::ReturnType, Self::Err> {
-        let outs = c
-            .graph
-            .grad_node()
-            .into_iter()
-            .map(|x| c.graph.node_weight(x).id().to_grad_type_ident());
+        let outs = c.tys().into_iter().take(c.tys().len() - 1);
         match t {
             syn::ReturnType::Default => todo!(),
             syn::ReturnType::Type(_, t) => Ok(parse_quote! {

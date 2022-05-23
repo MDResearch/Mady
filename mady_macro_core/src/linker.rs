@@ -115,15 +115,18 @@ impl Chain for AfterLinker {
         c: &mut Self::Input,
         t: syn::PatIdent,
     ) -> Result<syn::PatIdent, Self::Err> {
-        let var = if c.is_sig_level() {
-            VarType::Grad(Var::new(c, t.span()))
+        if c.is_sig_level() {
+            let var=VarType::Grad(Var::new(c, t.span()));
+            self.0
+                .borrow_mut()
+                .new_var(into_hash(&t.ident), c.graph.add_node(var));
         } else {
-            VarType::Tmp(Var::new(c, t.span()))
+            let var=VarType::Tmp(Var::new(c, t.span()));
+            self.0
+                .borrow_mut()
+                .new_var(into_hash(&t.ident), c.add_node_and_push_stack(var));
         };
 
-        self.0
-            .borrow_mut()
-            .new_var(into_hash(&t.ident), c.add_node_and_push_stack(var));
 
         Ok(t)
     }
@@ -160,7 +163,7 @@ impl Chain for AfterLinker {
                 .pop_stack()
                 .ok_or(ParseError::NotFindNode.new(t.right.span()))?;
 
-            // dump left node
+            // drop
             c.pop_stack()
                 .ok_or(ParseError::NotFindNode.new(t.left.span()))?;
 
@@ -185,6 +188,11 @@ impl Chain for AfterLinker {
                     .replace_phantom(into_hash(&p.ident), right)
                     .ok_or(ParseError::NotFindValue.new(p.span()))?;
             }
+            // drop
+            let left = c
+                .pop_stack()
+                .ok_or(ParseError::NotFindNode.new(t.pat.span()))?;
+            *c.graph.node_weight_mut(left) = VarType::Null;
 
             Ok(t)
         } else {
@@ -210,6 +218,40 @@ impl Chain for AfterLinker {
         c.add_edges(parent, children.into_iter().rev());
 
         Ok(t)
+    }
+
+    // fn chain_exprcall(
+    //     &mut self,
+    //     c: &mut Self::Input,
+    //     t: syn::ExprCall,
+    // ) -> Result<syn::ExprCall, Self::Err> {
+    //     let mut children = vec![];
+    //     for _ in 0..=t.args.len() {
+    //         children.push(
+    //             c.pop_stack()
+    //                 .ok_or(ParseError::NotFindNode.new(t.args.span()))?,
+    //         );
+    //     }
+    //     let var = VarType::Tmp(Var::new(c, t.span()));
+    //     let parent = c.add_node_and_push_stack(var);
+
+    //     c.add_edges(parent, children.into_iter().rev());
+
+    //     Ok(t)
+    // }
+
+    fn chain_returntype_type(
+        &mut self,
+        c: &mut Self::Input,
+        t: (syn::token::RArrow, Box<syn::Type>),
+    ) -> Result<syn::ReturnType, Self::Err> {
+        match &*t.1 {
+            syn::Type::Path(p) => c.push_ty(p.clone()),
+            // reserve for future use
+            syn::Type::Tuple(_) => todo!(),
+            _ => todo!(),
+        }
+        Ok(syn::ReturnType::Type(t.0, t.1))
     }
 
     fn chain_litint(

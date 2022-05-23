@@ -6,6 +6,7 @@ use crate::gen::Chain;
 use crate::utils::{ops_to_string, Marker};
 
 use proc_macro2::TokenStream;
+use quote::ToTokens;
 use syn::parse_quote;
 use syn::{spanned::Spanned, Error};
 
@@ -115,6 +116,46 @@ impl Chain for AfterAnnotator {
             Ok(t)
         } else {
             Err(ParseError::UnexpectNodeType.new(t.span()))
+        }
+    }
+
+    fn chain_exprcall(
+        &mut self,
+        c: &mut Self::Input,
+        t: syn::ExprCall,
+    ) -> Result<syn::ExprCall, Self::Err> {
+        let parent = c
+            .peek_stack()
+            .ok_or(ParseError::NotFindNode.new(t.span()))?;
+
+        let iter = c
+            .graph
+            .to_nodes(parent)
+            .iter()
+            .map(|&x| c.graph.node_weight(x).id())
+            .collect();
+
+        if let syn::Expr::Path(ref p) = *t.func {
+            let call_name = &p
+                .path
+                .segments
+                .last()
+                .ok_or(ParseError::UnexpectError.new(p.path.span()))?
+                .ident;
+            let marker = Marker::new_call(&call_name, &iter);
+
+            for (i, e) in c.graph.to_edges(parent).into_iter().enumerate() {
+                *c.graph.edge_weight_mut(e).ty_mut() = Some(marker.grad(i))
+            }
+
+            if let VarType::Tmp(v) | VarType::Grad(v) = c.graph.node_weight_mut(parent) {
+                *v.ty_mut() = Some(marker.output(0));
+                Ok(t)
+            } else {
+                Err(ParseError::UnexpectNodeType.new(t.span()))
+            }
+        } else {
+            Err(ParseError::UnsupportedSyntax.new(t.func.span()))
         }
     }
 

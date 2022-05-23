@@ -1,25 +1,24 @@
 use mady::prelude::*;
 
-#[grad]
+#[grad(f64, f64)]
 fn add(a: f64, b: f64) -> f64 {
     a + b
 }
 
-#[grad]
+#[grad(f64, f64)]
 fn sub(a: f64, b: f64) -> f64 {
     a - b
 }
 
-#[grad]
+#[grad(f64, f64)]
 fn mul(a: f64, b: f64) -> f64 {
     a * b
 }
 
-#[grad]
+#[grad(f64, f64)]
 fn div(a: f64, b: f64) -> f64 {
     a / b
 }
-
 
 fn main() {
     assert_eq!((8., (1., 1.)), add(6., 2.));
