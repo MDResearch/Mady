@@ -173,7 +173,10 @@ mod impl_max {
                 type Output = Self;
                 type GradLeft = Self;
                 type GradRight = Self;
-                fn grad_max(self: Self, i: Self) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
+                fn grad_max(
+                    self: Self,
+                    i: Self,
+                ) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
                     match self.cmp(&i) {
                         Ordering::Less | Ordering::Equal => (i, (Self::zero(), Self::one())),
                         Ordering::Greater => (self, (Self::one(), Self::zero())),
@@ -191,7 +194,10 @@ mod impl_max {
                 type Output = Self;
                 type GradLeft = Self;
                 type GradRight = Self;
-                fn grad_max(self: Self, i: Self) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
+                fn grad_max(
+                    self: Self,
+                    i: Self,
+                ) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
                     match self.partial_cmp(&i).unwrap() {
                         Ordering::Less | Ordering::Equal => (i, (Self::zero(), Self::one())),
                         Ordering::Greater => (self, (Self::one(), Self::zero())),
@@ -215,7 +221,10 @@ mod impl_min {
                 type Output = Self;
                 type GradLeft = Self;
                 type GradRight = Self;
-                fn grad_min(self: Self, i: Self) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
+                fn grad_min(
+                    self: Self,
+                    i: Self,
+                ) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
                     match self.partial_cmp(&i).unwrap() {
                         Ordering::Less | Ordering::Equal => (self, (Self::one(), Self::zero())),
                         Ordering::Greater => (i, (Self::zero(), Self::one())),
@@ -233,7 +242,10 @@ mod impl_min {
                 type Output = Self;
                 type GradLeft = Self;
                 type GradRight = Self;
-                fn grad_min(self: Self, i: Self) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
+                fn grad_min(
+                    self: Self,
+                    i: Self,
+                ) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
                     match self.partial_cmp(&i).unwrap() {
                         Ordering::Less | Ordering::Equal => (self, (Self::one(), Self::zero())),
                         Ordering::Greater => (i, (Self::zero(), Self::one())),
@@ -325,7 +337,6 @@ mod impl_div {
     impl_trait![parse, i8, i16, i32, i64, i128, isize, f32, f64];
 }
 
-
 // impl_trait![
 //     GradPow,
 //     fn grad_pow(self, i: u32) -> (Self, (Self,)) {
@@ -381,7 +392,6 @@ mod impl_div {
 //     f32,
 //     f64
 // ];
-
 
 #[cfg(test)]
 mod tests {
