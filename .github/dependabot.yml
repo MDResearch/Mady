@@ -8,13 +8,17 @@ updates:
   - package-ecosystem: "cargo" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
-      interval: "daily"
+      interval: "weekly"
   - package-ecosystem: "cargo" # See documentation for possible values
     directory: "/mady_math/" # Location of package manifests
     schedule:
-      interval: "daily"
+      interval: "weekly"
   - package-ecosystem: "cargo" # See documentation for possible values
     directory: "/mady_macro/" # Location of package manifests
     schedule:
-      interval: "daily"
+      interval: "weekly"
+  - package-ecosystem: "cargo" # See documentation for possible values
+    directory: "/codegen/" # Location of package manifests
+    schedule:
+      interval: "weekly"
 

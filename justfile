@@ -27,7 +27,7 @@ lint:
 
 # clean up all code in workspace
 clean:
-    cargo clean --all
+    cargo clean
 
 # run all task
-all: lint fmt check test build
+all: lint fmt check test
