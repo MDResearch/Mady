@@ -2,15 +2,39 @@ use std::ops::{Add, Div, Mul, Sub};
 
 use mady::prelude::*;
 
-#[derive(Debug, Clone, Copy, PartialEq, Hash, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Complex<T> {
     real: T,
     imaginary: T,
 }
 
+impl<T> Complex<T>
+where
+    Self: Zero + Copy,
+{
+    pub fn new(real: T, imaginary: T) -> Self {
+        Self { real, imaginary }
+    }
+
+    pub fn grad_new(real: T, imaginary: T) -> (Self, (Self, Self)) {
+        (Self::new(real, imaginary), (Self::zero(), Self::zero()))
+    }
+}
+
+impl<T> MadyChain for Complex<T>
+where
+    T: Add<Output = T> + Mul<Output = T> + Sub<Output = T> + Copy,
+{
+    type Output = Self;
+
+    fn mady_chain(self, i: Self) -> Self::Output {
+        self * i
+    }
+}
+
 impl<T> From<T> for Complex<T>
 where
-    T: Zero<O0 = T> + Copy,
+    T: Zero + Copy,
 {
     fn from(src: T) -> Self {
         Complex {
@@ -79,10 +103,10 @@ where
 
 impl<T> One for Complex<T>
 where
-    T: One<O0 = T> + Zero<O0 = T> + Copy,
+    T: One<Output = T> + Zero + Copy,
 {
-    type O0 = Complex<T>;
-    fn one() -> Self::O0 {
+    type Output = Complex<T>;
+    fn one() -> Self::Output {
         Complex {
             real: T::one(),
             imaginary: T::zero(),
@@ -92,10 +116,9 @@ where
 
 impl<T> Zero for Complex<T>
 where
-    T: One<O0 = T> + Zero<O0 = T> + Copy,
+    T: Zero + Copy,
 {
-    type O0 = Complex<T>;
-    fn zero() -> Self::O0 {
+    fn zero() -> Self {
         Complex {
             real: T::zero(),
             imaginary: T::zero(),
@@ -105,28 +128,27 @@ where
 
 impl<T> GradAdd<Complex<T>> for Complex<T>
 where
-    T: One<O0 = T> + Zero<O0 = T> + Copy,
-    Complex<T>: Add<Output = Complex<T>> + Copy + One<O0 = Complex<T>>,
+    T: One<Output = T> + Copy,
+    Complex<T>: Add<Output = Complex<T>> + Copy + One<Output = Complex<T>>,
 {
-    type O0 = Complex<T>;
-    type G0 = Complex<T>;
-    type G1 = Complex<T>;
+    type Output = Complex<T>;
+    type GradLeft = Complex<T>;
+    type GradRight = Complex<T>;
 
-    fn grad_add(self, rhs: Complex<T>) -> (Self::O0, (Self::G0, Self::G1)) {
+    fn grad_add(self, rhs: Complex<T>) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
         (self + rhs, (Complex::one(), Complex::one()))
     }
 }
 
 impl<T> GradSub<Complex<T>> for Complex<T>
 where
-    T: One<O0 = T> + Zero<O0 = T> + Copy,
-    Complex<T>: Sub<Output = Complex<T>> + Copy + One<O0 = Complex<T>>,
+    Complex<T>: Zero + Sub<Output = Complex<T>> + Copy + One<Output = Complex<T>>,
 {
-    type O0 = Complex<T>;
-    type G0 = Complex<T>;
-    type G1 = Complex<T>;
+    type Output = Complex<T>;
+    type GradLeft = Complex<T>;
+    type GradRight = Complex<T>;
 
-    fn grad_sub(self, rhs: Complex<T>) -> (Self::O0, (Self::G0, Self::G1)) {
+    fn grad_sub(self, rhs: Complex<T>) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
         (
             self - rhs,
             (Complex::one(), Complex::zero() - Complex::one()),
@@ -136,70 +158,24 @@ where
 
 impl<T> GradMul<Complex<T>> for Complex<T>
 where
-    T: One<O0 = T> + Zero<O0 = T> + Copy,
-    Complex<T>: Mul<Output = Complex<T>> + Copy + One<O0 = Complex<T>>,
+    Complex<T>: Mul<Output = Complex<T>> + Copy + One<Output = Complex<T>>,
 {
-    type O0 = Complex<T>;
-    type G0 = Complex<T>;
-    type G1 = Complex<T>;
+    type Output = Complex<T>;
+    type GradLeft = Complex<T>;
+    type GradRight = Complex<T>;
 
-    fn grad_mul(self, rhs: Complex<T>) -> (Self::O0, (Self::G0, Self::G1)) {
+    fn grad_mul(self, rhs: Complex<T>) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
         (self * rhs, (rhs, self))
     }
 }
 
-// #[grad]
+#[grad(Complex<f64>)]
 fn rotate_37(a: Complex<f64>) -> Complex<f64> {
-    todo!();
-    a * Complex {
-        real: 0.6_f64,
-        imaginary: 0.8_f64,
-    }
+    a * Complex::new(0.8, 0.6)
 }
 
-// use mady_4722293072650129776::rotate_37;
-// mod mady_4722293072650129776 {
-//     use super::*;
-//     type mady_ty_3 = <mady_ty_1 as GradMul<mady_ty_2>>::O0;
-//     type mady_gty_3 = <mady_ty_3 as One>::O0;
-//     type mady_ty_4 = <mady_ty_1 as GradMul<mady_ty_2>>::G0;
-//     type mady_gty_1 = <mady_gty_3 as MadyChain<mady_ty_4>>::O0;
-//     type mady_ty_5 = <mady_ty_1 as GradMul<mady_ty_2>>::G1;
-//     type mady_gty_2 = <mady_gty_3 as MadyChain<mady_ty_5>>::O0;
-//     type mady_ty_2 = f64;
-//     type mady_ty_1 = f64;
-//     type mady_ty_0 = Complex<f64>;
-//     type mady_gty_0 = <mady_ty_0 as One>::O0;
-//     pub fn rotate_37(a: Complex<f64>) -> (Complex<f64>, (mady_gty_0)) {
-//         let mut mady_var_0: mady_gty_0;
-//         let mut mady_var_1: mady_gty_1;
-//         let mut mady_var_2: mady_gty_2;
-//         let mut mady_var_3: mady_gty_3;
-//         let mady_var_4: mady_ty_4;
-//         let mady_var_5: mady_ty_5;
-//         let mady_return = {
-//             {
-//                 {
-//                     let mady_tmp;
-//                     (mady_tmp, (mady_var_4, mady_var_5)) = a.grad_mul(Complex {
-//                         real: 0.6_f64,
-//                         imaginary: 0.8_f64,
-//                     });
-//                     mady_tmp
-//                 }
-//             }
-//         };
-//         mady_var_3 = mady_ty_3::one();
-//         mady_var_1 = mady_var_3.mady_chain(mady_var_4).clone();
-//         mady_var_2 = mady_var_3.mady_chain(mady_var_5).clone();
-//         mady_var_0 = mady_ty_0::one();
-//         (mady_return, (mady_var_0))
-//     }
-// }
-
 fn main() {
-    let mut x = 50;
-    let mut y = 10;
+    assert_eq!(rotate_37(Complex::new(3., 4.)).1, Complex::new(0.8, 0.6));
 }
 
 #[cfg(test)]
