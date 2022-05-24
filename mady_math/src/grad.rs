@@ -3,8 +3,8 @@
 pub struct MadyNull;
 
 pub trait MadyChain<Rhs = Self> {
-    type O0;
-    fn mady_chain(self, i: Rhs) -> Self::O0;
+    type Output;
+    fn mady_chain(self, i: Rhs) -> Self::Output;
 }
 
 /// return one in a type
@@ -14,84 +14,57 @@ pub trait MadyChain<Rhs = Self> {
 /// and
 /// `a.one() * a = a`
 pub trait One: Sized {
-    type O0;
-    fn one() -> Self::O0;
+    type Output;
+    fn one() -> Self::Output;
 }
 
 /// return zero in a type
 ///
-/// zero must can
-/// `a + a.zero() = a`
-/// and
-/// `a.zero() * a = a`
+/// zero mean it not affact function output
 pub trait Zero: Sized {
-    type O0;
-    fn zero() -> Self::O0;
-}
-
-pub trait Max {
-    fn max(self, i: Self) -> Self;
-}
-
-pub trait Min {
-    fn min(self, i: Self) -> Self;
-}
-
-/// just a std method with trait
-pub trait Pow {
-    fn pow(self, exp: u32) -> Self;
-}
-
-/// just a std method with trait
-pub trait Powi {
-    fn powi(self, exp: i32) -> Self;
-}
-
-/// just a std method with trait
-pub trait Powf {
-    fn powf(self, exp: Self) -> Self;
+    fn zero() -> Self;
 }
 
 pub trait GradAdd<Rhs = Self> {
-    type O0;
-    type G0;
-    type G1;
-    fn grad_add(self, rhs: Rhs) -> (Self::O0, (Self::G0, Self::G1));
+    type Output;
+    type GradLeft;
+    type GradRight;
+    fn grad_add(self, rhs: Rhs) -> (Self::Output, (Self::GradLeft, Self::GradRight));
 }
 
 pub trait GradSub<Rhs = Self> {
-    type O0;
-    type G0;
-    type G1;
-    fn grad_sub(self, rhs: Rhs) -> (Self::O0, (Self::G0, Self::G1));
+    type Output;
+    type GradLeft;
+    type GradRight;
+    fn grad_sub(self, rhs: Rhs) -> (Self::Output, (Self::GradLeft, Self::GradRight));
 }
 
 pub trait GradMul<Rhs = Self> {
-    type O0;
-    type G0;
-    type G1;
-    fn grad_mul(self, rhs: Rhs) -> (Self::O0, (Self::G0, Self::G1));
+    type Output;
+    type GradLeft;
+    type GradRight;
+    fn grad_mul(self, rhs: Rhs) -> (Self::Output, (Self::GradLeft, Self::GradRight));
 }
 
 pub trait GradDiv<Rhs = Self> {
-    type O0;
-    type G0;
-    type G1;
-    fn grad_div(self, rhs: Rhs) -> (Self::O0, (Self::G0, Self::G1));
+    type Output;
+    type GradLeft;
+    type GradRight;
+    fn grad_div(self, rhs: Rhs) -> (Self::Output, (Self::GradLeft, Self::GradRight));
 }
 
 pub trait GradMin {
-    type O0;
-    type G0;
-    type G1;
-    fn grad_min(self, i: Self) -> (Self::O0, (Self::G0, Self::G1));
+    type Output;
+    type GradLeft;
+    type GradRight;
+    fn grad_min(self, i: Self) -> (Self::Output, (Self::GradLeft, Self::GradRight));
 }
 
 pub trait GradMax {
-    type O0;
-    type G0;
-    type G1;
-    fn grad_max(self, i: Self) -> (Self::O0, (Self::G0, Self::G1));
+    type Output;
+    type GradLeft;
+    type GradRight;
+    fn grad_max(self, i: Self) -> (Self::Output, (Self::GradLeft, Self::GradRight));
 }
 
 // pub trait GradPow {
@@ -117,8 +90,8 @@ mod impl_chain {
     macro_rules! parse {
         ($ty:ident) => {
             impl MadyChain for $ty {
-                type O0 = Self;
-                fn mady_chain(self, rhs: Self) -> Self::O0 {
+                type Output = Self;
+                fn mady_chain(self, rhs: Self) -> Self::Output {
                     self * rhs
                 }
             }
@@ -135,8 +108,8 @@ mod impl_one {
     macro_rules! parse_i {
         ($ty:ident) => {
             impl One for $ty {
-                type O0 = Self;
-                fn one() -> Self::O0 {
+                type Output = Self;
+                fn one() -> Self::Output {
                     1
                 }
             }
@@ -148,9 +121,9 @@ mod impl_one {
     macro_rules! parse_f {
         ($ty:ident) => {
             impl One for $ty {
-                type O0 = Self;
-                fn one() -> Self::O0 {
-                    1.0
+                type Output = Self;
+                fn one() -> Self::Output {
+                    1.
                 }
             }
         };
@@ -161,8 +134,8 @@ mod impl_one {
     macro_rules! parse_p {
         ($ty:ident) => {
             impl One for $ty {
-                type O0 = Self;
-                fn one() -> Self::O0 {
+                type Output = Self;
+                fn one() -> Self::Output {
                     Self
                 }
             }
@@ -176,31 +149,17 @@ mod impl_zero {
     use super::Zero;
     use crate::impl_trait;
 
-    macro_rules! parse_i {
+    macro_rules! parse {
         ($ty:ident) => {
             impl Zero for $ty {
-                type O0 = Self;
-                fn zero() -> Self::O0 {
-                    0
+                fn zero() -> Self {
+                    Self::default()
                 }
             }
         };
     }
 
-    impl_trait![parse_i, u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize];
-
-    macro_rules! parse_f {
-        ($ty:ident) => {
-            impl Zero for $ty {
-                type O0 = Self;
-                fn zero() -> Self::O0 {
-                    0.0
-                }
-            }
-        };
-    }
-
-    impl_trait![parse_f, f32, f64];
+    impl_trait![parse, u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize, f32, f64];
 }
 
 mod impl_max {
@@ -211,10 +170,10 @@ mod impl_max {
     macro_rules! parse_i {
         ($ty:ident) => {
             impl GradMax for $ty {
-                type O0 = Self;
-                type G0 = Self;
-                type G1 = Self;
-                fn grad_max(self: Self, i: Self) -> (Self::O0, (Self::G0, Self::G1)) {
+                type Output = Self;
+                type GradLeft = Self;
+                type GradRight = Self;
+                fn grad_max(self: Self, i: Self) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
                     match self.cmp(&i) {
                         Ordering::Less | Ordering::Equal => (i, (Self::zero(), Self::one())),
                         Ordering::Greater => (self, (Self::one(), Self::zero())),
@@ -229,10 +188,10 @@ mod impl_max {
     macro_rules! parse_f {
         ($ty:ident) => {
             impl GradMax for $ty {
-                type O0 = Self;
-                type G0 = Self;
-                type G1 = Self;
-                fn grad_max(self: Self, i: Self) -> (Self::O0, (Self::G0, Self::G1)) {
+                type Output = Self;
+                type GradLeft = Self;
+                type GradRight = Self;
+                fn grad_max(self: Self, i: Self) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
                     match self.partial_cmp(&i).unwrap() {
                         Ordering::Less | Ordering::Equal => (i, (Self::zero(), Self::one())),
                         Ordering::Greater => (self, (Self::one(), Self::zero())),
@@ -253,10 +212,10 @@ mod impl_min {
     macro_rules! parse_i {
         ($ty:ident) => {
             impl GradMin for $ty {
-                type O0 = Self;
-                type G0 = Self;
-                type G1 = Self;
-                fn grad_min(self: Self, i: Self) -> (Self::O0, (Self::G0, Self::G1)) {
+                type Output = Self;
+                type GradLeft = Self;
+                type GradRight = Self;
+                fn grad_min(self: Self, i: Self) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
                     match self.partial_cmp(&i).unwrap() {
                         Ordering::Less | Ordering::Equal => (self, (Self::one(), Self::zero())),
                         Ordering::Greater => (i, (Self::zero(), Self::one())),
@@ -271,10 +230,10 @@ mod impl_min {
     macro_rules! parse_f {
         ($ty:ident) => {
             impl GradMin for $ty {
-                type O0 = Self;
-                type G0 = Self;
-                type G1 = Self;
-                fn grad_min(self: Self, i: Self) -> (Self::O0, (Self::G0, Self::G1)) {
+                type Output = Self;
+                type GradLeft = Self;
+                type GradRight = Self;
+                fn grad_min(self: Self, i: Self) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
                     match self.partial_cmp(&i).unwrap() {
                         Ordering::Less | Ordering::Equal => (self, (Self::one(), Self::zero())),
                         Ordering::Greater => (i, (Self::zero(), Self::one())),
@@ -293,10 +252,10 @@ mod impl_add {
     macro_rules! parse {
         ($ty:ident) => {
             impl GradAdd for $ty {
-                type O0 = Self;
-                type G0 = Self;
-                type G1 = Self;
-                fn grad_add(self, rhs: Self) -> (Self::O0, (Self::G0, Self::G1)) {
+                type Output = Self;
+                type GradLeft = Self;
+                type GradRight = Self;
+                fn grad_add(self, rhs: Self) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
                     (self + rhs, (Self::one(), Self::one()))
                 }
             }
@@ -313,10 +272,10 @@ mod impl_sub {
     macro_rules! parse {
         ($ty:ident) => {
             impl GradSub for $ty {
-                type O0 = Self;
-                type G0 = Self;
-                type G1 = Self;
-                fn grad_sub(self, rhs: Self) -> (Self::O0, (Self::G0, Self::G1)) {
+                type Output = Self;
+                type GradLeft = Self;
+                type GradRight = Self;
+                fn grad_sub(self, rhs: Self) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
                     (self - rhs, (Self::one(), -Self::one()))
                 }
             }
@@ -333,10 +292,10 @@ mod impl_mul {
     macro_rules! parse {
         ($ty:ident) => {
             impl GradMul for $ty {
-                type O0 = Self;
-                type G0 = Self;
-                type G1 = Self;
-                fn grad_mul(self, rhs: Self) -> (Self::O0, (Self::G0, Self::G1)) {
+                type Output = Self;
+                type GradLeft = Self;
+                type GradRight = Self;
+                fn grad_mul(self, rhs: Self) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
                     (self * rhs, (rhs, self))
                 }
             }
@@ -353,10 +312,10 @@ mod impl_div {
     macro_rules! parse {
         ($ty:ident) => {
             impl GradDiv for $ty {
-                type O0 = Self;
-                type G0 = Self;
-                type G1 = Self;
-                fn grad_div(self, rhs: Self) -> (Self::O0, (Self::G0, Self::G1)) {
+                type Output = Self;
+                type GradLeft = Self;
+                type GradRight = Self;
+                fn grad_div(self, rhs: Self) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
                     (self / rhs, (Self::one() / rhs, -self / (rhs * rhs)))
                 }
             }
@@ -366,104 +325,6 @@ mod impl_div {
     impl_trait![parse, i8, i16, i32, i64, i128, isize, f32, f64];
 }
 
-// impl_trait![
-//     Max,
-//     fn max(self, i: Self) -> Self {
-//         std::cmp::max(self, i)
-//     },
-//     u8,
-//     u16,
-//     u32,
-//     u64,
-//     u128,
-//     usize,
-//     i8,
-//     i16,
-//     i32,
-//     i64,
-//     i128,
-//     isize
-// ];
-
-// impl_trait![
-//     Max,
-//     fn max(self, i: Self) -> Self {
-//         if self > i {
-//             return self;
-//         }
-//         i
-//     },
-//     f32,
-//     f64
-// ];
-
-// impl_trait![
-//     Min,
-//     fn min(self, i: Self) -> Self {
-//         std::cmp::min(self, i)
-//     },
-//     u8,
-//     u16,
-//     u32,
-//     u64,
-//     u128,
-//     usize,
-//     i8,
-//     i16,
-//     i32,
-//     i64,
-//     i128,
-//     isize
-// ];
-
-// impl_trait![
-//     Min,
-//     fn min(self, i: Self) -> Self {
-//         if self < i {
-//             return self;
-//         }
-//         i
-//     },
-//     f32,
-//     f64
-// ];
-
-// impl_trait![
-//     Pow,
-//     fn pow(self, exp: u32) -> Self {
-//         self.pow(exp)
-//     },
-//     u8,
-//     u16,
-//     u32,
-//     u64,
-//     u128,
-//     usize,
-//     i8,
-//     i16,
-//     i32,
-//     i64,
-//     i128,
-//     isize
-// ];
-
-// impl_trait![
-//     Powi,
-//     fn powi(self, exp: i32) -> Self {
-//         self.powi(exp)
-//     },
-//     f32,
-//     f64
-// ];
-
-// impl_trait![
-//     Powf,
-//     fn powf(self, exp: Self) -> Self {
-//         self.powf(exp)
-//     },
-//     f32,
-//     f64
-// ];
 
 // impl_trait![
 //     GradPow,
@@ -521,14 +382,6 @@ mod impl_div {
 //     f64
 // ];
 
-// impl_trait![
-//     regex
-//     {
-//         impl a for [T] {}
-//     },
-//     f32,
-//     f64
-// ];
 
 #[cfg(test)]
 mod tests {
