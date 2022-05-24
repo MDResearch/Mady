@@ -20,12 +20,6 @@ impl ParseGraph {
     }
 }
 
-pub fn to_upper_camel_case(name: String) -> String {
-    name.split('_')
-        .map(|x| format!("{}{}", x[..1].to_uppercase(), &x[1..]))
-        .collect::<String>()
-}
-
 pub fn grad_method<T>(method_name: T) -> Ident
 where
     T: ToString,

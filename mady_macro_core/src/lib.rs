@@ -16,12 +16,3 @@ pub fn new() -> Parser {
         .register(Linker::new())
         .register(Folder::new())
 }
-
-#[cfg(test)]
-mod tests {
-    use quote::quote;
-    use syn::parse_quote;
-
-    use super::*;
-
-}

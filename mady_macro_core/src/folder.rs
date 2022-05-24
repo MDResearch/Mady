@@ -1,5 +1,5 @@
 use syn::spanned::Spanned;
-use syn::{parse_quote, Error};
+use syn::{parse_quote_spanned, Error};
 
 use crate::error::ParseError;
 use crate::gen::Chain;
@@ -48,10 +48,10 @@ impl Chain for AfterFolder {
             destruct.push(var.to_ident())
         }
 
+        let span = t.span();
         let left = t.left;
         let right = t.right;
-
-        let ast = parse_quote! {
+        let ast = parse_quote_spanned! {span=>
             {
                 let mady_tmp;
                 (mady_tmp, (#(#destruct),*)) = #left.#grad_fn(#right);
@@ -61,31 +61,6 @@ impl Chain for AfterFolder {
         Ok(ast)
     }
 
-    // fn chain_stmt_expr(
-    //     &mut self,
-    //     c: &mut Self::Input,
-    //     t: syn::Expr,
-    // ) -> Result<syn::Stmt, Self::Err> {
-    //     let stmt = if c.is_top_level() {
-    //         let outs = c
-    //             .graph
-    //             .out_nodes()
-    //             .into_iter()
-    //             .map(|x| c.graph.node_weight(x).id().to_ident());
-    //         let backward = gen_backward(c)?;
-    //         parse_quote! {
-    //             {
-    //                 let mady_return = #t;
-    //                 #(#backward)*
-    //                 (mady_return, (#(#outs),*))
-    //             }
-    //         }
-    //     } else {
-    //         t
-    //     };
-    //     Ok(syn::Stmt::Expr(stmt))
-    // }
-
     fn chain_block(&mut self, c: &mut Self::Input, t: syn::Block) -> Result<syn::Block, Self::Err> {
         let stmt = if c.is_sig_level() {
             let outs = c
@@ -94,7 +69,7 @@ impl Chain for AfterFolder {
                 .into_iter()
                 .map(|x| c.graph.node_weight(x).id().to_ident());
             let backward = gen_backward(c)?;
-            parse_quote! {
+            parse_quote_spanned! {t.span()=>
                 {
                     let _mady_return = {#t};
                     #(#backward)*
@@ -115,7 +90,7 @@ impl Chain for AfterFolder {
         let outs = c.tys().iter().take(c.tys().len() - 1);
         match t {
             syn::ReturnType::Default => todo!(),
-            syn::ReturnType::Type(_, t) => Ok(parse_quote! {
+            syn::ReturnType::Type(_, t) => Ok(parse_quote_spanned! {t.span()=>
                 -> (#t, (#(#outs),*))
             }),
         }
@@ -138,7 +113,7 @@ impl Chain for AfterFolder {
         let mut t = t;
         t.method = grad_method(t.method);
 
-        let ast = parse_quote! {
+        let ast = parse_quote_spanned! {t.span()=>
             {
                 let mady_tmp;
                 (mady_tmp, (#(#destruct),*)) = #t;
@@ -173,7 +148,7 @@ impl Chain for AfterFolder {
             return Err(ParseError::UnsupportedSyntax.new(t.func.span()));
         }
 
-        let ast = parse_quote! {
+        let ast = parse_quote_spanned! {t.span()=>
             {
                 let mady_tmp;
                 (mady_tmp, (#(#destruct),*)) = #t;
