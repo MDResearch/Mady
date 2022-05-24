@@ -27,11 +27,9 @@ mod tests {
     #[test]
     fn gen() {
         let ts = parse_quote! {
-            fn let_mul(a: f64) -> f64 {
-                let mut b = a;
-                b = b * a;
-                b
-            }
+            fn nd(a: f64, b: f64) -> f64 {
+                f64::add(a, b)
+            }            
         };
         let tys = vec![parse_quote!(f64), parse_quote!(f64)];
 

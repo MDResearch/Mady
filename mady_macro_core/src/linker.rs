@@ -97,11 +97,12 @@ impl Chain for AfterLinker {
         c: &mut Self::Input,
         t: syn::ExprPath,
     ) -> Result<syn::ExprPath, Self::Err> {
-        let hash = into_hash(
-            t.path
-                .get_ident()
-                .ok_or(ParseError::UnsupportedSyntax.new(t.path.span()))?,
-        );
+        let hash = if let Some(i) = t.path.get_ident() {
+            into_hash(i)
+        } else {
+            return Ok(t);
+        };
+
         if let Some(node) = self.0.borrow().find_var(hash) {
             c.push_stack(node);
             Ok(t)
@@ -219,25 +220,25 @@ impl Chain for AfterLinker {
         Ok(t)
     }
 
-    // fn chain_exprcall(
-    //     &mut self,
-    //     c: &mut Self::Input,
-    //     t: syn::ExprCall,
-    // ) -> Result<syn::ExprCall, Self::Err> {
-    //     let mut children = vec![];
-    //     for _ in 0..=t.args.len() {
-    //         children.push(
-    //             c.pop_stack()
-    //                 .ok_or(ParseError::NotFindNode.new(t.args.span()))?,
-    //         );
-    //     }
-    //     let var = VarType::Tmp(Var::new(c, t.span()));
-    //     let parent = c.add_node_and_push_stack(var);
+    fn chain_exprcall(
+        &mut self,
+        c: &mut Self::Input,
+        t: syn::ExprCall,
+    ) -> Result<syn::ExprCall, Self::Err> {
+        let mut children = vec![];
+        for _ in 0..t.args.len() {
+            children.push(
+                c.pop_stack()
+                    .ok_or(ParseError::NotFindNode.new(t.args.span()))?,
+            );
+        }
+        let var = VarType::Tmp(Var::new(c, t.span()));
+        let parent = c.add_node_and_push_stack(var);
 
-    //     c.add_edges(parent, children.into_iter().rev());
+        c.add_edges(parent, children.into_iter().rev());
 
-    //     Ok(t)
-    // }
+        Ok(t)
+    }
 
     fn chain_returntype_type(
         &mut self,

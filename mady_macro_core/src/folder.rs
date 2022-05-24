@@ -147,4 +147,39 @@ impl Chain for AfterFolder {
         };
         Ok(ast)
     }
+
+    fn chain_expr_call(
+        &mut self,
+        c: &mut Self::Input,
+        t: syn::ExprCall,
+    ) -> Result<syn::Expr, Self::Err> {
+        let parent = c
+            .peek_stack()
+            .ok_or(ParseError::NotFindNode.new(t.span()))?;
+
+        let mut destruct = vec![];
+        for i in c.graph.to_edges(parent) {
+            let var = c.graph.edge_weight(i);
+            destruct.push(var.to_ident())
+        }
+        let mut t = t;
+        if let syn::Expr::Path(ref mut p) = *t.func {
+            if let Some(name) = p.path.segments.last_mut() {
+                name.ident = grad_method(&name.ident);
+            } else {
+                return Err(ParseError::UnexpectError.new(p.span()));
+            }
+        } else {
+            return Err(ParseError::UnsupportedSyntax.new(t.func.span()));
+        }
+
+        let ast = parse_quote! {
+            {
+                let mady_tmp;
+                (mady_tmp, (#(#destruct),*)) = #t;
+                mady_tmp
+            }
+        };
+        Ok(ast)
+    }
 }
