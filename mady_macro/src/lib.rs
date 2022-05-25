@@ -1,5 +1,5 @@
 use proc_macro::TokenStream;
-use quote::quote;
+use quote::{format_ident, quote};
 use syn::{parse_macro_input, ItemFn};
 
 /// this scope describe how to use this library
@@ -28,6 +28,21 @@ pub fn grad(attr: TokenStream, input: TokenStream) -> TokenStream {
         Err(err) => err.to_compile_error(),
     };
     TokenStream::from(ts)
+}
+
+#[proc_macro_attribute]
+pub fn derive_grad(attr: TokenStream, input: TokenStream) -> TokenStream {
+    let mut ts = input.clone();
+    let mut parser = mady_macro_core::new();
+    let tys = parse_macro_input!(attr as Arg);
+    let mut func = parse_macro_input!(input as ItemFn);
+    func.sig.ident = format_ident!("grad_{}", func.sig.ident);
+    let fn_ts = match parser.gen(tys.0, func) {
+        Ok(ts) => quote! {#ts},
+        Err(err) => err.to_compile_error(),
+    };
+    ts.extend(TokenStream::from(fn_ts));
+    ts
 }
 
 struct Arg(Vec<syn::TypePath>);
