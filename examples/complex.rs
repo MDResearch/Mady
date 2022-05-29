@@ -10,14 +10,17 @@ struct Complex<T> {
 
 impl<T> Complex<T>
 where
-    Self: Zero + Copy,
+    Self: MadyZero + Copy,
 {
     pub fn new(real: T, imaginary: T) -> Self {
         Self { real, imaginary }
     }
 
     pub fn grad_new(real: T, imaginary: T) -> (Self, (Self, Self)) {
-        (Self::new(real, imaginary), (Self::zero(), Self::zero()))
+        (
+            Self::new(real, imaginary),
+            (Self::mady_zero(), Self::mady_zero()),
+        )
     }
 }
 
@@ -34,12 +37,12 @@ where
 
 impl<T> From<T> for Complex<T>
 where
-    T: Zero + Copy,
+    T: MadyZero + Copy,
 {
     fn from(src: T) -> Self {
         Complex {
             real: src,
-            imaginary: T::zero(),
+            imaginary: T::mady_zero(),
         }
     }
 }
@@ -101,48 +104,48 @@ where
     }
 }
 
-impl<T> One for Complex<T>
+impl<T> MadyOne for Complex<T>
 where
-    T: One<Output = T> + Zero + Copy,
+    T: MadyOne<Output = T> + MadyZero + Copy,
 {
     type Output = Complex<T>;
-    fn one() -> Self::Output {
+    fn mady_one() -> Self::Output {
         Complex {
-            real: T::one(),
-            imaginary: T::zero(),
+            real: T::mady_one(),
+            imaginary: T::mady_zero(),
         }
     }
 }
 
-impl<T> Zero for Complex<T>
+impl<T> MadyZero for Complex<T>
 where
-    T: Zero + Copy,
+    T: MadyZero + Copy,
 {
-    fn zero() -> Self {
+    fn mady_zero() -> Self {
         Complex {
-            real: T::zero(),
-            imaginary: T::zero(),
+            real: T::mady_zero(),
+            imaginary: T::mady_zero(),
         }
     }
 }
 
 impl<T> GradAdd<Complex<T>> for Complex<T>
 where
-    T: One<Output = T> + Copy,
-    Complex<T>: Add<Output = Complex<T>> + Copy + One<Output = Complex<T>>,
+    T: MadyOne<Output = T> + Copy,
+    Complex<T>: Add<Output = Complex<T>> + Copy + MadyOne<Output = Complex<T>>,
 {
     type Output = Complex<T>;
     type GradLeft = Complex<T>;
     type GradRight = Complex<T>;
 
     fn grad_add(self, rhs: Complex<T>) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
-        (self + rhs, (Complex::one(), Complex::one()))
+        (self + rhs, (Complex::mady_one(), Complex::mady_one()))
     }
 }
 
 impl<T> GradSub<Complex<T>> for Complex<T>
 where
-    Complex<T>: Zero + Sub<Output = Complex<T>> + Copy + One<Output = Complex<T>>,
+    Complex<T>: MadyZero + Sub<Output = Complex<T>> + Copy + MadyOne<Output = Complex<T>>,
 {
     type Output = Complex<T>;
     type GradLeft = Complex<T>;
@@ -151,14 +154,17 @@ where
     fn grad_sub(self, rhs: Complex<T>) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
         (
             self - rhs,
-            (Complex::one(), Complex::zero() - Complex::one()),
+            (
+                Complex::mady_one(),
+                Complex::mady_zero() - Complex::mady_one(),
+            ),
         )
     }
 }
 
 impl<T> GradMul<Complex<T>> for Complex<T>
 where
-    Complex<T>: Mul<Output = Complex<T>> + Copy + One<Output = Complex<T>>,
+    Complex<T>: Mul<Output = Complex<T>> + Copy + MadyOne<Output = Complex<T>>,
 {
     type Output = Complex<T>;
     type GradLeft = Complex<T>;

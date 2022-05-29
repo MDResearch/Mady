@@ -1,9 +1,5 @@
 use std::collections::LinkedList;
-use std::fmt::Debug;
 use std::marker::Copy;
-use tabbycat::attributes;
-use tabbycat::{GraphBuilder, GraphType, Identity, StmtList};
-
 #[derive(Debug, Clone, Copy, PartialEq, Hash, Eq)]
 pub struct Node(usize);
 
@@ -30,39 +26,39 @@ impl<N, E> Default for Graph<N, E> {
     }
 }
 
-impl<N, E> Debug for Graph<N, E> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut stmt = StmtList::new();
+// impl<N, E> Debug for Graph<N, E> {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         let mut stmt = StmtList::new();
 
-        for n in self.nodes() {
-            let from = Identity::Usize(n.index());
-            stmt = stmt.add_node(from.clone(), None, None);
+//         for n in self.nodes() {
+//             let from = Identity::Usize(n.index());
+//             stmt = stmt.add_node(from.clone(), None, None);
 
-            for e in self.to_edges(n) {
-                let to = Identity::Usize(self.to_node(e).index());
-                stmt = stmt.add_node(to.clone(), None, None);
-                let edge = e.index();
-                stmt = stmt.add_edge(
-                    tabbycat::Edge::head_node(from.clone(), None)
-                        .arrow_to_node(to, None)
-                        .add_attrpair(attributes::xlabel(format!("{},{}", edge.0, edge.1))),
-                );
-            }
-        }
+//             for e in self.to_edges(n) {
+//                 let to = Identity::Usize(self.to_node(e).index());
+//                 stmt = stmt.add_node(to.clone(), None, None);
+//                 let edge = e.index();
+//                 stmt = stmt.add_edge(
+//                     tabbycat::Edge::head_node(from.clone(), None)
+//                         .arrow_to_node(to, None)
+//                         .add_attrpair(attributes::xlabel(format!("{},{}", edge.0, edge.1))),
+//                 );
+//             }
+//         }
 
-        write!(
-            f,
-            "```\n\n{}\n\n```",
-            GraphBuilder::default()
-                .graph_type(GraphType::DiGraph)
-                .strict(false)
-                .id(Identity::String("Mady".to_string()))
-                .stmts(stmt)
-                .build()
-                .unwrap()
-        )
-    }
-}
+//         write!(
+//             f,
+//             "```\n\n{}\n\n```",
+//             GraphBuilder::default()
+//                 .graph_type(GraphType::DiGraph)
+//                 .strict(false)
+//                 .id(Identity::String("Mady".to_string()))
+//                 .stmts(stmt)
+//                 .build()
+//                 .unwrap()
+//         )
+//     }
+// }
 
 impl<N, E> Graph<N, E> {
     pub fn new() -> Self {
