@@ -9,7 +9,6 @@ struct Complex<T> {
     imaginary: T,
 }
 
-/// Zero trait
 impl<T> Complex<T>
 where
     Self: Zero + Copy,
@@ -128,6 +127,9 @@ where
     }
 }
 
+/// add custom differential function for Complex
+///
+/// adding #[marco@grad] might work in the future version.
 impl<T> GradAdd<Complex<T>> for Complex<T>
 where
     T: One<Output = T> + Copy,
@@ -171,12 +173,14 @@ where
     }
 }
 
+/// gradrotate_37
 #[grad(Complex<f64>)]
 fn rotate_37(a: Complex<f64>) -> Complex<f64> {
     a * Complex::new(0.8, 0.6)
 }
 
 fn main() {
+    /// a's partial derivative to rotate_37() is 0.8+0.6i, "i" is the square root of -1
     assert_eq!(rotate_37(Complex::new(3., 4.)).1, Complex::new(0.8, 0.6));
 }
 

@@ -11,17 +11,8 @@ see cargo
 
 ## differentiation support:
 
-- structures: `vector`, `matrix`, `tensor`
-- functions: `sin`
+- functions: `min`, `max`
 - operations: `add`, `sub`, `mul`, `div`
 
-## installation
+## [example](examples/readme.md)
 
-not ready yet
-
-<!-- 
-```shell
-cargo install mady
-``` -->
-
-## example
