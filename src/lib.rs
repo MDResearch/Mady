@@ -3,8 +3,6 @@ pub mod prelude {
     pub use mady_macro::*;
     #[cfg(feature = "math")]
     pub use mady_math::prelude::*;
-    #[cfg(feature = "macro")]
-    pub use std::ops::Mul;
 }
 
 #[cfg(feature = "macro")]
