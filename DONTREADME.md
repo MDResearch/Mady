@@ -70,3 +70,4 @@ Event(Scope) Message
 - 🦀 Src
 - 🧪 Test
 - 📚 example
+- 💡 documentation
