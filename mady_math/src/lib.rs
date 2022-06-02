@@ -1,13 +1,12 @@
-pub mod grad;
-pub mod matrix;
-// pub mod ndarray;
-pub mod tensor;
+#[cfg(feature = "nalgebra")]
+pub mod nalgebras;
+pub mod stds;
 #[macro_use]
 mod macros;
 
 pub mod prelude {
-    pub use super::grad::*;
-    pub use super::matrix::{mat, Matrix};
-    // pub use super::ndarray::*;
-    pub use super::tensor::{ten, Tensor};
+    pub use super::stds::*;
+
+    #[cfg(feature = "nalgebra")]
+    pub use super::nalgebras::*;
 }

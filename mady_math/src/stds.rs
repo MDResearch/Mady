@@ -14,9 +14,10 @@ pub trait MadyChain<Rhs = Self> {
 /// ```ignore
 /// assert_eq!(i32::zero(),0_i32)
 /// ```
-pub trait One: Sized {
+///
+pub trait MadyOne: Sized {
     type Output;
-    fn one() -> Self::Output;
+    fn mady_one() -> Self::Output;
 }
 
 /// return zero in a type
@@ -26,8 +27,8 @@ pub trait One: Sized {
 /// ```ignore
 /// assert_eq!(i32::zero(),0_i32)
 /// ```
-pub trait Zero: Sized {
-    fn zero() -> Self;
+pub trait MadyZero: Sized {
+    fn mady_zero() -> Self;
 }
 
 ///
@@ -129,14 +130,14 @@ mod impl_chain {
 }
 
 mod impl_one {
-    use super::{MadyNull, One};
+    use super::{MadyNull, MadyOne};
     use crate::impl_trait;
 
     macro_rules! parse_i {
         ($ty:ident) => {
-            impl One for $ty {
+            impl MadyOne for $ty {
                 type Output = Self;
-                fn one() -> Self::Output {
+                fn mady_one() -> Self::Output {
                     1
                 }
             }
@@ -147,9 +148,9 @@ mod impl_one {
 
     macro_rules! parse_f {
         ($ty:ident) => {
-            impl One for $ty {
+            impl MadyOne for $ty {
                 type Output = Self;
-                fn one() -> Self::Output {
+                fn mady_one() -> Self::Output {
                     1.
                 }
             }
@@ -160,9 +161,9 @@ mod impl_one {
 
     macro_rules! parse_p {
         ($ty:ident) => {
-            impl One for $ty {
+            impl MadyOne for $ty {
                 type Output = Self;
-                fn one() -> Self::Output {
+                fn mady_one() -> Self::Output {
                     Self
                 }
             }
@@ -173,13 +174,13 @@ mod impl_one {
 }
 
 mod impl_zero {
-    use super::Zero;
+    use super::MadyZero;
     use crate::impl_trait;
 
     macro_rules! parse {
         ($ty:ident) => {
-            impl Zero for $ty {
-                fn zero() -> Self {
+            impl MadyZero for $ty {
+                fn mady_zero() -> Self {
                     Self::default()
                 }
             }
@@ -190,7 +191,7 @@ mod impl_zero {
 }
 
 mod impl_max {
-    use super::{GradMax, One, Zero};
+    use super::{GradMax, MadyOne, MadyZero};
     use crate::impl_trait;
     use std::cmp::Ordering;
 
@@ -205,8 +206,10 @@ mod impl_max {
                     i: Self,
                 ) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
                     match self.cmp(&i) {
-                        Ordering::Less | Ordering::Equal => (i, (Self::zero(), Self::one())),
-                        Ordering::Greater => (self, (Self::one(), Self::zero())),
+                        Ordering::Less | Ordering::Equal => {
+                            (i, (Self::mady_zero(), Self::mady_one()))
+                        }
+                        Ordering::Greater => (self, (Self::mady_one(), Self::mady_zero())),
                     }
                 }
             }
@@ -226,8 +229,10 @@ mod impl_max {
                     i: Self,
                 ) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
                     match self.partial_cmp(&i).unwrap() {
-                        Ordering::Less | Ordering::Equal => (i, (Self::zero(), Self::one())),
-                        Ordering::Greater => (self, (Self::one(), Self::zero())),
+                        Ordering::Less | Ordering::Equal => {
+                            (i, (Self::mady_zero(), Self::mady_one()))
+                        }
+                        Ordering::Greater => (self, (Self::mady_one(), Self::mady_zero())),
                     }
                 }
             }
@@ -238,7 +243,7 @@ mod impl_max {
 }
 
 mod impl_min {
-    use super::{GradMin, One, Zero};
+    use super::{GradMin, MadyOne, MadyZero};
     use crate::impl_trait;
     use std::cmp::Ordering;
 
@@ -253,8 +258,10 @@ mod impl_min {
                     i: Self,
                 ) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
                     match self.partial_cmp(&i).unwrap() {
-                        Ordering::Less | Ordering::Equal => (self, (Self::one(), Self::zero())),
-                        Ordering::Greater => (i, (Self::zero(), Self::one())),
+                        Ordering::Less | Ordering::Equal => {
+                            (self, (Self::mady_one(), Self::mady_zero()))
+                        }
+                        Ordering::Greater => (i, (Self::mady_zero(), Self::mady_one())),
                     }
                 }
             }
@@ -274,8 +281,10 @@ mod impl_min {
                     i: Self,
                 ) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
                     match self.partial_cmp(&i).unwrap() {
-                        Ordering::Less | Ordering::Equal => (self, (Self::one(), Self::zero())),
-                        Ordering::Greater => (i, (Self::zero(), Self::one())),
+                        Ordering::Less | Ordering::Equal => {
+                            (self, (Self::mady_one(), Self::mady_zero()))
+                        }
+                        Ordering::Greater => (i, (Self::mady_zero(), Self::mady_one())),
                     }
                 }
             }
@@ -285,7 +294,7 @@ mod impl_min {
 }
 
 mod impl_add {
-    use super::{GradAdd, One};
+    use super::{GradAdd, MadyOne};
     use crate::impl_trait;
 
     macro_rules! parse {
@@ -295,7 +304,7 @@ mod impl_add {
                 type GradLeft = Self;
                 type GradRight = Self;
                 fn grad_add(self, rhs: Self) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
-                    (self + rhs, (Self::one(), Self::one()))
+                    (self + rhs, (Self::mady_one(), Self::mady_one()))
                 }
             }
         };
@@ -305,7 +314,7 @@ mod impl_add {
 }
 
 mod impl_sub {
-    use super::{GradSub, One};
+    use super::{GradSub, MadyOne};
     use crate::impl_trait;
 
     macro_rules! parse {
@@ -315,7 +324,7 @@ mod impl_sub {
                 type GradLeft = Self;
                 type GradRight = Self;
                 fn grad_sub(self, rhs: Self) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
-                    (self - rhs, (Self::one(), -Self::one()))
+                    (self - rhs, (Self::mady_one(), -Self::mady_one()))
                 }
             }
         };
@@ -345,7 +354,7 @@ mod impl_mul {
 }
 
 mod impl_div {
-    use super::{GradDiv, One};
+    use super::{GradDiv, MadyOne};
     use crate::impl_trait;
 
     macro_rules! parse {
@@ -355,7 +364,7 @@ mod impl_div {
                 type GradLeft = Self;
                 type GradRight = Self;
                 fn grad_div(self, rhs: Self) -> (Self::Output, (Self::GradLeft, Self::GradRight)) {
-                    (self / rhs, (Self::one() / rhs, -self / (rhs * rhs)))
+                    (self / rhs, (Self::mady_one() / rhs, -self / (rhs * rhs)))
                 }
             }
         };

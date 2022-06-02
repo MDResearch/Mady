@@ -1,10 +1,14 @@
 use proc_macro2::{Ident, Span};
 use quote::format_ident;
+use std::fmt::Debug;
 use syn::Error;
 
 use crate::gen::*;
 use crate::generator::gen_declare;
 use crate::graph::{Edge, Graph, Node};
+
+use tabbycat::attributes;
+use tabbycat::{GraphBuilder, GraphType, Identity, StmtList};
 
 type ParserChian = dyn Chain<Input = Recorder, Err = Error>;
 pub type ParseGraph = Graph<VarType, Var>;
@@ -80,6 +84,10 @@ impl Var {
     pub fn to_string(&self) -> String {
         format!("_mady_var_{}", self.id)
     }
+
+    pub fn id(&self) -> Id {
+        Id::new(self.id)
+    }
 }
 
 impl VarType {
@@ -95,7 +103,7 @@ impl VarType {
             VarType::Tmp(v) | VarType::Grad(v) | VarType::IF(v, _) | VarType::IFEL(v, _, _) => {
                 Id::new(v.id)
             }
-            VarType::Null => todo!(),
+            VarType::Null => Id::new(usize::MAX),
         }
     }
 }
@@ -236,6 +244,41 @@ impl ChainIter for Parser {
     ) -> Box<dyn Iterator<Item = &mut Box<dyn Chain<Input = Self::Input, Err = Self::Err>>> + '_>
     {
         Box::new(self.after.iter_mut())
+    }
+}
+
+impl Debug for ParseGraph {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut stmt = StmtList::new();
+
+        for n in self.nodes() {
+            let from = Identity::Usize(self.node_weight(n).id().0);
+            stmt = stmt.add_node(from.clone(), None, None);
+
+            for e in self.to_edges(n) {
+                let to_node = self.to_node(e);
+                let to = Identity::Usize(self.node_weight(to_node).id().0);
+                stmt = stmt.add_node(to.clone(), None, None);
+                let edge = self.edge_weight(e).id().0;
+                stmt = stmt.add_edge(
+                    tabbycat::Edge::head_node(from.clone(), None)
+                        .arrow_to_node(to, None)
+                        .add_attrpair(attributes::label(edge.to_string())),
+                );
+            }
+        }
+
+        write!(
+            f,
+            "```\n\n{}\n\n```",
+            GraphBuilder::default()
+                .graph_type(GraphType::DiGraph)
+                .strict(false)
+                .id(Identity::String("Mady".to_string()))
+                .stmts(stmt)
+                .build()
+                .unwrap()
+        )
     }
 }
 

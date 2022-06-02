@@ -46,7 +46,7 @@ pub fn gen_backward(c: &Recorder) -> Result<Vec<syn::Stmt>, Error> {
                 if roots.contains(&n) {
                     let node_ty = tys.next().ok_or(ParseError::NotFindType.new(v.span()))?;
                     stmts.push(parse_quote_spanned! {v.span()=>
-                        #node_ident = <#node_ty>::one();
+                        #node_ident = <#node_ty>::mady_one();
                     });
                 }
                 for e in c.graph.to_edges(n) {
