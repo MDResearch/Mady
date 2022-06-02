@@ -2,12 +2,14 @@ use std::ops::{Add, Div, Mul, Sub};
 
 use mady::prelude::*;
 
+/// definition of complex number
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Complex<T> {
     real: T,
     imaginary: T,
 }
 
+/// Zero trait
 impl<T> Complex<T>
 where
     Self: Zero + Copy,
@@ -176,6 +178,12 @@ fn rotate_37(a: Complex<f64>) -> Complex<f64> {
 
 fn main() {
     assert_eq!(rotate_37(Complex::new(3., 4.)).1, Complex::new(0.8, 0.6));
+}
+
+impl GradSin for f64 {
+    fn gradsin(self) -> self {
+        self.cos()
+    }
 }
 
 #[cfg(test)]

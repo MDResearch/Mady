@@ -2,11 +2,11 @@ use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::{parse_macro_input, ItemFn};
 
-/// this scope describe how to use this library
+/// this scope describe the main function of this library.
 ///
-/// "grad" is a macro which let you get to the differentiation of the formula you inputed
+/// "grad" is a macro which let you get to the partial derivative of each overload of function.
 ///
-///  the usage of [grad] attribute will be introduced below
+///  the usage of #[grad] attribute will be introduced below.
 ///     
 ///  ```ignore
 /// #[grad]
@@ -15,10 +15,33 @@ use syn::{parse_macro_input, ItemFn};
 /// }
 ///  ```
 ///
-/// The 1st line decribe the method of importing grad
-///  
-/// The 3..N line decribe the formula you want to different; for this instance, it different a `a + b` formula
+/// The output function should worked like the function below.
 ///
+/// But the actuall output should be more complicated and not so human readable.
+///
+/// output of gradadd: (original output of add, (a's partial derivative to add(a,b), b's partial derivative to add(a,b)))
+///
+/// ```ignore
+/// fn gradadd(a: f64, b: f64)->(f64 ,f64 ,f64){
+///     (a+b, (1 ,1))
+/// }
+/// ```
+///
+/// All function call in grad functions should be either differentiable ,min ,max or elementary arithmetic.
+///
+/// If the function call isn't supported, you can create a grad function your own.
+///
+/// Below is an example to add sin support to be called in grad functions.
+/// ```ignore
+/// impl GradSin for f64 {
+///     fn gradsin(self) -> self {
+///         self.cos()
+///     }
+/// }
+/// ```
+///
+/// Also of note that the function "add" will disappear, if you want to keep "add" and "gradadd", you can use #[macro@derive_grad]
+///  
 #[proc_macro_attribute]
 pub fn grad(attr: TokenStream, input: TokenStream) -> TokenStream {
     let mut parser = mady_macro_core::new();
@@ -30,6 +53,11 @@ pub fn grad(attr: TokenStream, input: TokenStream) -> TokenStream {
     TokenStream::from(ts)
 }
 
+///
+/// 'derive_grad' is a macro which let you get to the partial derivative of each overload of function.
+///
+/// It's very similar to what #[macro@grad] do to your function, the only difference is that #[derive_grad] will keep your original function
+///
 #[proc_macro_attribute]
 pub fn derive_grad(attr: TokenStream, input: TokenStream) -> TokenStream {
     let mut ts = input.clone();

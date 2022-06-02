@@ -9,10 +9,11 @@ pub trait MadyChain<Rhs = Self> {
 
 /// return one in a type
 ///
-/// one must can
-/// `a * a.one() = a`
-/// and
-/// `a.one() * a = a`
+/// one mean whatever multiplied by one is whatever
+///
+/// ```ignore
+/// assert_eq!(i32::zero(),0_i32)
+/// ```
 pub trait One: Sized {
     type Output;
     fn one() -> Self::Output;
@@ -21,10 +22,17 @@ pub trait One: Sized {
 /// return zero in a type
 ///
 /// zero mean it not affact function output
+///
+/// ```ignore
+/// assert_eq!(i32::zero(),0_i32)
+/// ```
 pub trait Zero: Sized {
     fn zero() -> Self;
 }
 
+///
+/// Differential of elementary arithmetic
+///
 pub trait GradAdd<Rhs = Self> {
     type Output;
     type GradLeft;
@@ -32,6 +40,9 @@ pub trait GradAdd<Rhs = Self> {
     fn grad_add(self, rhs: Rhs) -> (Self::Output, (Self::GradLeft, Self::GradRight));
 }
 
+///
+/// Differential of elementary arithmetic
+///
 pub trait GradSub<Rhs = Self> {
     type Output;
     type GradLeft;
@@ -39,6 +50,9 @@ pub trait GradSub<Rhs = Self> {
     fn grad_sub(self, rhs: Rhs) -> (Self::Output, (Self::GradLeft, Self::GradRight));
 }
 
+///
+/// Differential of elementary arithmetic
+///
 pub trait GradMul<Rhs = Self> {
     type Output;
     type GradLeft;
@@ -46,6 +60,9 @@ pub trait GradMul<Rhs = Self> {
     fn grad_mul(self, rhs: Rhs) -> (Self::Output, (Self::GradLeft, Self::GradRight));
 }
 
+///
+/// Differential of elementary arithmetic
+///
 pub trait GradDiv<Rhs = Self> {
     type Output;
     type GradLeft;
@@ -53,6 +70,11 @@ pub trait GradDiv<Rhs = Self> {
     fn grad_div(self, rhs: Rhs) -> (Self::Output, (Self::GradLeft, Self::GradRight));
 }
 
+///
+/// Differential of min
+///
+/// "if else" is currently unsupported, use min in unstable.
+///
 pub trait GradMin {
     type Output;
     type GradLeft;
@@ -60,6 +82,11 @@ pub trait GradMin {
     fn grad_min(self, i: Self) -> (Self::Output, (Self::GradLeft, Self::GradRight));
 }
 
+///
+/// Differential of max
+///
+/// "if else" is currently unsupported, use max in unstable.
+///
 pub trait GradMax {
     type Output;
     type GradLeft;
