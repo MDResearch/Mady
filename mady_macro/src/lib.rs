@@ -2,6 +2,9 @@ use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::{parse_macro_input, ItemFn};
 
+
+// TODO add module level doc
+
 /// this scope describe the main function of this library.
 ///
 /// "grad" is a macro which let you get to the partial derivative of each overload of function.
@@ -9,7 +12,7 @@ use syn::{parse_macro_input, ItemFn};
 ///  the usage of #[grad] attribute will be introduced below.
 ///     
 ///  ```ignore
-/// #[grad]
+/// #[grad(f64, f64)]
 /// fn add(a: f64, b: f64) -> f64 {
 ///     a + b
 /// }
@@ -19,10 +22,10 @@ use syn::{parse_macro_input, ItemFn};
 ///
 /// But the actuall output should be more complicated and not so human readable.
 ///
-/// output of gradadd: (original output of add, (a's partial derivative to add(a,b), b's partial derivative to add(a,b)))
+/// output of add: (original output of add, (a's partial derivative to add(a,b), b's partial derivative to add(a,b)))
 ///
 /// ```ignore
-/// fn gradadd(a: f64, b: f64)->(f64 ,f64 ,f64){
+/// fn add(a: f64, b: f64)->(f64 ,f64 ,f64){
 ///     (a+b, (1 ,1))
 /// }
 /// ```
@@ -58,6 +61,11 @@ pub fn grad(attr: TokenStream, input: TokenStream) -> TokenStream {
 ///
 /// It's very similar to what #[macro@grad] do to your function, the only difference is that #[derive_grad] will keep your original function
 ///
+/// ```ignore
+/// fn original()...
+///
+/// fn grad_original()...
+/// ```
 #[proc_macro_attribute]
 pub fn derive_grad(attr: TokenStream, input: TokenStream) -> TokenStream {
     let mut ts = input.clone();

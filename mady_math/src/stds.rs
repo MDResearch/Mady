@@ -1,7 +1,10 @@
 //! about the std ops trait
+// TODO add module level doc
 
 pub struct MadyNull;
 
+
+// TODO add chain rule doc
 pub trait MadyChain<Rhs = Self> {
     type Output;
     fn mady_chain(self, i: Rhs) -> Self::Output;
@@ -12,7 +15,7 @@ pub trait MadyChain<Rhs = Self> {
 /// one mean whatever multiplied by one is whatever
 ///
 /// ```ignore
-/// assert_eq!(i32::zero(),0_i32)
+/// assert_eq!(i32::mady_one(),0_i32)
 /// ```
 ///
 pub trait MadyOne: Sized {
@@ -25,7 +28,7 @@ pub trait MadyOne: Sized {
 /// zero mean it not affact function output
 ///
 /// ```ignore
-/// assert_eq!(i32::zero(),0_i32)
+/// assert_eq!(i32::mady_zero(),0_i32)
 /// ```
 pub trait MadyZero: Sized {
     fn mady_zero() -> Self;
