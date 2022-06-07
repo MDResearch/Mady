@@ -3,7 +3,6 @@
 
 pub struct MadyNull;
 
-
 // TODO add chain rule doc
 pub trait MadyChain<Rhs = Self> {
     type Output;
