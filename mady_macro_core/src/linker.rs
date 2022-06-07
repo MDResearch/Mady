@@ -187,12 +187,12 @@ impl Chain for AfterLinker {
                     .borrow_mut()
                     .replace_phantom(into_hash(&p.ident), right)
                     .ok_or(ParseError::NotFindValue.new(p.span()))?;
-                    // drop
-                    let left = c
-                        .pop_stack()
-                        .ok_or(ParseError::NotFindNode.new(t.pat.span()))?;
-                    *c.graph.node_weight_mut(left) = VarType::Null;
-            }
+                }
+                // drop
+                let left = c
+                    .pop_stack()
+                    .ok_or(ParseError::NotFindNode.new(t.pat.span()))?;
+                *c.graph.node_weight_mut(left) = VarType::Null;
 
             Ok(t)
         } else {
