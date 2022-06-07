@@ -11,7 +11,7 @@ path = "./mady_math"
 path = "./mady_macro"
 
 [dev-dependencies]
-trybuild = "1.0.61"
+trybuild = "1.0"
 
 [workspace]
 members = [
