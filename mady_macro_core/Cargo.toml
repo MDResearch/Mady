@@ -1,7 +1,9 @@
 [package]
 edition = "2021"
 name = "mady_macro_core"
-version = "0.1.0"
+version = "0.1.0-alpha"
+description = "🌲 mady's subpackage"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

@@ -1,7 +1,9 @@
 [package]
 edition = "2021"
 name = "mady_macro"
-version = "0.1.0"
+version = "0.1.0-beta"
+description = "🌲 mady's subpackage"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -15,6 +17,7 @@ version = "1.0"
 
 [dependencies.mady_macro_core]
 path = "./../mady_macro_core"
+version = "0.1.0-alpha"
 
 [lib]
 proc-macro = true

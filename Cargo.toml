@@ -1,25 +1,27 @@
 [package]
 authors = ["by EHY <https://github.com/organizations/MDResearch/> "]
+description = "🌲 ahead-of-time automatic differentiation"
 edition = "2021"
 name = "mady"
-version = "0.1.0"
+version = "0.1.0-beta"
+readme = "README.md"
+license = "MIT"
+keywords = ["autodiff", "macro", "math"]
+categories = ["science", "mathematics"]
 
 [dependencies.mady_math]
 path = "./mady_math"
+version = "0.1.0-beta"
 
 [dependencies.mady_macro]
 path = "./mady_macro"
+version = "0.1.0-beta"
 
 [dev-dependencies]
 trybuild = "1.0"
 
 [workspace]
-members = [
-  "mady_math",
-  "mady_macro",
-  "mady_macro_core",
-  "codegen"
-]
+members = ["mady_math", "mady_macro", "mady_macro_core", "codegen"]
 
 [features]
 default = ["macro", "math"]
