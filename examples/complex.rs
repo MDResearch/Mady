@@ -185,7 +185,6 @@ fn rotate_37(a: Complex<f64>) -> Complex<f64> {
     a * Complex::new(0.8, 0.6)
 }
 
-
 /// a's partial derivative to rotate_37() is 0.8+0.6i, "i" is the square root of -1
 fn main() {
     assert_eq!(rotate_37(Complex::new(3., 4.)).1, Complex::new(0.8, 0.6));
