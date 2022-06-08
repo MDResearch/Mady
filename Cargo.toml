@@ -11,9 +11,11 @@ categories = ["Science", "Mathematics"]
 
 [dependencies.mady_math]
 path = "./mady_math"
+version = "*"
 
 [dependencies.mady_macro]
 path = "./mady_macro"
+version = "*"
 
 [dev-dependencies]
 trybuild = "1.0"
