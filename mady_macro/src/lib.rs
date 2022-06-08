@@ -5,9 +5,9 @@ use syn::{parse_macro_input, ItemFn};
 // TODO add module level doc
 
 /// this scope describe the main function of this library.
-/// 
-/// "grad" is a macro which let you get to the partial derivative of each overload of function.
-/// 
+///
+/// "grad" is a macro which let you get to the partial derivative of each overload.
+///
 ///  the usage of #[grad] attribute will be introduced below.
 ///     
 ///  ```ignore
@@ -21,10 +21,10 @@ use syn::{parse_macro_input, ItemFn};
 ///
 /// But the actuall output should be more complicated and not so human readable.
 ///
-/// output of add: (original output of add, (a partial derivative of add(a,b), b partial derivative of add(a,b)))
+/// output of gradadd: (original output of add, (a partial derivative of add(a,b), b partial derivative of add(a,b)))
 ///
 /// ```ignore
-/// fn add(a: f64, b: f64)->(f64 ,f64 ,f64){
+/// fn gradadd(a: f64, b: f64)->(f64 ,(f64 ,f64)){
 ///     (a+b, (1 ,1))
 /// }
 /// ```
@@ -56,7 +56,7 @@ pub fn grad(attr: TokenStream, input: TokenStream) -> TokenStream {
 }
 
 ///
-/// 'derive_grad' is a macro which let you get to the partial derivative of each overload of function.
+/// 'derive_grad' is a macro which let you get to the partial derivative of each overload.
 ///
 /// It's very similar to what #[macro@grad] do to your function, the only difference is that #[derive_grad] will keep your original function
 ///
