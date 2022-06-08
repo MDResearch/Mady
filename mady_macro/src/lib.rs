@@ -5,9 +5,9 @@ use syn::{parse_macro_input, ItemFn};
 // TODO add module level doc
 
 /// this scope describe the main function of this library.
-///
+/// 
 /// "grad" is a macro which let you get to the partial derivative of each overload of function.
-///
+/// 
 ///  the usage of #[grad] attribute will be introduced below.
 ///     
 ///  ```ignore
@@ -21,7 +21,7 @@ use syn::{parse_macro_input, ItemFn};
 ///
 /// But the actuall output should be more complicated and not so human readable.
 ///
-/// output of add: (original output of add, (a's partial derivative to add(a,b), b's partial derivative to add(a,b)))
+/// output of add: (original output of add, (a partial derivative of add(a,b), b partial derivative of add(a,b)))
 ///
 /// ```ignore
 /// fn add(a: f64, b: f64)->(f64 ,f64 ,f64){
@@ -31,7 +31,7 @@ use syn::{parse_macro_input, ItemFn};
 ///
 /// All function call in grad functions should be either differentiable ,min ,max or elementary arithmetic.
 ///
-/// If the function call isn't supported, you can create a grad function your own.
+/// If the function call isn't supported, meaning that grad{function_name} is invalid, you can create a grad function your own.
 ///
 /// Below is an example to add sin support to be called in grad functions.
 /// ```ignore
