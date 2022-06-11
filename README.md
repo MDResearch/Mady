@@ -16,3 +16,4 @@ see cargo
 
 ## [example](examples/readme.md)
 
+[hardcoded url](https://github.com/MDResearch/Mady/tree/main/examples)
