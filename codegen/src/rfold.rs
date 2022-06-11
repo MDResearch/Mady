@@ -1,8 +1,8 @@
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
-use std::fmt::Display;
+
 use std::str::FromStr;
-use syn_codegen::{Data, Definitions, Fields, Node, Punctuated, Type, Variants};
+use syn_codegen::{Data, Definitions, Node, Punctuated, Type};
 
 type TS = TokenStream;
 
@@ -215,7 +215,7 @@ fn gen_fold(field: TS, ty: &Type) -> TS {
             }
         }
         Type::Box(t) => {
-            let t = gen_fold(quote!(*#field), &t);
+            let t = gen_fold(quote!(*#field), t);
             quote!(Box::new(#t))
         }
         Type::Tuple(v) => gen_folds(field, v),
@@ -224,7 +224,7 @@ fn gen_fold(field: TS, ty: &Type) -> TS {
 }
 
 fn types_ty(v: &Vec<Type>) -> TS {
-    let v = v.iter().map(|t| type_ty(t));
+    let v = v.iter().map(type_ty);
     quote!((#(#v),*))
 }
 
@@ -252,15 +252,15 @@ fn type_ty(ty: &Type) -> TS {
             quote!(syn::punctuated::Punctuated<#t, #p>)
         }
         Type::Option(t) => {
-            let t = type_ty(&t);
+            let t = type_ty(t);
             quote!(Option<#t>)
         }
         Type::Box(t) => {
-            let t = type_ty(&t);
+            let t = type_ty(t);
             quote!(Box<#t>)
         }
         Type::Vec(t) => {
-            let t = type_ty(&t);
+            let t = type_ty(t);
             quote!(Vec<#t>)
         }
         Type::Tuple(v) => types_ty(v),
