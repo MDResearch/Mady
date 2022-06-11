@@ -11,11 +11,13 @@ use syn_codegen::Definitions;
 mod macros;
 mod chain;
 mod fold_chain;
+mod rfold;
 
 const SYN: &str = include_str!("syn.json");
 
 fn main() {
     let defs: Definitions = from_str(SYN).unwrap();
+    write_out("mady_macro_core/src/gen/rfold.rs", rfold::gen(&defs));
     write_out("mady_macro_core/src/gen/chain.rs", chain::gen(&defs));
     write_out(
         "mady_macro_core/src/gen/fold_chain.rs",

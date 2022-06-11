@@ -1,5 +1,6 @@
 mod chain;
 mod fold_chain;
+mod rfold;
 
 pub trait ChainIter {
     type Input;
