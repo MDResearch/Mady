@@ -14,6 +14,52 @@ see cargo
 - functions: `min`, `max`
 - operations: `add`, `sub`, `mul`, `div`
 
-## [example](examples/readme.md)
+## Get Started
+
+First, set up project and add ``mady`` as dependency in your Cargo.yml
+```toml
+[dependencies]
+mady = "*"
+```
+
+Write a simple fn (only [differentiation support](#differentiation-support) operation/function can be used)
+
+```rust
+fn simple(a:isize, b:isize)-> isize{
+  a + b
+}
+```
+
+Finally, add ``#[grad()]``(attribute macro) to your function.
+```rust
+// isize here, because the output type of simple is isize
+#[grad(isize)]
+fn simple(a:isize, b:isize)-> isize{
+  a + b
+}
+```
+
+expect output
+```rust
+fn grad_simple()-> (isize,isize){
+  (a+b, (1, 1))
+}
+```
+
+$$
+grad/_simple(a,b)=(simple(a,b),({d simple \over d a},{d simple \over d b}))
+$$
+
+To use unsupported function like ``sin``, add fn named ``grad_{{fn name}}``.
+```rust
+impl GradSin for f64 {
+    fn grad_sin(self) -> self {
+        self.cos()
+    }
+}
+```
+
+## example
 
 [hardcoded url](https://github.com/MDResearch/Mady/tree/main/examples)
+
