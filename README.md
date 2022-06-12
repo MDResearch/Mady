@@ -30,7 +30,7 @@ fn simple(a:isize, b:isize)-> isize{
 }
 ```
 
-Finally, add ``#[grad()]``(attribute macro) to your function.
+Finally, add ``#[derive_grad()]``(attribute macro) to your function.
 ```rust
 // isize here, because the output type of simple is isize
 #[grad(isize)]
@@ -41,7 +41,10 @@ fn simple(a:isize, b:isize)-> isize{
 
 expect output
 ```rust
-fn grad_simple()-> (isize,isize){
+fn simple(a:isize, b:isize)-> isize{
+  a+b
+}
+fn grad_simple(a:isize, b:isize)-> (isize,(isize,isize)){
   (a+b, (1, 1))
 }
 ```
