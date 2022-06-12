@@ -33,7 +33,7 @@ fn simple(a:isize, b:isize)-> isize{
 Finally, add ``#[derive_grad()]``(attribute macro) to your function.
 ```rust
 // isize here, because the output type of simple is isize
-#[grad(isize)]
+#[derive_grad(isize)]
 fn simple(a:isize, b:isize)-> isize{
   a + b
 }
