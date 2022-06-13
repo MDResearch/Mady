@@ -1,4 +1,9 @@
-#![doc = include_str!("../README.md")]
+//! Read `README.md`
+//! 
+//! [🚚](https://github.com/MDResearch/Mady)
+//! 
+//! 
+
 pub mod prelude {
     #[cfg(feature = "macro")]
     pub use mady_macro::*;
