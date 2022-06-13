@@ -8,6 +8,7 @@ readme = "README.md"
 license = "MIT"
 keywords = ["autodiff", "macro", "math"]
 categories = ["science", "mathematics"]
+repository = "https://github.com/MDResearch/Mady"
 
 [dependencies.mady_math]
 path = "./mady_math"
