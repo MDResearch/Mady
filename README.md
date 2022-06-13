@@ -1,6 +1,6 @@
 # MADY (macro-auto differentiation)
 
-[![Rust Test](https://github.com/MDResearch/research/actions/workflows/rust.yml/badge.svg)](https://github.com/MDResearch/research/actions/workflows/rust.yml) [![Project](https://img.shields.io/badge/Project-WIP-brightgreen)](https://github.com/orgs/MDResearch/projects/3)
+[![Rust Test](https://github.com/MDResearch/research/actions/workflows/rust.yml/badge.svg)](https://github.com/MDResearch/research/actions/workflows/rust.yml) [![Project](https://img.shields.io/badge/Project-WIP-brightgreen)](https://github.com/orgs/MDResearch/projects/3) ![Crates.io](https://img.shields.io/crates/d/mady) ![docs.rs](https://img.shields.io/docsrs/mady) ![GitHub release (latest SemVer including pre-releases)](https://img.shields.io/github/v/release/MDResearch/Mady?include_prereleases)
 
 MADY is open source tool for ahead-of-time automatic differentiation.
 In addition to ahead-of-time differentiation, MADY also provide some basic math structures, functions and operations with differentiation support.
