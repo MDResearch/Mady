@@ -1,8 +1,8 @@
 //! Read `README.md`
-//! 
+//!
 //! [🚚](https://github.com/MDResearch/Mady)
-//! 
-//! 
+//!
+//!
 
 pub mod prelude {
     #[cfg(feature = "macro")]
