@@ -1,6 +1,6 @@
 # MADY (macro-auto differentiation)
 
-[![Rust Test](https://github.com/MDResearch/research/actions/workflows/rust.yml/badge.svg)](https://github.com/MDResearch/research/actions/workflows/rust.yml) [![Project](https://img.shields.io/badge/Project-WIP-brightgreen)](https://github.com/orgs/MDResearch/projects/3) ![Crates.io](https://img.shields.io/crates/d/mady) ![docs.rs](https://img.shields.io/docsrs/mady) ![GitHub release (latest SemVer including pre-releases)](https://img.shields.io/github/v/release/MDResearch/Mady?include_prereleases)
+[![Rust Test](https://github.com/MDResearch/research/actions/workflows/rust.yml/badge.svg)](https://github.com/MDResearch/research/actions/workflows/rust.yml) [![Project](https://img.shields.io/badge/Project-WIP-brightgreen)](https://github.com/orgs/MDResearch/projects/3) [![Crates.io](https://img.shields.io/crates/d/mady)](https://crates.io/crates/mady) ![docs.rs](https://img.shields.io/docsrs/mady) [![Crates.io](https://img.shields.io/crates/v/mady)](https://crates.io/crates/mady)
 
 MADY is open source tool for ahead-of-time automatic differentiation.
 In addition to ahead-of-time differentiation, MADY also provide some basic math structures, functions and operations with differentiation support.
@@ -64,5 +64,5 @@ impl GradSin for f64 {
 
 ## example
 
-[hardcoded url](https://github.com/MDResearch/Mady/tree/main/examples)
+[more example](https://github.com/MDResearch/Mady/tree/main/examples)
 
