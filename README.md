@@ -55,7 +55,7 @@ fn grad_simple(a:isize, b:isize)-> (isize,(isize,isize)){
 ```
 
 $$
-grad/_simple(a,b)=(simple(a,b),({d simple \over d a},{d simple \over d b}))
+grad\\_simple(a,b)=(simple(a,b),({d simple \over d a},{d simple \over d b}))
 $$
 
 To use unsupported function like ``sin``, add fn named ``grad_{{fn name}}``.
