@@ -10,11 +10,22 @@ In addition to ahead-of-time differentiation, MADY also provide some basic math 
   
 </div>
 
-## Documentation
+## Feature
 
-see cargo
+- Ahead-of-time gen
+    
+    generate by proc-macro
+- Static
+    
+    no tree or graph struct in runtime, just normal function call
+- Multithreading
+    
+    because it's just a normal function, no hacky code or unsafe
+- Fast
+    
+    just static code, llvm can optimize all the code
 
-## differentiation support:
+## Supported Differentiation
 
 - functions: `min`, `max`
 - operations: `add`, `sub`, `mul`, `div`
@@ -24,7 +35,12 @@ see cargo
 First, set up project and add ``mady`` as dependency in your Cargo.yml
 ```toml
 [dependencies]
-mady = "*"
+mady = "version here"
+```
+
+or
+```bash
+cargo add mady
 ```
 
 Write a simple fn (only [differentiation support](#differentiation-support) operation/function can be used)
@@ -69,5 +85,6 @@ impl GradSin for f64 {
 
 ## example
 
-[more example](https://github.com/MDResearch/Mady/tree/main/examples)
+- [complex number](https://github.com/MDResearch/Mady/blob/main/examples/complex.rs)
+- [more example](https://github.com/MDResearch/Mady/tree/main/examples)
 
