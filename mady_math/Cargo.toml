@@ -9,4 +9,4 @@ repository = "https://github.com/MDResearch/Mady"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nalgebra = "0.31"
+nalgebra = "0.32"
